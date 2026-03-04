@@ -69,8 +69,23 @@ lemma gd_contraction (η L_smooth μ : ℝ) (h_smooth : is_L_smooth L L_smooth) 
     The error introduced by the SAM perturbation `ε` is bounded by `ρ`. -/
 lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
     ‖sam_perturbation L w ρ‖ ≤ ρ := by
-  -- Proof omitted for brevity
-  sorry
+  unfold sam_perturbation
+  -- split on whether gradient is zero
+  by_cases h : ‖gradient L w‖ = 0
+  · -- gradient is zero, perturbation is 0
+    simp [h]
+    linarith
+  · -- gradient is nonzero, perturbation is (ρ / ‖g‖) • g
+    simp [h]
+    -- ‖(ρ / ‖g‖) • g‖ = |ρ / ‖g‖| * ‖g‖
+    rw [norm_smul]
+    -- |ρ / ‖g‖| = ρ / ‖g‖ since both are positive
+    have hg_pos : 0 < ‖gradient L w‖ := by
+      exact lt_of_le_of_ne (norm_nonneg _) (Ne.symm h)
+    rw [Real.norm_of_nonneg (div_nonneg (le_of_lt hρ) (le_of_lt hg_pos))]
+    -- ρ / ‖g‖ * ‖g‖ = ρ, so the bound is exactly ρ
+    field_simp
+    exact le_refl _
 
 /-- Lemma 3: Z-Score Quantization Error.
     The filter introduces a bounded quantization error. Since masked components `g i` satisfy
