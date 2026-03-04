@@ -72,9 +72,11 @@ lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
   sorry
 
 /-- Lemma 3: Z-Score Quantization Error.
-    The filter introduces a bounded quantization error proportional to the standard deviation. -/
-lemma z_score_error_bound (g : W d) (z : ℝ) :
-    ‖filtered_gradient g z - g‖^2 ≤ (vector_std g * z)^2 * d := by
+    The filter introduces a bounded quantization error. Since masked components `g i` satisfy
+    `|g i - μ| < z * σ`, their magnitude is bounded by `|μ| + z * σ`.
+    Thus the total squared $L_2$ error is bounded by `d * (|μ| + z * σ)^2`. -/
+lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
+    ‖filtered_gradient g z - g‖^2 ≤ d * (|vector_mean g| + z * vector_std g)^2 := by
   -- Proof omitted for brevity
   sorry
 
