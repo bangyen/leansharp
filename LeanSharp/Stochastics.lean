@@ -4,9 +4,9 @@ import Mathlib.Data.Finset.Sum
 /-!
 # Stochastics & Empirical Risk
 
-In standard Machine Learning, we don't optimize the true population risk $L_\mathcal{D}(w)$ directly.
-Instead, we optimize the empirical risk $L_\mathcal{S}(w)$ over a dataset $\mathcal{S}$ of size $n$,
-where $L_\mathcal{S}(w) = \frac{1}{n} \sum_{i=1}^n \ell(w; x_i, y_i)$.
+In standard Machine Learning, we don't optimize the true population risk
+$L_\mathcal{D}(w)$ directly. Instead, we optimize the empirical risk
+$L_\mathcal{S}(w) = \frac{1}{n} \sum_{i=1}^n \ell(w; x_i, y_i)$ over a dataset $\mathcal{S}$.
 
 This file formally defines datasets, data points, and the empirical risk operator.
 -/
@@ -36,7 +36,8 @@ noncomputable def empirical_risk (w : W d) : ℝ :=
 /-!
 ## Stochastic Minibatches
 
-During SAM/ZSharp training, we take gradient steps based on random minibatches, not the fully empirical risk.
+During SAM/ZSharp training, we take gradient steps based on random
+minibatches, not the fully empirical risk.
 -/
 
 -- A minibatch `B` is simply a subset of indices of the dataset `S`.

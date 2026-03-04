@@ -55,7 +55,8 @@ lemma mask_bound (g : W d) (z : ℝ) (i : Fin d) :
     simp [h_eval]
     -- x^2 ≤ x^2 is true by reflexivity, handled by simp
 
-/-- Lemma 3 (Scalar): The absolute error of any component after filtering is bounded by `|μ| + z * σ`. -/
+/-- Lemma 3 (Scalar): The absolute error of any component after filtering is
+    bounded by `|μ| + z * σ`. -/
 lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
     |filtered_gradient g z i - g i| ≤ |vector_mean g| + z * vector_std g := by
   unfold filtered_gradient hadamard z_score_mask

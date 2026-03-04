@@ -158,13 +158,15 @@ lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
 lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
     ‖filtered_gradient g z - g‖^2 ≤ d * (|vector_mean g| + z * vector_std g)^2 := by
   -- ‖x‖^2 for EuclideanSpace is defined as the sum of squared components
-  have h_norm_sq : ‖filtered_gradient g z - g‖^2 = ∑ i : Fin d, (filtered_gradient g z i - g i)^2 := by
+  have h_norm_sq :
+      ‖filtered_gradient g z - g‖^2 = ∑ i : Fin d, (filtered_gradient g z i - g i)^2 := by
     rw [EuclideanSpace.norm_sq_eq]
     simp [Real.norm_eq_abs, sq_abs]
   rw [h_norm_sq]
   
   -- The bound for a single component's squared error
-  have h_comp_sq : ∀ i : Fin d, (filtered_gradient g z i - g i)^2 ≤ (|vector_mean g| + z * vector_std g)^2 := by
+  have h_comp_sq : ∀ i : Fin d,
+      (filtered_gradient g z i - g i)^2 ≤ (|vector_mean g| + z * vector_std g)^2 := by
     intro i
     have h_abs := filtered_component_bound g z hz i
     
@@ -173,7 +175,9 @@ lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
     
     have h_b_nonneg : 0 ≤ b := by
       have h1 : 0 ≤ |vector_mean g| := abs_nonneg _
-      have h2 : 0 ≤ z * vector_std g := mul_nonneg hz (by unfold vector_std; exact Real.sqrt_nonneg _)
+      have h2 : 0 ≤ z * vector_std g := by
+        apply mul_nonneg hz
+        unfold vector_std; exact Real.sqrt_nonneg _
       linarith
       
     -- We have |a| ≤ b
@@ -197,7 +201,7 @@ lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
       ≤ ∑ i : Fin d, (|vector_mean g| + z * vector_std g)^2 :=
           Finset.sum_le_sum fun i _ => h_comp_sq i
     _ = d * (|vector_mean g| + z * vector_std g)^2 := by
-          simp [Finset.sum_const, Finset.card_fin, smul_eq_mul]
+           simp [Finset.sum_const, Finset.card_fin, nsmul_eq_mul]
 
 /-!
 ## Convergence Theorem Statement

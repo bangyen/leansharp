@@ -12,7 +12,8 @@ empirical risk within a neighborhood, plus a complexity pacing function.
 
 Theorem:
 For any $\rho > 0$, with high probability:
-$L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon) + h(\|w\|_2^2 / \rho^2)$
+$L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon)
++ h(\|w\|_2^2 / \rho^2)$
 -/
 
 variable {d : ℕ} (DataPoint : Type*)
