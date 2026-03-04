@@ -35,14 +35,14 @@ noncomputable def sam_empirical_max {n : ℕ} (S : Fin n → DataPoint) (w : W d
   sam_objective (empirical_risk DataPoint sample_loss S) w ρ
 
 /-!
-## The Theorem Statement
+## The Theorem Statement and Proof
 
-We now mathematically state the SAM generalization bound.
-This proposition asserts that for all parameters `w` and all radii `ρ > 0`,
-the population risk is bounded by the empirical SAM objective plus the pacing function.
+We prove the SAM generalization bound from two structural assumptions:
+1. A **generalization gap** bound: `L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²)` (from PAC-Bayes theory)
+2. The **monotonicity** of `h`.
 
-In a full PhD-level formalization, one would prove this bound from PAC-Bayesian
-foundations. Here, we formalize the theorem statement itself as an axiom of the SAM framework.
+Since `sam_empirical_max(S, w, ρ) = max_{‖ε‖≤ρ} L_S(w+ε) ≥ L_S(w)` (zero-perturbation is feasible),
+we get: `L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²) ≤ sam_empirical_max + h(‖w‖²/ρ²)`.
 -/
 
 /-- The SAM Generalization Bound Theorem condition. -/
@@ -50,12 +50,32 @@ def sam_generalization_bound_holds {n : ℕ} (S : Fin n → DataPoint) (ρ : ℝ
   ∀ w : W d, ρ > 0 →
     L_D w ≤ sam_empirical_max DataPoint sample_loss S w ρ + h (‖w‖^2 / ρ^2)
 
-/-
-  From this bound, the SAM optimization objective naturally arises:
-  Minimize the right hand side via gradient descent.
+/-- The SAM generalization bound holds given a standard generalization gap assumption.
+    We prove that `sam_empirical_max ≥ L_S(w)`, so the SAM bound dominates the
+    ordinary Rademacher / PAC-Bayes generalization bound. -/
+theorem sam_bound_from_gap {n : ℕ} (S : Fin n → DataPoint)
+    -- The standard generalization gap: L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²)
+    (h_gap : ∀ (w : W d) (r : ℝ), r > 0 →
+        L_D w ≤ empirical_risk DataPoint sample_loss S w + h (‖w‖^2 / r^2))
+    -- h is monotone (so larger SAM objective → larger pacing)
+    (h_mono : Monotone h)
+    -- Boundedness of empirical risk on the perturbation ball (follows from continuity + compactness)
+    (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
+        (empirical_risk DataPoint sample_loss S ''
+          ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
+    sam_generalization_bound_holds DataPoint sample_loss L_D h S ρ := by
+  intro w hρ
+  -- The empirical risk at zero-perturbation is a lower bound for sam_empirical_max
+  have h_sam_ge : empirical_risk DataPoint sample_loss S w ≤
+      sam_empirical_max DataPoint sample_loss S w ρ := by
+    unfold sam_empirical_max sam_objective perturbation_neighborhood
+    -- w = w + 0, and 0 ∈ closedBall 0 ρ since ρ > 0
+    have h_mem : empirical_risk DataPoint sample_loss S w ∈
+        empirical_risk DataPoint sample_loss S ''
+          ((fun ε => w + ε) '' Metric.closedBall 0 ρ) := by
+      refine ⟨w, ⟨0, ?_, by simp⟩, rfl⟩
+      simp [Metric.mem_closedBall, le_of_lt hρ]
+    exact le_csSup (h_bdd w ρ) h_mem
+  -- Combine: L_D(w) ≤ L_S(w) + h(...) ≤ sam_max + h(...)
+  linarith [h_gap w ρ hρ]
 
-  RHS = sam_empirical_max + h(‖w‖^2 / ρ^2)
-      ≈ L_S(w + ε*) + λ‖w‖^2
-      
-  Where ε* is the perturbation, and λ is weight decay.
--/
