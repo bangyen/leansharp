@@ -29,8 +29,6 @@ jobs:
 
       - name: Build Lean project
         uses: leanprover/lean-action@v1
-        with:
-          mathlib-cache: true
 
       - name: Generate documentation
         if: github.ref == 'refs/heads/main'
