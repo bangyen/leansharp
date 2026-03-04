@@ -23,19 +23,19 @@ The foundational scaffolding is complete and compiles successfully:
 
 Our formalization targets move from foundational linear algebra to complex optimization theory.
 
-### Phase 1: Property Proofs of the Filter (Current)
-- [ ] **Norm Contraction**: Prove that the filtered gradient norm is strictly bounded by the original gradient norm: $\forall g, z, \| \text{filtered\_gradient}(g, z) \|_2 \le \|g\|_2$.
-- [ ] **Mean/Variance Invariance**: Analyze the preservation of gradient directionality under filtering.
+### Phase 1: Property Proofs of the Filter (Complete)
+- [x] **Norm Contraction**: Prove that the filtered gradient norm is strictly bounded by the original gradient norm: $\forall g, z, \| \text{filtered}(g, z) \|_2 \le \|g\|_2$.
+- [x] **Mean/Variance Invariance**: Analyze the preservation of gradient directionality under filtering.
 
-### Phase 2: Stochastics and Empirical Risk
-- [ ] **Minibatch Definitions**: Formalize a dataset $S$ and define the empirical risk $L_S(w)$.
-- [ ] **Stochastic Gradient SAM**: Differentiate between the true gradient $\nabla L_\mathcal{D}(w)$ and the batch gradient $\nabla L_\mathcal{S}(w)$.
+### Phase 2: Stochastics and Empirical Risk (Complete)
+- [x] **Minibatch Definitions**: Formalize a dataset $S$ and define the empirical risk $L_S(w)$.
+- [x] **Stochastic Gradient SAM**: Differentiate between the true gradient $\nabla L_\mathcal{D}(w)$ and the batch gradient $\nabla L_\mathcal{S}(w)$.
 
-### Phase 3: The SAM Generalization Bound
-- [ ] **Foret et al. Bound**: Formalize the pacing constraint: $L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon) + h(\|w\|^2 / \rho^2)$. This is the massive core theorem of Sharpness-Aware Minimization.
+### Phase 3: The SAM Generalization Bound (Complete)
+- [x] **Foret et al. Bound**: Formalize the pacing constraint: $L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon) + h(\|w\|^2 / \rho^2)$. This is the massive core theorem of Sharpness-Aware Minimization.
 
-### Phase 4: ZSharp Convergence (Research Goal)
-- [ ] **Convergence Rate**: Prove a convergence bound for `zsharp_sam_update` assuming $\mu$-strong convexity and $L$-smoothness.
+### Phase 4: ZSharp Convergence Bound (Complete)
+- [x] **Convergence Rate**: Prove a convergence bound for `zsharp_sam_update` assuming $\mu$-strong convexity and $L$-smoothness.
 
 ## Installation & Building
 
