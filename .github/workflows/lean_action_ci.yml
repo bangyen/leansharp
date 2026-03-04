@@ -16,6 +16,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
-      - uses: leanprover-community/docgen-action@v1
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Cache .lake directory
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: ${{ runner.os }}-lean-${{ hashFiles('lake-manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-lean-
+
+      - name: Build Lean project
+        uses: leanprover/lean-action@v1
+        with:
+          use-Lake: true
+          get-mathlib-cache: true
+
+      - name: Generate documentation
+        if: github.ref == 'refs/heads/main'
+        uses: leanprover-community/docgen-action@v1
