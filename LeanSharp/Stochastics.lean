@@ -13,15 +13,15 @@ This file formally defines datasets, data points, and the empirical risk operato
 
 variable {d : ℕ}
 
-/-- A generic data point type. It could represent `(x, y)` pairs or just inputs. -/
+-- A generic data point type. It could represent `(x, y)` pairs or just inputs.
 variable (DataPoint : Type*)
 
-/-- The per-sample loss function `ℓ`.
-    Given parameter weights `w` and a single `DataPoint`, it returns a Real loss. -/
+-- The per-sample loss function `ℓ`.
+-- Given parameter weights `w` and a single `DataPoint`, it returns a Real loss.
 variable (sample_loss : W d → DataPoint → ℝ)
 
-/-- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s. 
-    Here, we use a function from `Fin n → DataPoint` to represent a fixed-size dataset of `n` items. -/
+-- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s. 
+-- Here, we use a function from `Fin n → DataPoint` to represent a fixed-size dataset of `n` items.
 variable {n : ℕ} (S : Fin n → DataPoint)
 
 /-- The number of samples `n` cast to a Real number for averages. -/
@@ -39,7 +39,7 @@ noncomputable def empirical_risk (w : W d) : ℝ :=
 During SAM/ZSharp training, we take gradient steps based on random minibatches, not the fully empirical risk.
 -/
 
-/-- A minibatch `B` is simply a subset of indices of the dataset `S`. -/
+-- A minibatch `B` is simply a subset of indices of the dataset `S`.
 variable {b : ℕ} (B : Fin b → Fin n)
 
 /-- The minibatch loss function over subset `B`. -/
