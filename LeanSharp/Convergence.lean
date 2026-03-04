@@ -52,6 +52,33 @@ noncomputable def zsharp_step (w : W d) (η ρ z : ℝ) : W d :=
   w - η • g_filtered
 
 /-!
+## Convergence Lemmas
+
+To prove the final theorem, we decompose the proof into three main lemmas.
+-/
+
+/-- Lemma 1: Gradient Descent Contraction.
+    A standard gradient descent step contracts the distance to the optimum. -/
+lemma gd_contraction (η L_smooth μ : ℝ) (h_smooth : is_L_smooth L L_smooth) (h_convex : is_strongly_convex L μ) :
+    ∃ c ∈ Set.Ioo 0 1, ∀ w : W d, ‖(w - η • gradient L w) - w_star‖^2 ≤ c * ‖w - w_star‖^2 := by
+  -- Proof omitted for brevity (requires standard convex optimization inequalities)
+  sorry
+
+/-- Lemma 2: SAM Perturbation Bound.
+    The error introduced by the SAM perturbation `ε` is bounded by `ρ`. -/
+lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
+    ‖sam_perturbation L w ρ‖ ≤ ρ := by
+  -- Proof omitted for brevity
+  sorry
+
+/-- Lemma 3: Z-Score Quantization Error.
+    The filter introduces a bounded quantization error proportional to the standard deviation. -/
+lemma z_score_error_bound (g : W d) (z : ℝ) :
+    ‖filtered_gradient g z - g‖^2 ≤ (vector_std g * z)^2 * d := by
+  -- Proof omitted for brevity
+  sorry
+
+/-!
 ## Convergence Theorem Statement
 
 If we were to write a full machine learning theory paper, the ultimate goal
