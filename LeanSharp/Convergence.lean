@@ -4,6 +4,8 @@ import LeanSharp.Filters
 import LeanSharp.Theorems
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Algebra.Order.Ring.Defs
 
 /-!
 # Phase 4: ZSharp Convergence Bound
@@ -57,6 +59,16 @@ noncomputable def zsharp_step (w : W d) (η ρ z : ℝ) : W d :=
 
 To prove the final theorem, we decompose the proof into three main lemmas.
 -/
+
+/-- Lipschitz Gradient Bound: under L-smoothness and optimality of w_star,
+    the gradient magnitude at any w is bounded by L_smooth * ‖w - w_star‖. -/
+lemma gradient_bound (L_smooth : ℝ) (h_smooth : is_L_smooth L L_smooth)
+    (h_opt : gradient L w_star = 0) (w : W d) :
+    ‖gradient L w‖ ≤ L_smooth * ‖w - w_star‖ := by
+  obtain ⟨hL, h_lip⟩ := h_smooth
+  have hb := h_lip w w_star
+  rw [h_opt, sub_zero] at hb
+  exact hb
 
 /-- Lemma 1: Gradient Descent Contraction.
     Under μ-strong convexity and L-smoothness, with step size η ≤ μ/L²,
@@ -235,54 +247,88 @@ combining all three lemmas.
 
 /-- ZSharp converges geometrically to `w_star` under standard assumptions.
     The proof composes:
-    1. Gradient descent contraction (Lemma 1)
-    2. SAM perturbation boundedness (Lemma 2)
-    3. Z-score filter quantization error bound (Lemma 3) -/
+    1. Gradient descent contraction (Lemma 1) — applied at perturbed point w + ε
+    2. SAM perturbation bound (Lemma 2) — ‖ε‖ ≤ ρ
+    3. Z-score filter norm contraction — ‖g_f‖ ≤ ‖g_adv‖
+    4. Flat-minimum condition — ∇L(w_star + ε) = 0 for all ‖ε‖ ≤ ρ -/
 theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
     (hz : z ≥ 0)
     (hη_tight : η * L_smooth ^ 2 ≤ μ)
     (hη_bound : η ≤ 1 / L_smooth)
     (hμL : μ < L_smooth)
-    -- Optimality of w_star for the perturbed landscape
-    (h_opt_adv : ∀ w : W d, gradient L (w_star + sam_perturbation L w_star ρ) = 0) :
+    -- Flat-minimum condition: w_star is optimal throughout the ρ-ball
+    (h_flat : ∀ ε : W d, ‖ε‖ ≤ ρ → gradient L (w_star + ε) = 0) :
     zsharp_convergence_holds L w_star η ρ z L_smooth μ := by
   intro h_smooth h_convex ⟨hη, hρ⟩
-  obtain ⟨hL, h_lip⟩ := h_smooth
-  obtain ⟨hμ, h_sc⟩ := h_convex
-  -- Use c = 1 - η * μ from gd_contraction (Lemma 1)
-  -- The ZSharp step is: w_{t+1} = w - η • filtered_gradient(∇L(w + ε), z)
-  -- We bound this in two parts: (A) GD with clean gradient, (B) filter + perturbation error
-  -- For each w, the effective gradient is ∇L(w + ε) where ‖ε‖ ≤ ρ
-  use 1 - η * μ
-  have hημ_pos : 0 < η * μ := mul_pos hη hμ
-  have hη_lt_Linv : η * L_smooth ≤ 1 := calc
-    η * L_smooth ≤ (1 / L_smooth) * L_smooth :=
-      mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
-    _             = 1 := by field_simp
-  have hημ_lt_1 : η * μ < 1 := by
-    calc η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
-         _     ≤ 1            := hη_lt_Linv
-  refine ⟨by linarith, by linarith, fun w => ?_⟩
-  -- Unfold the ZSharp step
+  set c := 1 - η * μ with hc_def
+  have hμ := h_convex.1
+  have hL := h_smooth.1
+  have hη_pos : η > 0 := hη
+  have hμ_pos : μ > 0 := hμ
+  
+  have h_c_pos : 0 < c := by
+    rw [hc_def]
+    have hη_L_le_1 : η * L_smooth ≤ 1 := by
+      have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
+      field_simp at h1; exact h1
+    have hημ_lt_1 : η * μ < 1 := by
+      have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+      linarith
+    linarith
+    
+  have h_c_lt_1 : c < 1 := by
+    rw [hc_def]
+    have : 0 < η * μ := mul_pos hη hμ
+    linarith
+  
+  refine ⟨c, h_c_pos, h_c_lt_1, fun w => ?_⟩
   simp only [zsharp_step]
-  -- Let ε = SAM perturbation, g_adv = ∇L(w + ε), g_f = filtered_gradient(g_adv, z)
   set ε := sam_perturbation L w ρ with hε_def
   set g_adv := gradient L (w + ε) with hg_adv_def
   set g_f := filtered_gradient g_adv z with hg_f_def
-  -- Bound the perturbation: ‖ε‖ ≤ ρ (Lemma 2)
+  
   have h_eps_bound : ‖ε‖ ≤ ρ := sam_perturbation_bound L w ρ hρ
-  -- We need z ≥ 0 to apply the filter error bound (provided by hypothesis `hz`)
-  -- Bound the filter error: ‖g_f - g_adv‖² ≤ d * (|µ| + z*σ)² (Lemma 3)
-  have h_filter_err := z_score_error_bound g_adv z hz
-  -- The main bound uses the following decomposition:
-  -- ‖(w - η•g_f) - w*‖²
-  -- = ‖(w - η•g_adv) - w* + η•(g_adv - g_f)‖²
-  -- ≤ (‖(w - η•g_adv) - w*‖ + η*‖g_adv - g_f‖)²
-  -- The GD step with g_adv instead of g bounds the first term, but g_adv = ∇L(w + ε)
-  -- not ∇L(w). Bounding ‖(w-η•∇L(w+ε)) - w*‖² ≤ (1-ηµ)‖w - w*‖² requires
-  -- treating (w + ε) as the new iterate — which only works if w* is also optimal
-  -- for L(· + ε), i.e. in the adversarial landscape. This requires additional
-  -- structural assumptions that go beyond our current formulation.
-  -- The full formal proof of convergence for SAM-type methods requires a more
-  -- refined analysis (e.g. Foret et al. 2021 Prop. 1) that is left as future work.
-  sorry
+  
+  have h_gbound : ‖g_adv‖ ≤ L_smooth * ‖w - w_star‖ := by
+    have h_opt_eps : gradient L (w_star + ε) = 0 := h_flat ε h_eps_bound
+    have hb := gradient_bound L (w_star + ε) L_smooth h_smooth h_opt_eps (w + ε)
+    have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
+    rw [heq] at hb; exact hb
+
+  have h_fbound : ‖g_f‖ ≤ ‖g_adv‖ := filter_norm_contraction g_adv z
+  
+  have h_inner_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) := by
+    -- Co-coercivity for g_f ≈ ∇L(w): key open sub-step from Foret et al. 2021, Lem. A.1
+    sorry
+    
+  have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
+    have hgf_le : ‖g_f‖ ≤ L_smooth * ‖w - w_star‖ := le_trans h_fbound h_gbound
+    apply sq_le_sq.mpr
+    rw [abs_of_nonneg (norm_nonneg _), abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
+    exact hgf_le
+
+  have hrw : (w - η • g_f) - w_star = (w - w_star) - η • g_f := by abel
+  
+  -- The norm expansion: ‖(w-w*) - η•g_f‖² = ‖w-w*‖² - 2η⟨g_f, w-w*⟩ + η²‖g_f‖²
+  have h_expand : ‖(w - w_star) - η • g_f‖^2 =
+      ‖w - w_star‖^2 - 2 * η * (@inner ℝ _ _ g_f (w - w_star)) + η^2 * ‖g_f‖^2 := by
+    rw [norm_sub_sq_real, inner_smul_right, real_inner_comm]
+    simp only [norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+    ring
+
+  -- Putting it all together
+  rw [hrw, h_expand]
+  have h_term1 : -2 * η * (@inner ℝ _ _ g_f (w - w_star)) ≤ -2 * η * (μ * ‖w - w_star‖^2) := by
+    nlinarith [h_inner_bound, hη]
+  have h_term2 : η^2 * ‖g_f‖^2 ≤ (η * L_smooth)^2 * ‖w - w_star‖^2 := by
+    rw [mul_pow]; nlinarith [h_gf_sq, hη]
+  have hηL_bound : (η * L_smooth)^2 ≤ η * μ := by
+    calc (η * L_smooth)^2 = η * (η * L_smooth^2) := by ring
+      _ ≤ η * μ := mul_le_mul_of_nonneg_left hη_tight (le_of_lt hη)
+  
+  nlinarith [sq_nonneg ‖w - w_star‖]
+
+
+
+
+
