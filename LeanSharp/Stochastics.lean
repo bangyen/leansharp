@@ -21,7 +21,8 @@ variable (DataPoint : Type*)
 variable (sample_loss : W d → DataPoint → ℝ)
 
 -- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s. 
--- Here, we use a function from `Fin n → DataPoint` to represent a fixed-size dataset of `n` items.
+-- Here, we use a function from `Fin n → DataPoint` to represent a 
+-- fixed-size dataset of `n` items.
 variable {n : ℕ} (S : Fin n → DataPoint)
 
 /-- The number of samples `n` cast to a Real number for averages. -/

@@ -13,7 +13,7 @@ empirical risk within a neighborhood, plus a complexity pacing function.
 Theorem:
 For any $\rho > 0$, with high probability:
 $L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon)
-+ h(\|w\|_2^2 / \rho^2)$
+    + h(\|w\|_2^2 / \rho^2)$
 -/
 
 variable {d : ℕ} (DataPoint : Type*)
@@ -31,7 +31,8 @@ variable (h_mono : StrictMono h)
 
 /-- For a given dataset `S`, the maximal empirical risk in the $\rho$-neighborhood. 
     This uses the exact `sam_objective` we formalized in Phase 0. -/
-noncomputable def sam_empirical_max {n : ℕ} (S : Fin n → DataPoint) (w : W d) (ρ : ℝ) : ℝ :=
+noncomputable def sam_empirical_max {n : ℕ} 
+    (S : Fin n → DataPoint) (w : W d) (ρ : ℝ) : ℝ :=
   sam_objective (empirical_risk DataPoint sample_loss S) w ρ
 
 /-!
@@ -41,8 +42,9 @@ We prove the SAM generalization bound from two structural assumptions:
 1. A **generalization gap** bound: `L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²)` (from PAC-Bayes theory)
 2. The **monotonicity** of `h`.
 
-Since `sam_empirical_max(S, w, ρ) = max_{‖ε‖≤ρ} L_S(w+ε) ≥ L_S(w)` (zero-perturbation is feasible),
-we get: `L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²) ≤ sam_empirical_max + h(‖w‖²/ρ²)`.
+Since `sam_empirical_max(S, w, ρ) = max_{‖ε‖≤ρ} L_S(w+ε) ≥ L_S(w)` 
+(zero-perturbation is feasible), we get:
+`L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²) ≤ sam_empirical_max + h(‖w‖²/ρ²)`.
 -/
 
 /-- The SAM Generalization Bound Theorem condition. -/
@@ -59,7 +61,8 @@ theorem sam_bound_from_gap {n : ℕ} (S : Fin n → DataPoint)
         L_D w ≤ empirical_risk DataPoint sample_loss S w + h (‖w‖^2 / r^2))
     -- h is monotone (so larger SAM objective → larger pacing)
     (h_mono : Monotone h)
-    -- Boundedness of empirical risk on the perturbation ball (follows from continuity + compactness)
+    -- Boundedness of empirical risk on the perturbation ball 
+    -- (follows from continuity + compactness)
     (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
         (empirical_risk DataPoint sample_loss S ''
           ((fun ε => w + ε) '' Metric.closedBall 0 r))) :

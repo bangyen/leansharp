@@ -46,7 +46,7 @@ lemma mask_bound (g : W d) (z : ℝ) (i : Fin d) :
   · -- Case: mask = 0
     -- Rewrite the mask evaluation to 0
     have h_eval : z_score_mask g z i = 0 := h0
-    simp [h_eval]
+    simp only [WithLp.equiv_symm_apply, ge_iff_le, h_eval]
     -- 0^2 ≤ x^2 is true because x^2 ≥ 0
     exact sq_nonneg (g i)
 
@@ -76,10 +76,8 @@ lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
     simp [h]
     -- We know ¬(|g i - μ| ≥ z * σ), so |g i - μ| < z * σ
     have h_lt : |g i - vector_mean g| < z * vector_std g := not_le.mp h
-    -- By the reverse triangle inequality: |a| - |b| ≤ |a - b|
-    have h_triangle : |g i| - |vector_mean g| ≤ |g i - vector_mean g| :=
-      abs_sub_abs_le_abs_sub (g i) (vector_mean g)
-    -- By combining the inequalities: |g i| - |μ| ≤ |g i - μ| < z * σ  ==>  |g i| < |μ| + z * σ
+    -- By combining the inequalities: 
+    -- |g i| - |μ| ≤ |g i - μ| < z * σ  ==>  |g i| < |μ| + z * σ
     linarith
 
 /-!
