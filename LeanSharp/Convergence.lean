@@ -91,10 +91,32 @@ lemma gd_contraction (η L_smooth μ : ℝ)
     have h_expand : ‖(w - η • gradient L w) - w_star‖^2 =
         ‖w - w_star‖^2 - 2 * η * @inner ℝ _ _ (gradient L w) (w - w_star) +
         η^2 * ‖gradient L w‖^2 := by
-      sorry -- standard inner product norm expansion
+      -- (w - η•g) - w* = (w - w*) - η•g
+      have hrw : (w - η • gradient L w) - w_star = (w - w_star) - η • gradient L w := by abel
+      rw [hrw]
+      -- Apply norm_sub_sq_real: ‖a - b‖² = ‖a‖² - 2⟨a,b⟩ + ‖b‖²
+      rw [norm_sub_sq_real]
+      -- Simplify ⟨w - w*, η•g⟩ = η * ⟨g, w - w*⟩ and ‖η•g‖² = η² * ‖g‖²
+      rw [inner_smul_right, real_inner_comm, norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+      ring
     -- Strong convexity: ⟨g, w-w*⟩ ≥ µ‖w-w*‖²
     have h_sc_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L w) (w - w_star) := by
-      sorry -- from strong convexity + optimality ∇L(w*) = 0
+      -- Apply h_sc at (w*, w): L(w) ≥ L(w*) + ⟨∇L(w*), w - w*⟩ + µ/2 * ‖w - w*‖²
+      -- Since ∇L(w*) = 0: L(w) ≥ L(w*) + µ/2 * ‖w - w*‖²
+      have h_sc2 := h_sc w_star w
+      simp only [h_opt, inner_zero_left, zero_add] at h_sc2
+      -- Apply h_sc at (w, w*): L(w*) ≥ L(w) + ⟨∇L(w), w* - w⟩ + µ/2 * ‖w* - w‖²
+      have h_sc1 := h_sc w w_star
+      -- ⟨∇L(w), w* - w⟩ = -⟨∇L(w), w - w*⟩
+      have h_inner_flip : @inner ℝ _ _ (gradient L w) (w_star - w) =
+          -@inner ℝ _ _ (gradient L w) (w - w_star) := by
+        rw [show w_star - w = -(w - w_star) from (neg_sub w w_star).symm, inner_neg_right]
+      -- ‖w* - w‖ = ‖w - w*‖
+      have h_norm_eq : ‖w_star - w‖ = ‖w - w_star‖ := by rw [norm_sub_rev]
+      rw [h_inner_flip, h_norm_eq] at h_sc1
+      -- Combine: µ/2 * ‖·‖² ≤ L(w) - L(w*) ≤ ⟨g,w-w*⟩ - µ/2 * ‖·‖²
+      -- → µ * ‖·‖² ≤ ⟨g,w-w*⟩
+      linarith
     -- L-smoothness: ‖g‖ ≤ L‖w-w*‖
     have h_smooth_bound : ‖gradient L w‖^2 ≤ L_smooth^2 * ‖w - w_star‖^2 := by
       have hb := h_lip w w_star
