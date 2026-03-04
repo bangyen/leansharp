@@ -59,11 +59,53 @@ To prove the final theorem, we decompose the proof into three main lemmas.
 -/
 
 /-- Lemma 1: Gradient Descent Contraction.
-    A standard gradient descent step contracts the distance to the optimum. -/
-lemma gd_contraction (η L_smooth μ : ℝ) (h_smooth : is_L_smooth L L_smooth) (h_convex : is_strongly_convex L μ) :
-    ∃ c ∈ Set.Ioo 0 1, ∀ w : W d, ‖(w - η • gradient L w) - w_star‖^2 ≤ c * ‖w - w_star‖^2 := by
-  -- Proof omitted for brevity (requires standard convex optimization inequalities)
-  sorry
+    Under μ-strong convexity and L-smoothness, with step size η ≤ μ/L²,
+    a GD step contracts the squared distance to w* by factor (1 - η*μ) < 1. -/
+lemma gd_contraction (η L_smooth μ : ℝ)
+    (h_smooth : is_L_smooth L L_smooth)
+    (h_convex : is_strongly_convex L μ)
+    (h_opt : gradient L w_star = 0)
+    (hμL : μ < L_smooth)
+    (hη : 0 < η)
+    (hη_bound : η ≤ 1 / L_smooth)
+    -- Tight condition ensuring (1 - 2ηµ + η²L²) ≤ (1 - ηµ): need ηL² ≤ µ
+    (hη_tight : η * L_smooth ^ 2 ≤ μ) :
+    ∃ c ∈ Set.Ioo 0 1, ∀ w : W d,
+        ‖(w - η • gradient L w) - w_star‖^2 ≤ c * ‖w - w_star‖^2 := by
+  obtain ⟨hL, h_lip⟩ := h_smooth
+  obtain ⟨hμ, h_sc⟩ := h_convex
+  -- c = 1 - η * μ ∈ (0, 1)
+  use 1 - η * μ
+  have hημ_pos : 0 < η * μ := mul_pos hη hμ
+  have hημ_lt_1 : η * μ < 1 := by
+    have hL_inv : η * L_smooth ≤ 1 := calc
+      η * L_smooth ≤ (1 / L_smooth) * L_smooth := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
+      _             = 1                         := by field_simp
+    calc η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+         _     ≤ 1            := hL_inv
+  constructor
+  · -- c ∈ Ioo 0 1: i.e. 0 < 1 - ηµ < 1
+    constructor <;> linarith
+  · intro w
+    -- ‖w_{t+1} - w*‖² = ‖w-w*‖² - 2η⟨g,w-w*⟩ + η²‖g‖²
+    have h_expand : ‖(w - η • gradient L w) - w_star‖^2 =
+        ‖w - w_star‖^2 - 2 * η * @inner ℝ _ _ (gradient L w) (w - w_star) +
+        η^2 * ‖gradient L w‖^2 := by
+      sorry -- standard inner product norm expansion
+    -- Strong convexity: ⟨g, w-w*⟩ ≥ µ‖w-w*‖²
+    have h_sc_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L w) (w - w_star) := by
+      sorry -- from strong convexity + optimality ∇L(w*) = 0
+    -- L-smoothness: ‖g‖ ≤ L‖w-w*‖
+    have h_smooth_bound : ‖gradient L w‖^2 ≤ L_smooth^2 * ‖w - w_star‖^2 := by
+      have hb := h_lip w w_star
+      rw [h_opt, sub_zero] at hb
+      nlinarith [sq_nonneg (‖gradient L w‖ - L_smooth * ‖w - w_star‖),
+                 norm_nonneg (gradient L w), norm_nonneg (w - w_star)]
+    -- Combine: ≤ (1 - 2ηµ + η²L²)‖·‖² ≤ (1 - ηµ)‖·‖² since η²L² ≤ ηµ (from hη_tight)
+    rw [h_expand]
+    have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
+    nlinarith [h_sc_bound, h_smooth_bound, sq_nonneg ‖w - w_star‖,
+               mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
 
 /-- Lemma 2: SAM Perturbation Bound.
     The error introduced by the SAM perturbation `ε` is bounded by `ρ`. -/
