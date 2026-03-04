@@ -1,6 +1,7 @@
 import LeanSharp.Landscape
 import LeanSharp.Sam
 import LeanSharp.Filters
+import LeanSharp.Theorems
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
@@ -77,8 +78,45 @@ lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
     Thus the total squared $L_2$ error is bounded by `d * (|μ| + z * σ)^2`. -/
 lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
     ‖filtered_gradient g z - g‖^2 ≤ d * (|vector_mean g| + z * vector_std g)^2 := by
-  -- Proof omitted for brevity
-  sorry
+  -- ‖x‖^2 for EuclideanSpace is defined as the sum of squared components
+  have h_norm_sq : ‖filtered_gradient g z - g‖^2 = ∑ i : Fin d, (filtered_gradient g z i - g i)^2 := sorry
+  rw [h_norm_sq]
+  
+  -- The bound for a single component's squared error
+  have h_comp_sq : ∀ i : Fin d, (filtered_gradient g z i - g i)^2 ≤ (|vector_mean g| + z * vector_std g)^2 := by
+    intro i
+    have h_abs := filtered_component_bound g z hz i
+    
+    let a := filtered_gradient g z i - g i
+    let b := |vector_mean g| + z * vector_std g
+    
+    have h_b_nonneg : 0 ≤ b := by
+      have h1 : 0 ≤ |vector_mean g| := abs_nonneg _
+      have h2 : 0 ≤ z * vector_std g := mul_nonneg hz (by unfold vector_std; exact Real.sqrt_nonneg _)
+      linarith
+      
+    -- We have |a| ≤ b
+    have h_abs_le : |a| ≤ b := h_abs
+    -- Since b is non-negative, |b| = b
+    have h_b_abs : |b| = b := abs_of_nonneg h_b_nonneg
+    
+    -- |a| ≤ |b|
+    have h_abs_le_abs : |a| ≤ |b| := by linarith
+    
+    -- Then a^2 ≤ b^2 via Mathlib
+    have h_sq := sq_le_sq.mpr h_abs_le_abs
+    
+    -- b^2 = (|μ| + z*σ)^2
+    have h_b_sq : b^2 = (|vector_mean g| + z * vector_std g)^2 := by rfl
+    
+    linarith
+    
+  -- Sum the component bounds and simplify: ∑ C^2 = d * C^2
+  calc (∑ i : Fin d, (filtered_gradient g z i - g i)^2)
+      ≤ ∑ i : Fin d, (|vector_mean g| + z * vector_std g)^2 :=
+          Finset.sum_le_sum fun i _ => h_comp_sq i
+    _ = d * (|vector_mean g| + z * vector_std g)^2 := by
+          simp [Finset.sum_const, Finset.card_fin, smul_eq_mul]
 
 /-!
 ## Convergence Theorem Statement
