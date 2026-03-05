@@ -17,12 +17,12 @@ namespace LeanSharp
 open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]
-variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- A stochastic gradient is a random vector `W d`.
     We typically assume it is based on a true gradient plus some noise `ξ`. -/
 def is_stochastic_gradient (L : W d → ℝ) (g : Ω → W d) (w : W d) : Prop :=
-  Integrable g ℙ ∧ 𝔼[g] = gradient L w
+  Integrable g ∧ 𝔼[g] = gradient L w
 
 /-- Bounded variance assumption for the stochastic gradient. -/
 def has_bounded_variance (L : W d → ℝ) (g : Ω → W d) (w : W d) (σsq : ℝ) : Prop :=
