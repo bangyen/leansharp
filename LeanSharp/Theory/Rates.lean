@@ -43,11 +43,14 @@ noncomputable def weight_sequence (w0 : W d) (η : ℕ → ℝ) (z : ℝ) (g_adv
 | 0, _ => w0
 | t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) (η t) z (g_adv t) ω
 
+section NoDimFact
+omit [Fact (0 < d)]
+
 /-- **Strongly Convex Rate ($O(1/T)$)**:
 Under strong convexity and appropriate step size decay $\eta_t = 1 / (\mu t)$,
 the expected squared distance to the optimum decreases at a rate of $1/T$. -/
 theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
-    (η : ℕ → ℝ) (z μ L_smooth σsq ρ : ℝ) (g_adv : ℕ → Ω → W d) [Nonempty Ω]
+    (η : ℕ → ℝ) (z μ σsq ρ : ℝ) (g_adv : ℕ → Ω → W d) [Nonempty Ω]
     -- Add the filtration and measurability assumptions
     (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ (‹MeasureSpace Ω›.toMeasurableSpace))
@@ -56,7 +59,6 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
       volume[fun ω' => ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖ ^ 2 | ℱ t] ω ≤
       (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)
     (h_convex : is_strongly_convex L μ)
-    (h_smooth : is_L_smooth L L_smooth)
     (h_sgd : ∀ t ω, is_stochastic_gradient L (g_adv t)
       (weight_sequence w0 η z g_adv t ω + sam_perturbation L (weight_sequence w0 η z g_adv t ω) ρ))
     (h_var : ∀ t ω, has_bounded_variance L (g_adv t)
@@ -66,7 +68,7 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
     (h_align : ∀ t ω, stochastic_alignment_condition w_star
       (weight_sequence w0 η z g_adv t ω) (η t) z μ (g_adv t))
     -- Integrability assumptions for iterates
-    (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖^2)) :
+    (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
     ∃ C : ℝ, ∀ T : ℕ, T > 0 →
       𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖^2] ≤ C / T := by
   let C := ‖w0 - w_star‖^2 + 1
@@ -122,12 +124,9 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
                          volume[fun ω' =>
                            ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2 | ℱ t] ω] :=
           (integral_condExp (h_le t)).symm
-
         rw [h_tower]
-
         -- 2. Substitute (1 - η * μ) with t / (t + 1)
         rw [← h_contraction]
-
         -- 3. Apply the conditional bound inside the expectation
         have h_int_bound : 𝔼[fun ω =>
                              volume[fun ω' =>
@@ -143,9 +142,7 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
               (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖^2)
                 := Integrable.const_mul (h_int t) (1 - η t * μ)
           apply integral_mono_ae h_int_1 h_int_2 (h_cond_bound t)
-
         apply le_trans h_int_bound
-
         -- 4. Pull the constant scalar out of the integral
         rw [integral_const_mul]
       have h_ih := ih h_pos_t
@@ -164,41 +161,38 @@ For general smooth (but potentially non-convex) objectives, the average gradient
 norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
 theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : ℝ)
     (η : ℕ → ℝ) (g_adv : ℕ → Ω → W d) (T : ℕ) (hT : T > 0)
-    (h_smooth : is_L_smooth L L_smooth)
     (h_step : ∀ t, η t = 1 / Real.sqrt (T : ℝ))
-    (h_descent : ∀ t, ∀ ω, stochastic_descent_condition L (η t) z L_smooth σsq (g_adv t)
-                   (weight_sequence w0 η z g_adv t ω))
     -- Objective function properties
     (h_bdd : BddBelow (Set.range L))
     (h_int_L : ∀ t, Integrable (fun ω => L (weight_sequence w0 η z g_adv t ω)))
     -- Landscape descent property (standard for L-smooth functions)
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
-        (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2] +
-        ((η t)^2 * L_smooth / 2) * σsq) :
+        (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] +
+        ((η t) ^ 2 * L_smooth / 2) * σsq) :
     ∃ C : ℝ,
       (1 / T : ℝ) * (∑ t ∈ Finset.range T,
         𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
       ≤ C / Real.sqrt (T : ℝ) := by
   let C := 2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq
   use C
-
   have h_const_L : 𝔼[fun (_ : Ω) => L w0] = L w0 := by
     simp [integral_const]
-
   -- 1. Per-step descent in expectation
   have h_step_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
       𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
       (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2] +
       ((η t)^2 * L_smooth / 2) * σsq := h_L_descent
-
   have h_base : ∫ ω, L (weight_sequence w0 η z g_adv 0 ω) ∂ℙ = ∫ _ : Ω, L w0 ∂ℙ := rfl
-
   -- 2. Summing over iterations (telescoping sum)
-  have h_telescope : (η 0 / 2) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
-      ≤ (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq := by
-    have h_rearranged : ∀ t, (η 0 / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2] ≤
-        (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] - 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)]) +
+  have h_telescope : (η 0 / 2) * (∑ t ∈ Finset.range T, 𝔼[fun ω
+        => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
+      ≤ (L w0 - 𝔼[fun ω
+        => L (weight_sequence w0 η z g_adv T ω)]) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq := by
+    have h_rearranged : ∀ t, (η 0 / 2) * 𝔼[fun ω
+          => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2] ≤
+        (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] - 𝔼[fun ω
+          => L (weight_sequence w0 η z g_adv (t + 1) ω)]) +
         ((η 0)^2 * L_smooth / 2) * σsq := by
       intro t
       have h_eta : η t = η 0 := by rw [h_step t, h_step 0]
@@ -208,11 +202,13 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
     have h_sum := Finset.sum_le_sum (fun (t : ℕ) (_ : t ∈ Finset.range T) => h_rearranged t)
     rw [← Finset.mul_sum] at h_sum
     have h_right : ∑ t ∈ Finset.range T, ((∫ ω, L (weight_sequence w0 η z g_adv t ω) ∂ℙ -
-          ∫ ω, L (weight_sequence w0 η z g_adv (t + 1) ω) ∂ℙ) + (η 0)^2 * L_smooth / 2 * σsq) =
-          (∫ ω, L (weight_sequence w0 η z g_adv 0 ω) ∂ℙ - ∫ ω, L (weight_sequence w0 η z g_adv T ω) ∂ℙ) +
+          ∫ ω, L (weight_sequence w0 η z g_adv (t + 1) ω) ∂ℙ) + (η 0)^2 * L_smooth / 2 * σsq)
+          = (∫ ω, L (weight_sequence w0 η z g_adv 0 ω) ∂ℙ - ∫ ω, L
+            (weight_sequence w0 η z g_adv T ω) ∂ℙ) +
           (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq := by
       rw [Finset.sum_add_distrib]
-      have h_const : ∑ t ∈ Finset.range T, ((η 0)^2 * L_smooth / 2 * σsq) = (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq := by
+      have h_const : ∑ t ∈ Finset.range T, ((η 0)^2 * L_smooth / 2 * σsq)
+          = (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq := by
         simp [Finset.sum_const, nsmul_eq_mul]; ring
       have h_tele : ∑ t ∈ Finset.range T, (∫ ω, L (weight_sequence w0 η z g_adv t ω) ∂ℙ -
           ∫ ω, L (weight_sequence w0 η z g_adv (t + 1) ω) ∂ℙ) =
@@ -220,11 +216,9 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
             - ∫ ω, L (weight_sequence w0 η z g_adv T ω) ∂ℙ := by
         exact Finset.sum_range_sub' (fun t => ∫ ω, L (weight_sequence w0 η z g_adv t ω) ∂ℙ) T
       rw [h_tele, h_const]
-
     rw [h_right] at h_sum
     simp only [h_base, h_const_L] at h_sum
     exact h_sum
-
   -- 3. Bound the final expected value by the global infimum
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun (ω : Ω) => L (weight_sequence w0 η z g_adv T ω)] := by
     calc sInf (Set.range L) = 𝔼[fun _ : Ω => sInf (Set.range L)] := by
@@ -234,21 +228,23 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
           intro ω
           apply csInf_le h_bdd
           apply Set.mem_range_self
-
   -- 4. Rearrange to isolate the average gradient norm
   have h_pos : (T : ℝ) > 0 := Nat.cast_pos.mpr hT
   have h_eta0 : η 0 = 1 / Real.sqrt (T : ℝ) := h_step 0
   have h_eta_nz : η 0 ≠ 0 := by rw [h_eta0]; positivity
-
-  calc (1 / (T : ℝ)) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
-    _ = (2 / ((T : ℝ) * η 0)) * ((η 0 / 2) * ∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2]) := by
+  calc (1 / (T : ℝ)) * (∑ t ∈ Finset.range T, 𝔼[fun ω
+      => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
+    _ = (2 / ((T : ℝ) * η 0)) * ((η 0 / 2) * ∑ t ∈ Finset.range T, 𝔼[fun ω
+          => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2]) := by
         field_simp [h_eta_nz, h_pos]
-    _ ≤ (2 / ((T : ℝ) * η 0)) * (L w0 - sInf (Set.range L) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq) := by
+    _ ≤ (2 / ((T : ℝ) * η 0))
+          * (L w0 - sInf (Set.range L) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq) := by
         apply mul_le_mul_of_nonneg_left
         · linarith [h_telescope, h_inf]
         · have : η 0 > 0 := by rw [h_eta0]; positivity
           positivity
-    _ = (2 / Real.sqrt (T : ℝ)) * (L w0 - sInf (Set.range L)) + (L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+    _ = (2 / Real.sqrt (T : ℝ))
+          * (L w0 - sInf (Set.range L)) + (L_smooth * σsq) / Real.sqrt (T : ℝ) := by
         rw [h_eta0]
         field_simp [h_pos, h_eta_nz]
         rw [Real.sq_sqrt (le_of_lt h_pos)]
@@ -256,5 +252,7 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
     _ = C / Real.sqrt (T : ℝ) := by
         simp [C]
         field_simp [h_pos]
+
+end NoDimFact
 
 end LeanSharp
