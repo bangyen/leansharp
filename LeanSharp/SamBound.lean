@@ -1,7 +1,6 @@
 import LeanSharp.Landscape
 import LeanSharp.Sam
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Data.Finset.Sum
 
 set_option linter.unusedSectionVars false
 
@@ -22,63 +21,40 @@ namespace LeanSharp
 
 variable {d : ℕ} [Fact (0 < d)]
 
-open BigOperators
-
-/-- A dataset is formally represented as a collection of n data points. -/
-def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
-
-/-- Two datasets are neighbors if they differ by exactly one element. -/
-def dataset_neighbor {DataPoint : Type*} {n : ℕ} (S S' : Dataset DataPoint n) : Prop :=
-  ∃ (i : Fin n), ∀ (j : Fin n), i ≠ j → S j = S' j
-
-/-- The number of samples `n` cast to a Real number for averages. -/
-noncomputable def n_real (n : ℕ) : ℝ := (n : ℝ)
-
-/-- The empirical risk (loss) over the entire dataset `S` given parameters `w`.
-    $L_S(w) = \frac{1}{n} \sum_{i=1}^n \ell(w; S[i])$ -/
-noncomputable def empirical_risk {DataPoint : Type*} (sample_loss : W d → DataPoint → ℝ)
-    {n : ℕ} (S : Dataset DataPoint n) (w : W d) : ℝ :=
-  if n = 0 then 0 else
-  (∑ i : Fin n, sample_loss w (S i)) / n_real n
-
-variable {DataPoint : Type*}
-variable (sample_loss : W d → DataPoint → ℝ)
-
 -- We assume the existence of a true population risk function over the parameter space.
 variable (L_D : W d → ℝ)
+
+-- We assume the existence of an empirical risk function over the parameter space.
+variable (L_S : W d → ℝ)
 
 -- The pacing function h : R_{>0} -> R_{>0} defined by Foret et al.
 variable (h : ℝ → ℝ) (h_mono : StrictMono h)
 
-/-- For a given dataset `S`, the maximal empirical risk in the $\rho$-neighborhood.
+/-- The maximal empirical risk in the $\rho$-neighborhood.
     This uses the exact `sam_objective` we formalized in Phase 0. -/
-noncomputable def sam_empirical_max {n : ℕ} (S : Dataset DataPoint n) (w : W d) (ρ : ℝ) : ℝ :=
-  sam_objective (empirical_risk sample_loss S) w ρ
+noncomputable def sam_empirical_max (w : W d) (ρ : ℝ) : ℝ :=
+  sam_objective L_S w ρ
 
 /-- The SAM Generalization Bound Theorem condition.
     States that with high probability, the population risk is bounded by the SAM objective. -/
-def sam_generalization_bound_holds {n : ℕ} (S : Dataset DataPoint n) (ρ : ℝ) : Prop :=
+def sam_generalization_bound_holds (ρ : ℝ) : Prop :=
   ∀ w : W d, ρ > 0 →
-    L_D w ≤ sam_empirical_max sample_loss S w ρ + h (‖w‖^2 / ρ^2)
+    L_D w ≤ sam_empirical_max L_S w ρ + h (‖w‖^2 / ρ^2)
 
 /-- Theorem: The SAM generalization bound holds given a standard generalization gap assumption.
     We prove that `sam_empirical_max ≥ L_S(w)`, so the SAM bound dominates the
     ordinary Rademacher / PAC-Bayes generalization bound. -/
-theorem sam_bound_from_gap {n : ℕ} (S : Dataset DataPoint n) {ρ : ℝ}
+theorem sam_bound_from_gap {ρ : ℝ}
     (h_gap : ∀ (w : W d) (r : ℝ), r > 0 →
-        L_D w ≤ empirical_risk sample_loss S w + h (‖w‖ ^ 2 / r ^ 2))
+        L_D w ≤ L_S w + h (‖w‖ ^ 2 / r ^ 2))
     (_h_mono : Monotone h)
     (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
-        (empirical_risk sample_loss S ''
-          ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
-    sam_generalization_bound_holds sample_loss L_D h S ρ := by
+        (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
+    sam_generalization_bound_holds L_D L_S h ρ := by
   intro w hρ
-  have h_sam_ge : empirical_risk sample_loss S w ≤
-      sam_empirical_max sample_loss S w ρ := by
+  have h_sam_ge : L_S w ≤ sam_empirical_max L_S w ρ := by
     unfold sam_empirical_max sam_objective perturbation_neighborhood
-    have h_mem : empirical_risk sample_loss S w ∈
-        empirical_risk sample_loss S ''
-          ((fun ε => w + ε) '' Metric.closedBall 0 ρ) := by
+    have h_mem : L_S w ∈ L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 ρ) := by
       refine ⟨w, ⟨0, ?_, by simp⟩, rfl⟩
       simp [Metric.mem_closedBall, le_of_lt hρ]
     exact le_csSup (h_bdd w ρ) h_mem

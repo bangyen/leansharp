@@ -167,25 +167,6 @@ def zsharp_convergence_holds (η ρ z L_smooth μ : ℝ) : Prop :=
   ∃ c : ℝ, 0 < c ∧ c < 1 ∧
     ∀ w : W d, ‖zsharp_step L w η ρ z - w_star‖^2 ≤ c * ‖w - w_star‖^2
 
-/-- Lower bound for adversarial gradient inner product. -/
-lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
-    (h_convex : is_strongly_convex L μ)
-    (h_opt_eps : gradient L (w_star + ε) = 0) :
-    μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
-  obtain ⟨hμ, h_sc⟩ := h_convex
-  have h_sc2 := h_sc (w_star + ε) (w + ε)
-  simp only [h_opt_eps, inner_zero_left] at h_sc2
-  have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
-  rw [heq] at h_sc2
-  have h_sc1 := h_sc (w + ε) (w_star + ε)
-  have h_inner_flip : @inner ℝ _ _ (gradient L (w + ε)) (w_star + ε - (w + ε)) =
-      -@inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
-    rw [show w_star + ε - (w + ε) = -(w - w_star) by abel, inner_neg_right]
-  have h_norm_eq : ‖w_star + ε - (w + ε)‖ = ‖w - w_star‖ := by
-    rw [show w_star + ε - (w + ε) = -(w - w_star) by abel, norm_neg]
-  rw [h_inner_flip, h_norm_eq] at h_sc1
-  linarith
-
 /-- The Alignment Condition:
     A statistical assumption that the filtered gradient maintains sufficient
     alignment with the true descent direction. -/
@@ -193,12 +174,6 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ : �
   let g_adv := gradient L (w + ε)
   let g_f := filtered_gradient g_adv z
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star)
-
-/-- Bound for the inner product error introduced by filtering. -/
-lemma inner_filter_error (g_adv g_f w w_star : W d) :
-    @inner ℝ _ _ g_f (w - w_star) = @inner ℝ _ _ g_adv (w - w_star) -
-      @inner ℝ _ _ (g_adv - g_f) (w - w_star) := by
-  rw [inner_sub_left, sub_sub_cancel]
 
 /-- Main Theorem: ZSharp converges geometrically to `w_star` under standard assumptions. -/
 theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)

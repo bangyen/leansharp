@@ -25,6 +25,13 @@ namespace LeanSharp
 
 variable {d : ℕ} [Fact (0 < d)]
 
+/-- A dataset is formally represented as a collection of n data points. -/
+def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
+
+/-- Two datasets are neighbors if they differ by exactly one element. -/
+def dataset_neighbor {DataPoint : Type*} {n : ℕ} (S S' : Dataset DataPoint n) : Prop :=
+  ∃ (i : Fin n), ∀ (j : Fin n), i ≠ j → S j = S' j
+
 
 
 /-- The maximum eigenvalue of a symmetric linear operator.
