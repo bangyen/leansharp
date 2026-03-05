@@ -1,7 +1,6 @@
 import LeanSharp.Landscape
 import LeanSharp.Sam
 import LeanSharp.Filters
-import LeanSharp.Theorems
 import LeanSharp.SamBound
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2

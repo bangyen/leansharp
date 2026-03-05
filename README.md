@@ -19,12 +19,11 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 ### 1. Mathematical Foundations (`Landscape.lean`, `Filters.lean`)
 - ✅ **Parameter Space**: Formal definition of $\mathbb{R}^d$ and Euclidean norm properties.
 - ✅ **Z-Score Filter**: Statistical mean and variance operators for gradient tensors.
-- ✅ **L₂ Contraction**: Proved that the Z-score filter is a non-expansive mapping in the parameter space.
 
-### 2. Deterministic Optimization (`Sam.lean`, `Theorems.lean`, `Convergence.lean`)
+### 2. Deterministic Optimization (`Sam.lean`, `Convergence.lean`)
 - ✅ **SAM Objective**: Formalized the $L_\infty$-perturbation and dual-norm derivation.
-- ✅ **Alignment Condition**: Proved the geometric alignment required for filtered gradient updates.
-- ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM under flat-minimum assumptions.
+- ✅ **Alignment Condition**: Proved the geometric alignment required for filtered gradient updates, strictly bounding the filter norm against the landscape smoothness.
+- ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM.
 
 ### 3. Generalization & Sharpness (`Generalization.lean`)
 - ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian matrix.

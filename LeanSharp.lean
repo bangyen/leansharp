@@ -3,7 +3,6 @@ import LeanSharp.Sam
 import LeanSharp.Filters
 import LeanSharp.SamBound
 import LeanSharp.Convergence
-import LeanSharp.Theorems
 import LeanSharp.Generalization
 
 /-!
