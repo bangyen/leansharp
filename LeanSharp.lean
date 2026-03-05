@@ -15,6 +15,8 @@ import LeanSharp.Examples.ToyApplication
 import LeanSharp.Theory.HessianContraction
 import LeanSharp.Stochastic.StochasticGeneralization
 import LeanSharp.Utils.Tactics
+import LeanSharp.Theory.Rates
+import LeanSharp.Core.Models
 
 /-!
 # LeanSharp
