@@ -17,25 +17,23 @@ The foundational scaffolding is complete and compiles successfully:
 - ✅ Formal definition of $\mathbb{R}^d$ parameter spaces (`Landscape.lean`).
 - ✅ Formal definition of the standard SAM max-perturbation objective (`Sam.lean`).
 - ✅ Formal definition of statistical Z-Score Gradient Filtering tensors (`Filters.lean`).
-- ✅ Basic Boolean property proofs of the z-score mask (`LeanSharp.lean`).
+- ✅ L₂ Norm contraction and component bounds for the Z-score filter (`Theorems.lean`).
 
 ## Roadmap for Formalization
 
 Our formalization targets move from foundational linear algebra to complex optimization theory.
 
-### Phase 1: Property Proofs of the Filter (Complete)
-- [x] **Norm Contraction**: Prove that the filtered gradient norm is strictly bounded by the original gradient norm: $\forall g, z, \| \text{filtered}(g, z) \|_2 \le \|g\|_2$.
-- [x] **Mean/Variance Invariance**: Analyze the preservation of gradient directionality under filtering.
+### Phase 4: ZSharp Convergence Bound (Scaffolded)
+- [x] **Decomposition**: Decomposed the convergence proof into modular lemmas (`inner_g_adv_bound`, `inner_filter_error`).
+- [/] **Alignment Lemma**: Establish the formal lower bound on the inner product of the filtered gradient (the current `sorry`).
 
-### Phase 2: Stochastics and Empirical Risk (Complete)
-- [x] **Minibatch Definitions**: Formalize a dataset $S$ and define the empirical risk $L_S(w)$.
-- [x] **Stochastic Gradient SAM**: Differentiate between the true gradient $\nabla L_\mathcal{D}(w)$ and the batch gradient $\nabla L_\mathcal{S}(w)$.
+### Phase 5: Stochastic Z-Score Convergence (Future)
+- [ ] **Minibatch Noise Analysis**: Analyze the interaction between Z-score filtering and stochastic noise $\xi_t$.
+- [ ] **SVRG-like Bounds**: Prove 1/T convergence rates for the stochastic variant under standard variance assumptions.
 
-### Phase 3: The SAM Generalization Bound (Complete)
-- [x] **Foret et al. Bound**: Formalize the pacing constraint: $L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon) + h(\|w\|^2 / \rho^2)$. This is the massive core theorem of Sharpness-Aware Minimization.
-
-### Phase 4: ZSharp Convergence Bound (Complete)
-- [x] **Convergence Rate**: Prove a convergence bound for `zsharp_sam_update` assuming $\mu$-strong convexity and $L$-smoothness.
+### Phase 6: Extension to Non-convexity
+- [ ] **L-smooth relaxations**: Relax strong convexity to general L-smoothness and prove convergence to stationary points.
+- [ ] **Hessian Sharpness**: Formally link Z-score filtering to the eigenvalues of the Hessian $\nabla^2 L(w)$.
 
 ## Installation & Building
 
