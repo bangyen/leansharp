@@ -22,17 +22,14 @@ open BigOperators
 
 variable {d : ℕ} [Fact (0 < d)]
 
-/-- To compute statistics, we need `d` as a real number. -/
-noncomputable def d_real (d : ℕ) : ℝ := (d : ℝ)
-
 /-- The mean of a vector in `W = ℝ^d`. -/
 noncomputable def vector_mean (g : W d) : ℝ :=
-  (∑ i : Fin d, g i) / d_real d
+  (∑ i : Fin d, g i) / (d : ℝ)
 
 /-- The variance of a vector in `W = ℝ^d`. -/
 noncomputable def vector_variance (g : W d) : ℝ :=
   let μ := vector_mean g
-  (∑ i : Fin d, (g i - μ)^2) / d_real d
+  (∑ i : Fin d, (g i - μ)^2) / (d : ℝ)
 
 /-- The standard deviation `σ` is the square root of the variance. -/
 noncomputable def vector_std (g : W d) : ℝ :=
@@ -52,7 +49,5 @@ noncomputable def hadamard (a b : W d) : W d :=
 /-- The fully filtered gradient used in the parameter update. -/
 noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
   hadamard g (z_score_mask g z)
-
-
 
 end LeanSharp

@@ -30,3 +30,11 @@ jobs:
       - name: Build Lean project
         uses: leanprover/lean-action@v1
 
+      - name: Guard against new axiom declarations
+        run: |
+          if grep -rn "^axiom " LeanSharp/; then
+            echo "ERROR: Unverified 'axiom' declarations found in LeanSharp source."
+            echo "All theorems must be formally proved. Replace axioms with theorems."
+            exit 1
+          fi
+          echo "✓ No axiom declarations found. All theorems formally proved."
