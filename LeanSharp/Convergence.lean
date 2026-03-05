@@ -316,17 +316,13 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   set ε := sam_perturbation L w ρ with hε_def
   set g_adv := gradient L (w + ε) with hg_adv_def
   set g_f := filtered_gradient g_adv z with hg_f_def
-
   have h_eps_bound : ‖ε‖ ≤ ρ := sam_perturbation_bound L w ρ hρ
   have h_opt_eps : gradient L (w_star + ε) = 0 := h_flat ε h_eps_bound
-
   have h_gbound : ‖g_adv‖ ≤ L_smooth * ‖w - w_star‖ := by
     have hb := gradient_bound L (w_star + ε) L_smooth h_smooth h_opt_eps (w + ε)
     have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
     rw [heq] at hb; exact hb
-
   have h_fbound : ‖g_f‖ ≤ ‖g_adv‖ := filter_norm_contraction g_adv z
-
   have h_inner_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) := by
     -- We use the alignment_condition assumption directly here.
     -- In the noise-free/ideal filter case, g_f ≈ g_adv.
