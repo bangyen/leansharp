@@ -10,12 +10,15 @@ import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Algebra.Order.Ring.Defs
+import Mathlib.Probability.Notation
+import Mathlib.Probability.Moments.Basic
 
 /-!
 # ZSharp Convergence Bound
 
 This module formalizes the geometric convergence of the ZSharp algorithm
 under standard optimization assumptions (L-smoothness and strong convexity).
+It also defines conditions for stochastic non-convex convergence.
 
 ## Main definitions
 
@@ -23,6 +26,7 @@ under standard optimization assumptions (L-smoothness and strong convexity).
 * `is_strongly_convex`: Predicate for $\mu$-strong convexity of a function.
 * `zsharp_step`: The single-step update rule for the Z-score filtered SAM.
 * `alignment_condition`: An assumption about the alignment of the filtered gradient.
+* `stochastic_descent_condition`: A condition for non-convex convergence.
 
 ## Main theorems
 
@@ -31,6 +35,8 @@ under standard optimization assumptions (L-smoothness and strong convexity).
 -/
 
 namespace LeanSharp
+
+open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]
 
@@ -68,6 +74,19 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
   let g_f := filtered_gradient g_adv z
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
   ‖g_f‖ ≤ L_smooth * ‖w - w_star‖
+
+/-- **Stochastic Descent Condition**: A condition for smooth non-convex functions
+requiring that the filtered stochastic gradient provide sufficient descent
+relative to the expected gradient norm and variance. -/
+def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L : W d → ℝ) (η z L_smooth σsq : ℝ) (g_adv : Ω → W d) (w : W d) : Prop :=
+  let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
+  let gradL := gradient L w
+  Integrable g_f ∧
+  Integrable (fun ω => ‖g_f ω‖^2) ∧
+  𝔼[fun ω => inner ℝ (g_f ω) gradL] - (η * L_smooth / 2) * 𝔼[fun ω => ‖g_f ω‖^2] ≥
+    (1 / 2) * ‖gradL‖^2 - σsq
 
 section NoDimFact
 omit [Fact (0 < d)]
