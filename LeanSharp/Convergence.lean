@@ -295,7 +295,6 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   have hL := h_smooth.1
   have hη_pos : η > 0 := hη
   have hμ_pos : μ > 0 := hμ
-
   have h_c_pos : 0 < c := by
     rw [hc_def]
     have hη_L_le_1 : η * L_smooth ≤ 1 := by
@@ -305,12 +304,10 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
       have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
       linarith
     linarith
-
   have h_c_lt_1 : c < 1 := by
     rw [hc_def]
     have : 0 < η * μ := mul_pos hη hμ
     linarith
-
   refine ⟨c, h_c_pos, h_c_lt_1, fun w => ?_⟩
   simp only [zsharp_step]
   set ε := sam_perturbation L w ρ with hε_def
