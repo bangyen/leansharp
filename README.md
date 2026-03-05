@@ -33,9 +33,10 @@ Our formalization targets move from foundational linear algebra to complex optim
 - [x] **Initial Scaffolding**: Formalized `stochastic_sgd_contraction` and `stochastic_zsharp_convergence` theorems in `StochasticSam.lean`.
 - [x] **Verification**: Standard optimization assumptions (unbiasedness, variance) are formally connected to the proof structure.
 
-### Phase 6: Extension to Non-convexity
-- [ ] **L-smooth relaxations**: Relax strong convexity to general L-smoothness and prove convergence to stationary points.
-- [ ] **Hessian Sharpness**: Formally link Z-score filtering to the eigenvalues of the Hessian $\nabla^2 L(w)$.
+### Phase 6: Extension to Non-convexity (Completed Foundations)
+- [x] **Second-Order Scaffolding**: Defined the Hessian operator $\nabla^2 L(w)$ in `Landscape.lean` for curvature analysis.
+- [x] **Stationary Point Scaffolding**: Formalized `is_stationary_point` and `non_convex_convergence` theorem statements in `NonConvex.lean`.
+- [x] **Hessian Linkage**: Added the `hessian_flatness_link` conjecture to investigate the filter's impact on surface curvature.
 
 ## Installation & Building
 

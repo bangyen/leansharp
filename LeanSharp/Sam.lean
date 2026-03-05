@@ -28,22 +28,6 @@ def perturbation_neighborhood (ρ : ℝ) : Set (W d) :=
 noncomputable def sam_objective (L : W d → ℝ) (w : W d) (ρ : ℝ) : ℝ :=
   sSup (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))
 
-/-
-  Practically, SAM approximates this by taking a first-order Taylor expansion
-  around `w`:
-    L(w + ε) ≈ L(w) + εᵀ ∇L(w)
-
-  This gives the closed-form dual-norm solution for the perturbation:
-    ε*(w) = ρ * ∇L(w) / ||∇L(w)||₂
-
-  We define the Riesz Representation of the gradient here to formalize this.
--/
-
-/-- The Riesz representation of the Fréchet derivative of `L` at `w`.
-    This represents the gradient vector `∇L(w)` in the space `W`. -/
-noncomputable def gradient (L : W d → ℝ) (w : W d) : W d :=
-  InnerProductSpace.toDual ℝ (W d) |>.symm (fderiv ℝ L w)
-
 /-- Property that `w_star` is a critical point (optimum) of `L`. -/
 def is_optimum (L : W d → ℝ) (w_star : W d) : Prop :=
   gradient L w_star = 0
