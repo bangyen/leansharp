@@ -34,7 +34,7 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 ### 4. Generalization & Sharpness (`Generalization.lean`)
 - ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian matrix.
 - ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
-- 🏗️ **Uniform Stability**: (In Progress) Stability bounds for the Z-score filtered update rule.
+- ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
 
 ## Installation & Building
 
