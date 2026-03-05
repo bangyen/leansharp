@@ -92,7 +92,7 @@ theorem sam_taylor_bound {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (�
   apply csSup_le
   · exact ⟨L w, w, ⟨0, by simpa [Metric.mem_closedBall] using hρ, by simp⟩, rfl⟩
   · rintro v ⟨_, ⟨ε, hε_norm, rfl⟩, rfl⟩
-    simp [Metric.mem_closedBall, dist_zero_right] at hε_norm
+    rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
     have hdescent := smooth_descent L w ε M h_diff h_smooth
     have hcs : inner ℝ (gradient L w) ε ≤ ‖gradient L w‖ * ρ := by
       calc inner ℝ (gradient L w) ε

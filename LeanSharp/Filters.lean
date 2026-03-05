@@ -49,7 +49,7 @@ noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
     one component of the gradient. -/
-theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) (hz_pos : 0 < z) :
+theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
   let μ := vector_mean g
   let σ := vector_std g
@@ -57,7 +57,7 @@ theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) (hz_pos : 0 < z) 
   by_cases hσ : σ = 0
   · -- Case σ = 0: All are kept.
     use ⟨0, ‹0 < d›⟩
-    simp [z_score_mask, σ, hσ, hz_pos]
+    simp [z_score_mask, σ, hσ]
   · -- Case σ > 0: Contradiction if all are zeroed.
     by_contra h
     push_neg at h
@@ -88,8 +88,10 @@ theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) (hz_pos : 0 < z) 
         _ = d * σ^2 := by simp
     -- But Σ |g i - μ|² = d * σ² by definition.
     have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) = d * σ^2 := by
+      have h_d_pos : 0 < (d : ℝ) := by positivity
       have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
-      have h_sq_std : (Real.sqrt (vector_variance g))^2 = vector_variance g := Real.sq_sqrt h_var_pos
+      have h_sq_std : (Real.sqrt (vector_variance g))^2 = vector_variance g :=
+        Real.sq_sqrt h_var_pos
       unfold σ at hσ h_sq_std ⊢
       rw [vector_std, h_sq_std]
       unfold vector_variance
