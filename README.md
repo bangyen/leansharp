@@ -38,13 +38,9 @@ Our formalization targets move from foundational linear algebra to complex optim
 - [x] **Stationary Point Scaffolding**: Formalized `is_stationary_point` and `non_convex_convergence` theorem statements in `NonConvex.lean`.
 - [x] **Hessian Linkage**: Added the `hessian_flatness_link` conjecture to investigate the filter's impact on surface curvature.
 
-### Phase 7: Generalization & Sharpness (New)
+### Phase 7: Generalization & Sharpness (In Progress)
 - [ ] **PAC-Bayes Integration**: Formally link sharpness (Hessian eigenvalues) to PAC-Bayes generalization bounds.
 - [ ] **Uniform Stability**: Prove that Z-score filtered gradients improve uniform stability of the optimization process.
-
-### Phase 8: Higher-Order Smoothness (New)
-- [ ] **Third-Order Analysis**: Define the tensor of third derivatives and analyze how Z-score filtering interacts with higher-order geometry.
-- [ ] **Sobolev Space Foundations**: Consider defining the loss function in Sobolev spaces for more advanced regularity analysis.
 
 ## Installation & Building
 

@@ -6,6 +6,7 @@ import LeanSharp.StochasticSam
 import LeanSharp.SamBound
 import LeanSharp.Convergence
 import LeanSharp.Theorems
+import LeanSharp.Generalization
 
 /-!
 # LeanSharp

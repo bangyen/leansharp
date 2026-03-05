@@ -50,5 +50,10 @@ noncomputable def gradient (L : W d → ℝ) (w : W d) : W d :=
 noncomputable def hessian (L : W d → ℝ) (w : W d) : W d →L[ℝ] W d :=
   fderiv ℝ (gradient L) w
 
+/-- We assume the Hessian is symmetric (self-adjoint).
+    In standard analysis, this follows from C² smoothness (Schwarz's theorem). -/
+axiom hessian_symmetric (L : W d → ℝ) (w : W d) :
+  (hessian L w).toLinearMap.IsSymmetric
+
 -- A perturbation vector ε in the parameter space.
 variable (ε : W d)
