@@ -62,7 +62,8 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
   unfold filtered_gradient hadamard z_score_mask
   simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, Real.norm_eq_abs]
   have h_base : ‖(WithLp.equiv 2 (Fin d → ℝ) g) i *
-                  if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| ≥ z * vector_std g then (1 : ℝ) else 0‖^2
+                  if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g|
+                    ≥ z * vector_std g then (1 : ℝ) else 0‖^2
                 ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
     split_ifs
     · simp
