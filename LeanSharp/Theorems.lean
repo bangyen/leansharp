@@ -59,7 +59,7 @@ lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
   simp only [WithLp.equiv_symm_apply]
   by_cases h : |g i - vector_mean g| ≥ z * vector_std g
   · -- Case: Condition is met, mask is 1
-    simp [h]
+    simp only [h, if_true, mul_one, sub_self, abs_zero]
     -- We must prove 0 ≤ |μ| + z * σ.
     have h1 : 0 ≤ |vector_mean g| := abs_nonneg (vector_mean g)
     -- Variance is a sum of squares, so its square root (std) is non-negative.
@@ -70,7 +70,7 @@ lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
     linarith
   · -- Case: Condition is not met, mask is 0.
     -- It simplifies to evaluating |-g i| ≤ |μ| + z * σ, which is |g i| ≤ |μ| + z * σ
-    simp [h]
+    simp only [h, if_false, mul_zero, zero_sub, abs_neg]
     -- We know ¬(|g i - μ| ≥ z * σ), so |g i - μ| < z * vector_std g
     have h_lt : |g i - vector_mean g| < z * vector_std g := not_le.mp h
     have h_tri := abs_add_le (g i - vector_mean g) (vector_mean g)

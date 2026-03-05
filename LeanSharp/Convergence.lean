@@ -116,7 +116,7 @@ lemma gd_contraction (η L_smooth μ : ℝ)
       -- Apply h_sc at (w*, w): L(w) ≥ L(w*) + ⟨∇L(w*), w - w*⟩ + µ/2 * ‖w - w*‖²
       -- Since ∇L(w*) = 0: L(w) ≥ L(w*) + µ/2 * ‖w - w*‖²
       have h_sc2 := h_sc w_star w
-      simp only [h_opt, inner_zero_left, zero_add] at h_sc2
+      simp only [h_opt, inner_zero_left] at h_sc2
       -- Apply h_sc at (w, w*): L(w*) ≥ L(w) + ⟨∇L(w), w* - w⟩ + µ/2 * ‖w* - w‖²
       have h_sc1 := h_sc w w_star
       -- ⟨∇L(w), w* - w⟩ = -⟨∇L(w), w - w*⟩
@@ -149,10 +149,10 @@ lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
   -- split on whether gradient is zero
   by_cases h : ‖gradient L w‖ = 0
   · -- gradient is zero, perturbation is 0
-    simp [h]
+    simp only [h, if_true, norm_zero]
     linarith
   · -- gradient is nonzero, perturbation is (ρ / ‖g‖) • g
-    simp [h]
+    simp only [h, if_false]
     -- ‖(ρ / ‖g‖) • g‖ = |ρ / ‖g‖| * ‖g‖
     rw [norm_smul]
     -- |ρ / ‖g‖| = ρ / ‖g‖ since both are positive
@@ -213,7 +213,7 @@ lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
       ≤ ∑ i : Fin d, (|vector_mean g| + z * vector_std g)^2 :=
           Finset.sum_le_sum fun i _ => h_comp_sq i
     _ = d * (|vector_mean g| + z * vector_std g)^2 := by
-           simp [Finset.sum_const, Finset.card_fin, nsmul_eq_mul]
+           simp [Finset.sum_const, nsmul_eq_mul]
 
 /-!
 ## Convergence Theorem Statement
@@ -253,7 +253,7 @@ lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
   obtain ⟨hμ, h_sc⟩ := h_convex
   -- L(w+ε) ≥ L(w*+ε) + ⟨∇L(w*+ε), w-w*⟩ + µ/2 ‖w-w*‖²
   have h_sc2 := h_sc (w_star + ε) (w + ε)
-  simp only [h_opt_eps, inner_zero_left, zero_add] at h_sc2
+  simp only [h_opt_eps, inner_zero_left] at h_sc2
   have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
   rw [heq] at h_sc2
   
@@ -269,7 +269,8 @@ lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
 
 /-- Bound for the inner product error introduced by filtering. -/
 lemma inner_filter_error (g_adv g_f w w_star : W d) :
-    @inner ℝ _ _ g_f (w - w_star) = @inner ℝ _ _ g_adv (w - w_star) - @inner ℝ _ _ (g_adv - g_f) (w - w_star) := by
+    @inner ℝ _ _ g_f (w - w_star) = @inner ℝ _ _ g_adv (w - w_star) -
+      @inner ℝ _ _ (g_adv - g_f) (w - w_star) := by
   rw [inner_sub_left, sub_sub_cancel]
 
 /-- ZSharp converges geometrically to `w_star` under standard assumptions.
@@ -337,7 +338,8 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
     have hgf_le : ‖g_f‖ ≤ L_smooth * ‖w - w_star‖ := le_trans h_fbound h_gbound
     apply sq_le_sq.mpr
-    rw [abs_of_nonneg (norm_nonneg _), abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
+    rw [abs_of_nonneg (norm_nonneg _),
+        abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
     exact hgf_le
 
   have hrw : (w - η • g_f) - w_star = (w - w_star) - η • g_f := by abel
