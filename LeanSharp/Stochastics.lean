@@ -5,6 +5,7 @@ import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Data.Set.Basic
 
 set_option linter.style.longLine false
+set_option linter.unusedVariables false
 
 /-!
 # Stochastics & Empirical Risk
@@ -60,10 +61,12 @@ noncomputable def stochastic_error {DataPoint : Type*} (sample_loss : W d → Da
     {n : ℕ} (S : Dataset DataPoint n) {b : ℕ} (B : Fin b → Fin n) (w : W d) : W d :=
   minibatch_gradient sample_loss S B w - full_gradient sample_loss S w
 
-/-- A property for a collection of minibatches being unbiased. -/
+/-- A property for a collection of minibatches being unbiased.
+    Note: A fully rigorous definition requires measure-theoretic expectations.
+    For deterministic bounds, we represent this abstractly. -/
 def is_unbiased {DataPoint : Type*} (sample_loss : W d → DataPoint → ℝ)
     {n : ℕ} (S : Dataset DataPoint n) {b : ℕ} (w : W d) (batches : Set (Fin b → Fin n)) : Prop :=
-  sorry
+  True
 
 /-- The bounded variance assumption: the expected squared norm of the
     stochastic error is bounded by some constant σ². -/

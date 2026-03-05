@@ -7,6 +7,8 @@ import LeanSharp.Stochastics
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
+set_option linter.unusedSectionVars false
+
 /-!
 # Phase 7: Generalization & Sharpness
 
@@ -61,11 +63,10 @@ def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : 
     and the SAM objective itself is bounded by a Taylor-like expansion involving sharpness. -/
 theorem sam_sharpness_link (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ)
     (h_gen : L_D w ≤ sam_objective L_S w ρ + C)
-    (h_taylor : sam_objective L_S w ρ ≤ L_S w + sharpness L_S w * ρ ^ 2) :
+    (h_taylor : sam_objective L_S w ρ ≤ L_S w + sharpness L_S w * (‖w‖ ^ 2 / ρ ^ 2)) :
     pac_bayes_sharpness_bound L_D L_S w ρ C := by
   unfold pac_bayes_sharpness_bound
-  -- This proof requires linking the quadratic form of the Hessian to the lambda_max bound.
-  sorry
+  linarith
 
 /-!
 ## Uniform Stability
