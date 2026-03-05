@@ -3,7 +3,6 @@ import LeanSharp.Sam
 import LeanSharp.Filters
 import LeanSharp.Theorems
 import LeanSharp.SamBound
-import LeanSharp.Stochastics
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
@@ -25,6 +24,8 @@ learning algorithm's output changes when a single data point is replaced.
 namespace LeanSharp
 
 variable {d : ℕ} [Fact (0 < d)]
+
+
 
 /-- The maximum eigenvalue of a symmetric linear operator.
     For a symmetric operator `T` on a finite-dimensional real inner product space `E`,

@@ -1,7 +1,7 @@
 import LeanSharp.Landscape
 import LeanSharp.Sam
-import LeanSharp.Stochastics
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Data.Finset.Sum
 
 set_option linter.unusedSectionVars false
 
@@ -20,7 +20,28 @@ $L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon)
 
 namespace LeanSharp
 
-variable {d : ℕ} [Fact (0 < d)] {DataPoint : Type*}
+variable {d : ℕ} [Fact (0 < d)]
+
+open BigOperators
+
+/-- A dataset is formally represented as a collection of n data points. -/
+def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
+
+/-- Two datasets are neighbors if they differ by exactly one element. -/
+def dataset_neighbor {DataPoint : Type*} {n : ℕ} (S S' : Dataset DataPoint n) : Prop :=
+  ∃ (i : Fin n), ∀ (j : Fin n), i ≠ j → S j = S' j
+
+/-- The number of samples `n` cast to a Real number for averages. -/
+noncomputable def n_real (n : ℕ) : ℝ := (n : ℝ)
+
+/-- The empirical risk (loss) over the entire dataset `S` given parameters `w`.
+    $L_S(w) = \frac{1}{n} \sum_{i=1}^n \ell(w; S[i])$ -/
+noncomputable def empirical_risk {DataPoint : Type*} (sample_loss : W d → DataPoint → ℝ)
+    {n : ℕ} (S : Dataset DataPoint n) (w : W d) : ℝ :=
+  if n = 0 then 0 else
+  (∑ i : Fin n, sample_loss w (S i)) / n_real n
+
+variable {DataPoint : Type*}
 variable (sample_loss : W d → DataPoint → ℝ)
 
 -- We assume the existence of a true population risk function over the parameter space.
