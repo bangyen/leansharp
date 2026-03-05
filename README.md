@@ -15,36 +15,21 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 
 ## Verification Status
 
-The Z-Score SAM formalization is divided into four logical layers, from foundational linear algebra to advanced generalization theory.
+All theorems in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
-### 1. Mathematical Foundations (`Landscape.lean`, `Filters.lean`)
-- ✅ **Parameter Space**: Formal definition of $\mathbb{R}^d$ and Euclidean norm properties.
-- ✅ **Hessian Symmetry**: Proved from Mathlib's `second_derivative_symmetric` (Schwarz's Theorem) — **no axioms**.
-- ✅ **Z-Score Filter**: Statistical mean, variance, and standard deviation operators for gradient tensors.
+- ✅ **Core Foundations** (`Core/`): Hessian symmetry, L-smoothness, and Z-score hadamard filtering.
+- ✅ **Theory & Convergence** (`Theory/`): Geometric convergence for ZSharp and generalization bounds (PAC-Bayes).
+- ✅ **Stochastic Stability** (`Stochastic/`): Probabilistic convergence and variance contraction bounds.
+- ✅ **Mathematical Purity**: Verified by CI to have no axioms and no linter warnings.
+- ✅ **Toy Application** (`Examples/`): Computable verification on 2D quadratic landscapes.
 
-### 2. Deterministic Optimization (`Sam.lean`, `Convergence.lean`)
-- ✅ **SAM Objective**: Formalized the $L_\infty$-perturbation and dual-norm derivation.
-- ✅ **Alignment Condition**: Proved the geometric alignment required for filtered gradient updates, strictly bounding the filter norm against the landscape smoothness.
-- ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM.
+## Roadmap & Future Work
 
-### 3. Stochastic Optimization (`StochasticSam.lean`, `StochasticConvergence.lean`, `StochasticGeneralization.lean`)
-- ✅ **Stochastic Gradient Model**: Formalization of empirical gradients with bounded variance.
-- ✅ **Stochastic ZSharp Convergence**: Proof that the Z-score filtered gradient descent converges in expectation even under stochastic noise.
-- ✅ **Stochastic Variance Bounds**: Demonstrates that through L2 contraction, the Z-score filter intrinsically preserves and limits the expected stochastic trace variations!
-
-### 4. Generalization & Sharpness (`Generalization.lean`, `HessianContraction.lean`)
-- ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian.
-- 🚧 **Hessian Contraction Bound**: Formal connection bounding the Z-score filtered gradient's curvature descent by the native Maximum Eigenvalue of the Hessian.
-- ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
-- ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
-
-### 5. Toy Application (`ToyApplication.lean`)
-- ✅ **Explicit Computability**: Explicit evaluation matching the theoretical exact gradient of the algorithm on a simple 2D quadratic landscape.
-
-### 6. Absolute Mathematical Purity
-- ✅ **Zero `axiom` declarations**: Every theorem is formally derived. CI enforces this automatically.
-- ✅ **Zero `sorry` placeholders**: All proofs are complete.
-- ✅ **Zero `set_option linter` suppressions**: All linter warnings resolved at their source.
+While the core theory is now verified, the following research directions are planned:
+- **Convergence Rates**: Formalize specific $O(1/T)$ or $O(1/\sqrt{T})$ rates for Z-score filtered SGD.
+- **Deep Models**: Extend formalization to multi-layer neural network architectures.
+- **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian noise.
+- **Automated Tactics**: Develop a `zsharp_solve` tactic for automatically bounding filtered variances.
 
 ## Installation & Building
 

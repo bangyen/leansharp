@@ -1,6 +1,6 @@
-import LeanSharp.Sam
-import LeanSharp.Filters
-import LeanSharp.Convergence
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Filters
+import LeanSharp.Theory.Convergence
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 

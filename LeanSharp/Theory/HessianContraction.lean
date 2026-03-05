@@ -1,6 +1,6 @@
-import LeanSharp.Landscape
-import LeanSharp.Filters
-import LeanSharp.Generalization
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Filters
+import LeanSharp.Theory.Generalization
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 
 /-!

@@ -1,5 +1,5 @@
-import LeanSharp.Landscape
-import LeanSharp.Sam
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Sam
 
 /-!
 # The SAM Generalization Bound
@@ -25,7 +25,7 @@ variable (L_S : W d → ℝ)
 variable (h : ℝ → ℝ)
 
 /-- The maximal empirical risk in the $\rho$-neighborhood.
-    This uses the exact `sam_objective` we formalized in Phase 0. -/
+    This uses the exact `sam_objective` we formalized previously. -/
 noncomputable def sam_empirical_max (w : W d) (ρ : ℝ) : ℝ :=
   sam_objective L_S w ρ
 

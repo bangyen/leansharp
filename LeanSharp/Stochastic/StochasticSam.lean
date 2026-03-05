@@ -1,5 +1,5 @@
-import LeanSharp.Sam
-import LeanSharp.Filters
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Filters
 import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2

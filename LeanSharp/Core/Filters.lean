@@ -1,4 +1,4 @@
-import LeanSharp.Sam
+import LeanSharp.Core.Sam
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Sum
 import Mathlib.Analysis.InnerProductSpace.PiL2

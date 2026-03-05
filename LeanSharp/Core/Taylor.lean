@@ -1,5 +1,5 @@
-import LeanSharp.Sam
-import LeanSharp.Landscape
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Data.NNReal.Basic

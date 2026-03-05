@@ -1,14 +1,14 @@
-import LeanSharp.Landscape
-import LeanSharp.Sam
-import LeanSharp.Filters
-import LeanSharp.SamBound
-import LeanSharp.Convergence
-import LeanSharp.Generalization
-import LeanSharp.StochasticSam
-import LeanSharp.StochasticConvergence
-import LeanSharp.ToyApplication
-import LeanSharp.HessianContraction
-import LeanSharp.StochasticGeneralization
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Filters
+import LeanSharp.Theory.SamBound
+import LeanSharp.Theory.Convergence
+import LeanSharp.Theory.Generalization
+import LeanSharp.Stochastic.StochasticSam
+import LeanSharp.Stochastic.StochasticConvergence
+import LeanSharp.Examples.ToyApplication
+import LeanSharp.Theory.HessianContraction
+import LeanSharp.Stochastic.StochasticGeneralization
 
 /-!
 # LeanSharp

@@ -1,4 +1,4 @@
-import LeanSharp.Landscape
+import LeanSharp.Core.Landscape
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Algebra.Group.Pointwise.Set.Basic

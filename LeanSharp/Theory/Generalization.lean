@@ -1,13 +1,13 @@
-import LeanSharp.Landscape
-import LeanSharp.Sam
-import LeanSharp.Filters
-import LeanSharp.SamBound
-import LeanSharp.Taylor
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Filters
+import LeanSharp.Theory.SamBound
+import LeanSharp.Core.Taylor
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
-# Phase 7: Generalization & Sharpness
+# Generalization & Sharpness
 
 This file formalizes the link between the geometric "sharpness" of the loss
 landscape and the statistical generalization performance of the model.
@@ -41,7 +41,8 @@ def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : 
   L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + C
 
 /-- **SAM Generalization Theorem**: Links the population risk to the empirical risk
-    via the Taylor bound proved in `Taylor.lean`. -/
+    via the Taylor bound proved in `Taylor.lean`.
+    This uses the exact `sam_objective` we formalized previously. -/
 theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (M : ℝ≥0) (C : ℝ)
     (h_smooth : LipschitzWith M (gradient L_S))
     (h_diff : Differentiable ℝ L_S)

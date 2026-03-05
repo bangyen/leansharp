@@ -1,5 +1,5 @@
-import LeanSharp.StochasticSam
-import LeanSharp.Filters
+import LeanSharp.Stochastic.StochasticSam
+import LeanSharp.Core.Filters
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Probability.Notation
@@ -8,7 +8,7 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Norm
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 
 /-!
-# Phase 8: Stochastic Generalization Bounds
+# Stochastic Generalization Bounds
 
 We formalize advanced bounds on the variance of the ZSharp algorithm.
 A key theoretical property of the Z-score filter is that it is a *contraction*

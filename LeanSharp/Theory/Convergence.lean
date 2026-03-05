@@ -1,6 +1,6 @@
-import LeanSharp.Landscape
-import LeanSharp.Sam
-import LeanSharp.Filters
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Filters
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
@@ -8,7 +8,7 @@ import Mathlib.Algebra.Order.Ring.Defs
 
 
 /-!
-# Phase 4: ZSharp Convergence Bound
+# ZSharp Convergence Bound
 
 One of the open research questions for SAM variants is how modifying the
 adversarial gradient affects the theoretical convergence rate under standard
