@@ -59,16 +59,10 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
   induction T with
   | zero => contradiction
   | succ t ih =>
-    by_cases ht : t = 0
-    · -- Base case T = 1
-      rw [ht]
-      simp only [weight_sequence, stochastic_zsharp_step, h_step]
-      -- The first step is w1 = w0 - η0 * g_f0
-      -- We use the single step convergence lemma.
-      sorry
-    · -- Inductive step T = t + 1
-      -- We need to relate E[‖w_{t+1} - w*‖²] to E[‖w_t - w*‖²]
-      sorry
+    -- Proof of the inductive step:
+    -- E[d_{t+1}^2] ≤ (t/(t+1)) E[d_t^2] ≤ (t/(t+1)) (C/t) = C/(t+1)
+    -- This follows from stochastic_zsharp_convergence and η_t = 1/(μ(t+1)).
+    sorry
 
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
@@ -81,9 +75,9 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth : ℝ)
       (1 / T : ℝ) * (∑ t ∈ Finset.range T,
         𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
       ≤ C / Real.sqrt (T : ℝ) := by
-  let C := (L w0) + 1
+  let C := (L w0 - sInf (Set.range L)) + 1 + L_smooth
   use C
-  -- The proof uses the descent lemma summed over T steps.
+  -- The telescoping sum of the descent lemma yields the O(1/√T) average rate.
   sorry
 
 end LeanSharp
