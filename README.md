@@ -36,7 +36,10 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 - ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
 - ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
 
-### 5. Absolute Mathematical Purity
+### 5. Toy Application (`ToyApplication.lean`)
+- ✅ **Explicit Computability**: Explicit evaluation matching the theoretical exact gradient of the algorithm on a simple 2D quadratic landscape.
+
+### 6. Absolute Mathematical Purity
 - ✅ **Zero `axiom` declarations**: Every theorem is formally derived. CI enforces this automatically.
 - ✅ **Zero `sorry` placeholders**: All proofs are complete.
 - ✅ **Zero `set_option linter` suppressions**: All linter warnings resolved at their source.
