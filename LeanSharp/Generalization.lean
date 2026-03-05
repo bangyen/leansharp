@@ -5,7 +5,6 @@ import LeanSharp.SamBound
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
-set_option linter.unusedSectionVars false
 
 /-!
 # Phase 7: Generalization & Sharpness
@@ -63,6 +62,9 @@ We formalize a simplified version of this relationship.
 def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ) : Prop :=
   L_D w ≤ L_S w + sharpness L_S w * (‖w‖ ^ 2 / ρ ^ 2) + C
 
+section NoDimFact
+omit [Fact (0 < d)]
+
 /-- Theorem: If the SAM empirical max is bounded by the second-order Taylor expansion,
     then the Sharpness-based generalization bound holds.
     This theorem links the SAM objective to a generalization bound involving sharpness,
@@ -74,6 +76,8 @@ theorem sam_sharpness_link (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ
     pac_bayes_sharpness_bound L_D L_S w ρ C := by
   unfold pac_bayes_sharpness_bound
   linarith
+
+end NoDimFact
 
 /-!
 ## Uniform Stability
@@ -91,6 +95,9 @@ def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n →
   ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
 
+section NoDimFact2
+omit [Fact (0 < d)]
+
 /-- Theorem: The Z-score filtered gradient update exhibits lower uniform stability
     (more stable) compared to standard SAM updates. By leveraging the Lipschitz continuity
     of the gradient filter (which guarantees `‖filtered_gradient g z‖ ≤ ‖g‖`), the algorithmic
@@ -107,5 +114,7 @@ theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
   calc ‖A_zsharp S - A_zsharp S'‖
       ≤ ‖A_sam S - A_sam S'‖ := h_filter_bound S S'
     _ ≤ β_sam / (n : ℝ)      := h_base
+
+end NoDimFact2
 
 end LeanSharp

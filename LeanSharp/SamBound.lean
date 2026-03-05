@@ -2,7 +2,7 @@ import LeanSharp.Landscape
 import LeanSharp.Sam
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
-set_option linter.unusedSectionVars false
+
 
 /-!
 # Phase 3: The SAM Generalization Bound
@@ -41,6 +41,9 @@ def sam_generalization_bound_holds (ρ : ℝ) : Prop :=
   ∀ w : W d, ρ > 0 →
     L_D w ≤ sam_empirical_max L_S w ρ + h (‖w‖^2 / ρ^2)
 
+section NoDimFact
+omit [Fact (0 < d)]
+
 /-- Theorem: The SAM generalization bound holds given a standard generalization gap assumption.
     We prove that `sam_empirical_max ≥ L_S(w)`, so the SAM bound dominates the
     ordinary Rademacher / PAC-Bayes generalization bound. -/
@@ -60,5 +63,7 @@ theorem sam_bound_from_gap {ρ : ℝ}
     exact le_csSup (h_bdd w ρ) h_mem
   have h_gap_spec := h_gap w ρ hρ
   linarith [h_gap_spec, h_sam_ge]
+
+end NoDimFact
 
 end LeanSharp

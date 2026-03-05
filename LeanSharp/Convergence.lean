@@ -6,7 +6,6 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Algebra.Order.Ring.Defs
 
-set_option linter.unusedSectionVars false
 
 /-!
 # Phase 4: ZSharp Convergence Bound
@@ -71,6 +70,9 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
   ‖g_f‖ ≤ L_smooth * ‖w - w_star‖
 
+section NoDimFact
+omit [Fact (0 < d)]
+
 /-- Main Theorem: ZSharp converges geometrically to `w_star` under standard assumptions. -/
 theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
     (hη_tight : η * L_smooth ^ 2 ≤ μ)
@@ -108,5 +110,7 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
   nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
              mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
+
+end NoDimFact
 
 end LeanSharp
