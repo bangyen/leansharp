@@ -31,8 +31,7 @@ variable (h_mono : StrictMono h)
 
 /-- For a given dataset `S`, the maximal empirical risk in the $\rho$-neighborhood. 
     This uses the exact `sam_objective` we formalized in Phase 0. -/
-noncomputable def sam_empirical_max {n : ℕ} 
-    (S : Fin n → DataPoint) (w : W d) (ρ : ℝ) : ℝ :=
+noncomputable def sam_empirical_max {n : ℕ} (S : Fin n → DataPoint) (w : W d) (ρ : ℝ) : ℝ :=
   sam_objective (empirical_risk DataPoint sample_loss S) w ρ
 
 /-!
@@ -58,9 +57,9 @@ def sam_generalization_bound_holds {n : ℕ} (S : Fin n → DataPoint) (ρ : ℝ
 theorem sam_bound_from_gap {n : ℕ} (S : Fin n → DataPoint)
     -- The standard generalization gap: L_D(w) ≤ L_S(w) + h(‖w‖²/ρ²)
     (h_gap : ∀ (w : W d) (r : ℝ), r > 0 →
-        L_D w ≤ empirical_risk DataPoint sample_loss S w + h (‖w‖^2 / r^2))
+        L_D w ≤ empirical_risk DataPoint sample_loss S w + h (‖w‖ ^ 2 / r ^ 2))
     -- h is monotone (so larger SAM objective → larger pacing)
-    (h_mono : Monotone h)
+    (_h_mono : Monotone h)
     -- Boundedness of empirical risk on the perturbation ball 
     -- (follows from continuity + compactness)
     (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
