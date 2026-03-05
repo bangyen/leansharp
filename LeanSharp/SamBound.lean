@@ -2,8 +2,6 @@ import LeanSharp.Landscape
 import LeanSharp.Sam
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
-
-
 /-!
 # Phase 3: The SAM Generalization Bound
 
@@ -28,7 +26,7 @@ variable (L_D : W d → ℝ)
 variable (L_S : W d → ℝ)
 
 -- The pacing function h : R_{>0} -> R_{>0} defined by Foret et al.
-variable (h : ℝ → ℝ) (h_mono : StrictMono h)
+variable (h : ℝ → ℝ)
 
 /-- The maximal empirical risk in the $\rho$-neighborhood.
     This uses the exact `sam_objective` we formalized in Phase 0. -/

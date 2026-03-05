@@ -2,8 +2,6 @@ import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Dual
-import Mathlib.Data.Real.Basic
-import Mathlib.Topology.MetricSpace.Basic
 
 /-!
 # The Mathematical Landscape
@@ -27,17 +25,6 @@ variable {d : ℕ} [Fact (0 < d)]
 
 /-- The parameter space $W = \mathbb{R}^d$, represented as a Euclidean space. -/
 abbrev W (d : ℕ) := EuclideanSpace ℝ (Fin d)
-
-noncomputable instance : NormedAddCommGroup (W d) := by unfold W; infer_instance
-noncomputable instance : InnerProductSpace ℝ (W d) := by unfold W; infer_instance
-noncomputable instance : FiniteDimensional ℝ (W d) := by unfold W; infer_instance
-
-/-- A loss function is a differentiable mapping from parameter space to Reals. -/
-def LossFunction (d : ℕ) := W d → ℝ
-
-/-- The Fréchet derivative of L at a point w. -/
-noncomputable def L_deriv (L : W d → ℝ) (w : W d) : W d →L[ℝ] ℝ :=
-  fderiv ℝ L w
 
 /-- The gradient of a loss function at point `w`.
     Defined as the Riesz representation of the Fréchet derivative. -/

@@ -5,12 +5,13 @@
 [![Lean 4 Version](https://img.shields.io/badge/Lean-4.28.0-blue.svg)](https://leanprover.github.io/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib-4-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
 
-LeanSharp is the formal, mathematical sister-project to [ZSharp](https://github.com/bangyen/zsharp). While ZSharp provides an empirical PyTorch implementation of Z-Score filtered SAM (achieving +5.26% accuracy over SGD), this repository aims to construct a completely rigorous foundation for the algorithm using the [Lean 4](https://leanprover.github.io/) interactive theorem prover.
+LeanSharp is the formal, mathematical sister-project to [ZSharp](https://github.com/bangyen/zsharp). While ZSharp provides an empirical PyTorch implementation of Z-Score filtered SAM (achieving +5.26% accuracy over SGD), this repository constructs a completely rigorous foundation for the algorithm using the [Lean 4](https://leanprover.github.io/) interactive theorem prover.
 
 ## Motivation
+
 Machine Learning optimization algorithms are notoriously difficult to analyze theoretically. Proofs of convergence for Deep Learning optimizers often rely on informal heuristics or hidden assumptions about the loss landscape.
 
-By formally verifying Z-Score SAM in Lean 4, we ensure that every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel.
+By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel. **Critically, every theorem is formally proved with zero `axiom` declarations in the source; all mathematical claims are derived directly from Mathlib.**
 
 ## Verification Status
 
@@ -18,7 +19,8 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 
 ### 1. Mathematical Foundations (`Landscape.lean`, `Filters.lean`)
 - ✅ **Parameter Space**: Formal definition of $\mathbb{R}^d$ and Euclidean norm properties.
-- ✅ **Z-Score Filter**: Statistical mean and variance operators for gradient tensors.
+- ✅ **Hessian Symmetry**: Proved from Mathlib's `second_derivative_symmetric` (Schwarz's Theorem) — **no axioms**.
+- ✅ **Z-Score Filter**: Statistical mean, variance, and standard deviation operators for gradient tensors.
 
 ### 2. Deterministic Optimization (`Sam.lean`, `Convergence.lean`)
 - ✅ **SAM Objective**: Formalized the $L_\infty$-perturbation and dual-norm derivation.
@@ -26,9 +28,14 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 - ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM.
 
 ### 3. Generalization & Sharpness (`Generalization.lean`)
-- ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian matrix.
+- ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian.
 - ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
 - ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
+
+### 4. Absolute Mathematical Purity
+- ✅ **Zero `axiom` declarations**: Every theorem is formally derived. CI enforces this automatically.
+- ✅ **Zero `sorry` placeholders**: All proofs are complete.
+- ✅ **Zero `set_option linter` suppressions**: All linter warnings resolved at their source.
 
 ## Installation & Building
 
