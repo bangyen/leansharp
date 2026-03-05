@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Filters
@@ -9,8 +14,24 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 /-!
 # Generalization & Sharpness
 
-This file formalizes the link between the geometric "sharpness" of the loss
+This module formalizes the link between the geometric "sharpness" of the loss
 landscape and the statistical generalization performance of the model.
+
+## Main definitions
+
+* `Dataset`: A representation of a collection of data points.
+* `dataset_neighbor`: Predicate for two datasets differing by one element.
+* `max_eigenvalue`: The maximum eigenvalue of a symmetric linear operator.
+* `sharpness`: Measures loss landscape sharpness via the maximum Hessian eigenvalue.
+* `pac_bayes_sharpness_bound`: A PAC-Bayes bound incorporating sharpness.
+* `uniform_stability`: Measures algorithm sensitivity to training data.
+
+## Main theorems
+
+* `sam_concrete_generalization`: Connects population risk to empirical risk via
+  sharpness and Taylor expansion.
+* `zsharp_stability_theorem`: Proves that filtered updates exhibit lower uniform
+  stability.
 -/
 
 namespace LeanSharp
@@ -19,7 +40,7 @@ open Real NNReal
 
 variable {d : ℕ} [Fact (0 < d)]
 
-/-- A dataset is formally represented as a collection of n data points. -/
+/-- A dataset is formally represented as a collection of $n$ data points. -/
 def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
 
 /-- Two datasets are neighbors if they differ by exactly one element. -/
@@ -41,8 +62,9 @@ def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : 
   L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + C
 
 /-- **SAM Generalization Theorem**: Links the population risk to the empirical risk
-    via the Taylor bound proved in `Taylor.lean`.
-    This uses the exact `sam_objective` we formalized previously. -/
+via the Taylor bound proved in `Taylor.lean`.
+
+This uses the exact `sam_objective` we formalized previously. -/
 theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (M : ℝ≥0) (C : ℝ)
     (h_smooth : LipschitzWith M (gradient L_S))
     (h_diff : Differentiable ℝ L_S)
@@ -55,7 +77,7 @@ theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ)
 /-!
 ## Uniform Stability
 
-Uniform stability β measures the sensitivity of the algorithm to the data.
+Uniform stability $\beta$ measures the sensitivity of the algorithm to the data.
 -/
 
 /-- The uniform stability of a learning algorithm `A` on a dataset. -/
@@ -66,7 +88,8 @@ def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n →
 section NoDimFact
 omit [Fact (0 < d)]
 
-/-- Theorem: The Z-score filtered gradient update exhibits lower uniform stability. -/
+/-- **Stability Theorem**: The Z-score filtered gradient update exhibits lower
+uniform stability. -/
 theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
     (A_sam : Dataset DataPoint n → W d)
     (A_zsharp : Dataset DataPoint n → W d)

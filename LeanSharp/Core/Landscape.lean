@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Analysis.InnerProductSpace.PiL2
@@ -6,17 +11,24 @@ import Mathlib.Analysis.InnerProductSpace.Dual
 /-!
 # The Mathematical Landscape
 
-In order to formulate Sharpness-Aware Minimization (SAM), we need to formalize:
-1. The parameter space `W` (which is typically a Euclidean space like ℝ^d).
-2. The loss function `L : W → ℝ`.
+This module formalizes the parameter space and core calculus operators for
+Sharpness-Aware Minimization (SAM).
+
+## Main definitions
+
+* `W`: The parameter space $\mathbb{R}^d$, represented as a Euclidean space.
+* `gradient`: The gradient of a loss function, defined via the Riesz representation.
+* `hessian`: The Hessian operator, defined as the derivative of the gradient.
+
+## Main theorems
+
+* `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
+
+## Implementation notes
 
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (Fin d)`.
--/
-
-/-
-  To define SAM, we need the gradient of `L`. In Lean, the Fréchet derivative
-  of `L` at `w` is `fderiv ℝ L w`. Since `W` is a Hilbert space, the gradient
-  is the Riesz representation of this derivative.
+The gradient is computed as the Riesz representation `InnerProductSpace.toDual.symm`
+of the Fréchet derivative.
 -/
 
 namespace LeanSharp
@@ -27,12 +39,12 @@ variable {d : ℕ} [Fact (0 < d)]
 abbrev W (d : ℕ) := EuclideanSpace ℝ (Fin d)
 
 /-- The gradient of a loss function at point `w`.
-    Defined as the Riesz representation of the Fréchet derivative. -/
+Defined as the Riesz representation of the Fréchet derivative. -/
 noncomputable def gradient (L : W d → ℝ) (w : W d) : W d :=
   (InnerProductSpace.toDual ℝ (W d)).symm (fderiv ℝ L w)
 
 /-- The Hessian operator ∇²L(w) is the derivative of the gradient.
-    It is a continuous linear map from the parameter space to itself: $W \toL[ℝ] W$. -/
+It is a continuous linear map from the parameter space to itself: $W \toL[ℝ] W$. -/
 noncomputable def hessian (L : W d → ℝ) (w : W d) : W d →L[ℝ] W d :=
   fderiv ℝ (gradient L) w
 
@@ -40,10 +52,10 @@ section NoDimFact
 omit [Fact (0 < d)]
 
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
-    Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib.
+Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib.
 
-    Requires: `L` everywhere Fréchet-differentiable (`h_diff`) and `fderiv ℝ L`
-    differentiable at `w` (`h_grad_diff`). Both hold for any C² loss function. -/
+Requires: `L` everywhere Fréchet-differentiable (`h_diff`) and `fderiv ℝ L`
+differentiable at `w` (`h_grad_diff`). Both hold for any C² loss function. -/
 theorem hessian_symmetric (L : W d → ℝ) (w : W d)
     (h_diff : ∀ p : W d, HasFDerivAt L (fderiv ℝ L p) p)
     (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :

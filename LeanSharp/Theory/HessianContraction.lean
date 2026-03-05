@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Filters
 import LeanSharp.Theory.Generalization
@@ -6,14 +11,17 @@ import Mathlib.Analysis.InnerProductSpace.Spectrum
 /-!
 # Hessian Contraction
 
-This file formalizes the relationship between the geometric properties of the
-loss landscape (specifically, the maximum eigenvalue of the Hessian matrix)
-and the statistical Z-score gradient filter.
+This module formalizes the relationship between the geometric properties of the
+loss landscape and the statistical Z-score gradient filter.
 
-We prove that the quadratic form of the Hessian along the direction of the
-filtered gradient is globally bounded by the product of the landscape's
-sharpness ($\lambda_{max}$) and the squared $L_2$ norm of the original,
-unfiltered gradient.
+## Main definitions
+
+* `hessian_quadratic_form`: Computes the curvature $v^T H v$.
+
+## Main theorems
+
+* `zsharp_curvature_bound`: Proves that the curvature along the filtered gradient
+  is bounded by the landscape's $L_2$ sharpness and the original gradient norm.
 -/
 
 namespace LeanSharp
@@ -26,14 +34,11 @@ variable {d : ℕ} [Fact (0 < d)]
 noncomputable def hessian_quadratic_form (L : W d → ℝ) (w v : W d) : ℝ :=
   @inner ℝ (W d) _ v ((hessian L w) v)
 
-/-- **Theorem: ZSharp Curvature Bound**
-  The quadratic curvature along the Z-score filtered gradient's direction
-  is strictly bounded by the maximum eigenvalue of the Hessian and the
-  magnitude of the completely unfiltered gradient.
+/-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
+Z-score filtered gradient's direction is strictly bounded.
 
-  Condition: We assume the standard Spectral Theorem bound on the quadratic
-  form, i.e., $v^T H v \le \lambda_{max} \|v\|^2$.
--/
+The bound is $\lambda_{max} \|g\|^2$, connecting the geometric sharpness to
+the statistical filter. -/
 theorem zsharp_curvature_bound (L : W d → ℝ) (w : W d) (g : W d) (z : ℝ)
     (hT : (hessian L w).toLinearMap.IsSymmetric)
     (h_spectral : ∀ v : W d, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖^2)

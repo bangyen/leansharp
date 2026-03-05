@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Stochastic.StochasticSam
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
@@ -10,9 +15,19 @@ import Mathlib.MeasureTheory.Function.L2Space
 /-!
 # Stochastic ZSharp Convergence Bound
 
-We formalize the stochastic convergence of the ZSharp algorithm.
-Unlike the deterministic case, we must account for the variance of the
-stochastic gradient and its interaction with the Z-score filter.
+This module formalizes the stochastic convergence theory for the ZSharp algorithm.
+It accounts for the variance in stochastic gradients and its interaction with
+the Z-score filter.
+
+## Main definitions
+
+* `stochastic_alignment_condition`: Generalization of the alignment condition
+  to the expectation of the filtered stochastic gradient.
+
+## Main theorems
+
+* `stochastic_zsharp_convergence`: Proves that the expected squared distance to
+  the optimum decreases in each step.
 -/
 
 namespace LeanSharp
@@ -22,13 +37,10 @@ open ProbabilityTheory MeasureTheory
 variable {d : ℕ} [Fact (0 < d)]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
--- The loss function and its global minimum.
-variable (L : W d → ℝ) (w_star : W d)
-
-/-- The Stochastic Alignment Condition:
-    Generalizes the deterministic alignment condition to the stochastic case.
-    The filtered stochastic gradient must, on average, provide sufficient descent. -/
-def stochastic_alignment_condition (w : W d) (η z μ : ℝ) (g_adv : Ω → W d) : Prop :=
+/-- **Stochastic Alignment Condition**: A generalization of the alignment condition
+to the stochastic setting. It requires that the filtered stochastic gradient
+provide sufficient descent in expectation. -/
+def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω → W d) : Prop :=
   let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
   Integrable g_f ∧
   Integrable (fun ω => ‖g_f ω‖^2) ∧
@@ -38,10 +50,11 @@ def stochastic_alignment_condition (w : W d) (η z μ : ℝ) (g_adv : Ω → W d
 section NoDimFact
 omit [Fact (0 < d)]
 
-/-- **Stochastic ZSharp Convergence Theorem**:
-    Under the stochastic alignment condition and standard optimization assumptions,
-    the parameter distance to the optimum decreases in expectation. -/
-theorem stochastic_zsharp_convergence {g_adv : Ω → W d} (w : W d) (η ρ z σsq μ : ℝ)
+/-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
+condition and standard assumptions, the distance to the optimum decreases in
+expectation. -/
+theorem stochastic_zsharp_convergence (L : W d → ℝ) (w_star : W d) {g_adv : Ω → W d} (w : W d)
+    (η ρ z σsq μ : ℝ)
     (_h_sgd : is_stochastic_gradient L g_adv (w + sam_perturbation L w ρ))
     (_h_var : has_bounded_variance L g_adv (w + sam_perturbation L w ρ) σsq)
     (h_align : stochastic_alignment_condition w_star w η z μ g_adv) :

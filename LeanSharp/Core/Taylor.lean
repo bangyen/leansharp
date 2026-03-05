@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.MeanValue
@@ -7,7 +12,13 @@ import Mathlib.Data.NNReal.Basic
 /-!
 # Taylor Descent Lemma for SAM
 
-We prove a concrete second-order Taylor bound for L-smooth loss functions.
+This module proves a second-order Taylor bound for L-smooth loss functions,
+which is critical for the convergence analysis of SAM variants.
+
+## Main theorems
+
+* `smooth_descent`: The standard quadratic upper bound for L-smooth functions.
+* `sam_taylor_bound`: Specifically adapts the descent lemma to the SAM objective.
 -/
 
 namespace LeanSharp

@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Core.Sam
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Sum
@@ -7,9 +12,24 @@ import Mathlib.Algebra.Order.Ring.Abs
 /-!
 # Z-Score Gradient Filtering
 
-The core of ZSharp is the statistical filtering of gradient tensors.
-Given a gradient vector `g ∈ ℝ^d`, we compute its mean `μ` and standard
-deviation `σ`.
+This module formalizes the statistical filtering of gradient tensors using
+Z-score masking.
+
+## Main definitions
+
+* `vector_mean`: The empirical mean of a vector's components.
+* `vector_variance`: The empirical variance of a vector's components.
+* `vector_std`: The standard deviation of a vector's components.
+* `z_score_mask`: A boolean-valued vector in $\{0, 1\}^d$ indicating components
+  within the Z-score threshold.
+* `hadamard`: Element-wise multiplication of two vectors.
+* `filtered_gradient`: The final gradient after applying the Z-score mask.
+
+## Main theorems
+
+* `filtered_gradient_norm_sq_le`: Proves that the filter is an $L_2$ contraction.
+* `z_score_nonempty`: Proves that the filter preserves at least one component
+  when $z \le 1$.
 -/
 
 namespace LeanSharp
@@ -48,7 +68,7 @@ noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
   hadamard g (z_score_mask g z)
 
 /-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
-    by the original. -/
+by the original. -/
 theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
   have hd : 0 < d := Fact.out
@@ -66,13 +86,14 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
                     ≥ z * vector_std g then (1 : ℝ) else 0‖^2
                 ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
     split_ifs
-    · simp
-    · simp
+    · simp only [mul_one, le_refl]
+    · simp only [mul_zero, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
+        Real.norm_eq_abs, sq_abs]
       positivity
   exact h_base
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
-    one component of the gradient. -/
+one component of the gradient. -/
 theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
   let μ := vector_mean g

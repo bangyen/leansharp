@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
 import LeanSharp.Stochastic.StochasticSam
 import LeanSharp.Core.Filters
 import Mathlib.Analysis.InnerProductSpace.PiL2
@@ -10,11 +15,19 @@ import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 /-!
 # Stochastic Generalization Bounds
 
-We formalize advanced bounds on the variance of the ZSharp algorithm.
-A key theoretical property of the Z-score filter is that it is a *contraction*
-with respect to the $L_2$ norm. This means that if the original stochastic
-gradient estimator has bounded variance, the variance of the filtered
-stochastic gradient is strictly bounded by the same constant!
+This module formalizes advanced bounds on the variance of the ZSharp algorithm
+in stochastic settings.
+
+A key theoretical property of the Z-score filter is that it is a contraction
+with respect to the $L_2$ norm. This ensures that the filtered gradient does
+not increase the variance of the stochastic estimator.
+
+## Main theorems
+
+* `filtered_norm_bound`: Proves the $L_2$ norm contraction of the filter.
+* `zsharp_variance_bound`: Proves that the variance of the filtered stochastic
+  gradient is bounded by the variance of the original estimator plus a
+  curvature term.
 -/
 
 namespace LeanSharp
@@ -26,10 +39,11 @@ open ProbabilityTheory MeasureTheory
 variable {d : ℕ} [Fact (0 < d)]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-/-- Central Lemma: The Z-score filter reduces or preserves the vector norm.
-    Because the Z-score filter is implemented via a Hadamard element-wise mask
-    with values in {0, 1}, the L2-norm of the filtered gradient is always less
-    than or equal to the original gradient. -/
+/-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm.
+
+Because the Z-score filter is implemented via a Hadamard element-wise mask
+with values in $\{0, 1\}$, the $L_2$-norm of the filtered gradient is always less
+than or equal to the original gradient. -/
 theorem filtered_norm_bound (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖ ≤ ‖g‖ := by
   have h_sq := filtered_gradient_norm_sq_le g z
@@ -38,9 +52,8 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
   rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
   exact h_sqrt
 
-/-- **ZSharp Variance Bound Theorem**:
-    If the base stochastic gradient has bounded variance $\sigma^2$, the
-    filtered gradient also has strictly bounded variance. -/
+/-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
+variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/
 theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (z σsq : ℝ)
     (h_unbiased : is_stochastic_gradient L g_adv w)
     (h_base_var : has_bounded_variance L g_adv w σsq)
