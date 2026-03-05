@@ -4,6 +4,8 @@ import LeanSharp.Filters
 import LeanSharp.SamBound
 import LeanSharp.Convergence
 import LeanSharp.Generalization
+import LeanSharp.StochasticSam
+import LeanSharp.StochasticConvergence
 
 /-!
 # LeanSharp

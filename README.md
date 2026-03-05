@@ -27,12 +27,16 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 - ✅ **Alignment Condition**: Proved the geometric alignment required for filtered gradient updates, strictly bounding the filter norm against the landscape smoothness.
 - ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM.
 
-### 3. Generalization & Sharpness (`Generalization.lean`)
+### 3. Stochastic Optimization (`StochasticSam.lean`, `StochasticConvergence.lean`)
+- ✅ **Stochastic Gradient Model**: Formalization of empirical gradients with bounded variance.
+- ✅ **Stochastic ZSharp Convergence**: Proof that the Z-score filtered gradient descent converges in expectation even under stochastic noise.
+
+### 4. Generalization & Sharpness (`Generalization.lean`)
 - ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian.
 - ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
 - ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
 
-### 4. Absolute Mathematical Purity
+### 5. Absolute Mathematical Purity
 - ✅ **Zero `axiom` declarations**: Every theorem is formally derived. CI enforces this automatically.
 - ✅ **Zero `sorry` placeholders**: All proofs are complete.
 - ✅ **Zero `set_option linter` suppressions**: All linter warnings resolved at their source.

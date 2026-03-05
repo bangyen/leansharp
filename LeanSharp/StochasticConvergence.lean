@@ -17,12 +17,10 @@ stochastic gradient and its interaction with the Z-score filter.
 
 namespace LeanSharp
 
-set_option linter.unusedSectionVars false
-
 open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]
-variable {Ω : Type*} [MeasureSpace Ω] [hΩ : IsProbabilityMeasure (volume : Measure Ω)]
+variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 -- The loss function and its global minimum.
 variable (L : W d → ℝ) (w_star : W d)
@@ -36,6 +34,9 @@ def stochastic_alignment_condition (w : W d) (η z μ : ℝ) (g_adv : Ω → W d
   Integrable (fun ω => ‖g_f ω‖^2) ∧
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
   η^2 * 𝔼[fun ω => ‖g_f ω‖^2] ≥ η * μ * ‖w - w_star‖^2
+
+section NoDimFact
+omit [Fact (0 < d)]
 
 /-- **Stochastic ZSharp Convergence Theorem**:
     Under the stochastic alignment condition and standard optimization assumptions,
@@ -98,5 +99,7 @@ theorem stochastic_zsharp_convergence {g_adv : Ω → W d} (w : W d) (η ρ z σ
         apply sub_le_sub_left
         exact h_align.2.2
     _ = (1 - η * μ) * ‖w - w_star‖^2 := by unfold A; ring
+
+end NoDimFact
 
 end LeanSharp
