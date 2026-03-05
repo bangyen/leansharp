@@ -11,6 +11,7 @@ import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Basic
 import Mathlib.MeasureTheory.Integral.Lebesgue.Norm
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import LeanSharp.Utils.Tactics
 
 /-!
 # Stochastic Generalization Bounds
@@ -47,8 +48,7 @@ than or equal to the original gradient. -/
 theorem filtered_norm_bound (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖ ≤ ‖g‖ := by
   have h_sq := filtered_gradient_norm_sq_le g z
-  have h_sqrt : Real.sqrt (‖filtered_gradient g z‖ ^ 2) ≤ Real.sqrt (‖g‖ ^ 2) :=
-    Real.sqrt_le_sqrt h_sq
+  have h_sqrt := Real.sqrt_le_sqrt h_sq
   rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
   exact h_sqrt
 

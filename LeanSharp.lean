@@ -14,6 +14,7 @@ import LeanSharp.Stochastic.StochasticConvergence
 import LeanSharp.Examples.ToyApplication
 import LeanSharp.Theory.HessianContraction
 import LeanSharp.Stochastic.StochasticGeneralization
+import LeanSharp.Utils.Tactics
 
 /-!
 # LeanSharp

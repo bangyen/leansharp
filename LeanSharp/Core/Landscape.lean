@@ -7,6 +7,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Dual
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
 # The Mathematical Landscape
@@ -29,6 +30,12 @@ Sharpness-Aware Minimization (SAM).
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (Fin d)`.
 The gradient is computed as the Riesz representation `InnerProductSpace.toDual.symm`
 of the Fréchet derivative.
+
+### Functional Analysis (Sobolev Spaces)
+
+We are transitioning the project foundations to rely on Sobolev spaces
+(specifically $H^1$ and $H^2$) for regularity, rather than just $C^k$.
+This allows analyzing modern ML functions which may lack global $C^2$ smoothness.
 -/
 
 namespace LeanSharp
@@ -47,6 +54,18 @@ noncomputable def gradient (L : W d → ℝ) (w : W d) : W d :=
 It is a continuous linear map from the parameter space to itself: $W \toL[ℝ] W$. -/
 noncomputable def hessian (L : W d → ℝ) (w : W d) : W d →L[ℝ] W d :=
   fderiv ℝ (gradient L) w
+
+/-- A function $L: W \to \mathbb{R}$ has an $L_2$-integrable gradient if
+$\int_W \|\text{gradient } L(w)\|_2^2 dw < \infty$. -/
+def is_L2_integrable (L : W d → ℝ) : Prop :=
+  ∃ (_ : MeasureTheory.MeasureSpace (W d)),
+    MeasureTheory.Integrable (fun w => ‖gradient L w‖^2)
+
+/-- A loss function is "Sobolev Regular" if it belongs to $H^1(W)$,
+meaning its value and gradient are both $L_2$-integrable. -/
+def is_sobolev_regular (L : W d → ℝ) : Prop :=
+  ∃ (_ : MeasureTheory.MeasureSpace (W d)),
+    MeasureTheory.Integrable L ∧ is_L2_integrable L
 
 section NoDimFact
 omit [Fact (0 < d)]

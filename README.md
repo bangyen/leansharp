@@ -18,7 +18,8 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 All theorems in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
 - ✅ **Core Foundations** (`Core/`): Hessian symmetry, L-smoothness, and Z-score hadamard filtering.
-- ✅ **Theory & Convergence** (`Theory/`): Geometric convergence for ZSharp and generalization bounds (PAC-Bayes).
+- ✅ **Theory & Convergence** (`Theory/`): Geometric convergence for ZSharp, generalization bounds (PAC-Bayes), and Z-score uniform stability.
+- ✅ **Curvature & Sharpness** (`Theory/`): Spectral bounds relating maximum Hessian eigenvalues to Z-score gradient contraction.
 - ✅ **Stochastic Stability** (`Stochastic/`): Probabilistic convergence and variance contraction bounds.
 - ✅ **Mathematical Purity**: Verified by CI to have no axioms and no linter warnings.
 - ✅ **Toy Application** (`Examples/`): Computable verification on 2D quadratic landscapes.
@@ -26,10 +27,13 @@ All theorems in LeanSharp are formally verified with **zero axioms** and **zero 
 ## Roadmap & Future Work
 
 While the core theory is now verified, the following research directions are planned:
-- **Convergence Rates**: Formalize specific $O(1/T)$ or $O(1/\sqrt{T})$ rates for Z-score filtered SGD.
-- **Deep Models**: Extend formalization to multi-layer neural network architectures.
-- **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian noise.
-- **Automated Tactics**: Develop a `zsharp_solve` tactic for automatically bounding filtered variances.
+- **ZSharp Universality**: Formally prove that the empirical distribution of Z-scores converges to the standard Gaussian as $d \to \infty$.
+- **Explicit Convergence Rates**: Formalize specific $O(1/T)$ or $O(1/\sqrt{T})$ rates for specific classes of functions (e.g., PŁ functions).
+- **Deep Models**: Extend formalization to structured multi-layer neural network architectures and backpropagation.
+- **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian (e.g., Cauchy) noise.
+- **Third-Order Analysis**: Define third-derivative tensors to analyze Z-score filtering against higher-order geometry.
+- **Sobolev Space Foundations**: Transition to Sobolev spaces for advanced regularity and functional analysis.
+- **Automated Tactics**: Develop a `zsharp_solve` tactic using `aesop` or `linarith` extensions to automate filter contraction bounds.
 
 ## Installation & Building
 
