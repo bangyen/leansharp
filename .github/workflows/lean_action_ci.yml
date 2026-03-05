@@ -30,6 +30,3 @@ jobs:
       - name: Build Lean project
         uses: leanprover/lean-action@v1
 
-      - name: Generate documentation
-        if: github.ref == 'refs/heads/main'
-        run: lake build LeanSharp:docs
