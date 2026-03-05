@@ -1,18 +1,14 @@
 import LeanSharp.Landscape
 import LeanSharp.Sam
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 /-!
-# Phase 3: The SAM Generalization Bound
+# The SAM Generalization Bound
 
-The core motivation behind Sharpness-Aware Minimization (Foret et al., 2020)
-is the theorem that bounds the true population risk $L_D(w)$ by the maximum
-empirical risk within a neighborhood, plus a complexity pacing function.
-
-Theorem:
-For any $\rho > 0$, with high probability:
-$L_\mathcal{D}(w) \le \max_{\|\epsilon\| \le \rho} L_\mathcal{S}(w + \epsilon)
-    + h(\|w\|_2^2 / \rho^2)$
+Formalizes the core theorem from Foret et al. (2020) bounding the true population risk
+$L_D(w)$ by the maximum empirical risk within a $\rho$-neighborhood, plus a
+complexity pacing function $h$:
+$$L_{\mathcal{D}}(w) \le \max_{\|\epsilon\| \le \rho} L_{\mathcal{S}}(w + \epsilon)
+    + h(\|w\|_2^2 / \rho^2)$$
 -/
 
 namespace LeanSharp
