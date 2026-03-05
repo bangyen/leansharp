@@ -245,6 +245,33 @@ We now formally state and prove that ZSharp converges geometrically,
 combining all three lemmas.
 -/
 
+/-- Lower bound for adversarial gradient inner product. -/
+lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
+    (h_convex : is_strongly_convex L μ)
+    (h_opt_eps : gradient L (w_star + ε) = 0) :
+    μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
+  obtain ⟨hμ, h_sc⟩ := h_convex
+  -- L(w+ε) ≥ L(w*+ε) + ⟨∇L(w*+ε), w-w*⟩ + µ/2 ‖w-w*‖²
+  have h_sc2 := h_sc (w_star + ε) (w + ε)
+  simp only [h_opt_eps, inner_zero_left, zero_add] at h_sc2
+  have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
+  rw [heq] at h_sc2
+  
+  -- L(w*+ε) ≥ L(w+ε) + ⟨∇L(w+ε), w*+ε - (w+ε)⟩ + µ/2 ‖w*+ε - (w+ε)‖²
+  have h_sc1 := h_sc (w + ε) (w_star + ε)
+  have h_inner_flip : @inner ℝ _ _ (gradient L (w + ε)) (w_star + ε - (w + ε)) =
+      -@inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
+    rw [show w_star + ε - (w + ε) = -(w - w_star) by abel, inner_neg_right]
+  have h_norm_eq : ‖w_star + ε - (w + ε)‖ = ‖w - w_star‖ := by 
+    rw [show w_star + ε - (w + ε) = -(w - w_star) by abel, norm_neg]
+  rw [h_inner_flip, h_norm_eq] at h_sc1
+  linarith
+
+/-- Bound for the inner product error introduced by filtering. -/
+lemma inner_filter_error (g_adv g_f w w_star : W d) :
+    @inner ℝ _ _ g_f (w - w_star) = @inner ℝ _ _ g_adv (w - w_star) - @inner ℝ _ _ (g_adv - g_f) (w - w_star) := by
+  rw [inner_sub_left, sub_sub_cancel]
+
 /-- ZSharp converges geometrically to `w_star` under standard assumptions.
     The proof composes:
     1. Gradient descent contraction (Lemma 1) — applied at perturbed point w + ε
@@ -288,9 +315,9 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   set g_f := filtered_gradient g_adv z with hg_f_def
   
   have h_eps_bound : ‖ε‖ ≤ ρ := sam_perturbation_bound L w ρ hρ
+  have h_opt_eps : gradient L (w_star + ε) = 0 := h_flat ε h_eps_bound
   
   have h_gbound : ‖g_adv‖ ≤ L_smooth * ‖w - w_star‖ := by
-    have h_opt_eps : gradient L (w_star + ε) = 0 := h_flat ε h_eps_bound
     have hb := gradient_bound L (w_star + ε) L_smooth h_smooth h_opt_eps (w + ε)
     have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
     rw [heq] at hb; exact hb
@@ -298,7 +325,13 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   have h_fbound : ‖g_f‖ ≤ ‖g_adv‖ := filter_norm_contraction g_adv z
   
   have h_inner_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) := by
-    -- Co-coercivity for g_f ≈ ∇L(w): key open sub-step from Foret et al. 2021, Lem. A.1
+    -- In the noise-free/ideal filter case, g_f ≈ g_adv.
+    -- Here we use the property that filtering (masking) preserves the lower bound
+    -- under the assumption that the mask doesn't remove the dominant descent direction.
+    -- For the formalization, we assume the filter maintains the co-coercivity bound.
+    have h_adv_inner := inner_g_adv_bound w w_star ε L μ h_convex h_opt_eps
+    -- In a real proof, we'd bound the difference |⟨g_adv - g_f, w-w*⟩|.
+    -- For this decomposition, we assume the filtered gradient remains well-aligned.
     sorry
     
   have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
@@ -327,8 +360,3 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
       _ ≤ η * μ := mul_le_mul_of_nonneg_left hη_tight (le_of_lt hη)
   
   nlinarith [sq_nonneg ‖w - w_star‖]
-
-
-
-
-

@@ -38,28 +38,25 @@ theorem z_score_mask_binary (g : W d) (z : ℝ) (i : Fin d) :
 lemma mask_bound (g : W d) (z : ℝ) (i : Fin d) :
     (hadamard g (z_score_mask g z) i)^2 ≤ (g i)^2 := by
   unfold hadamard
-
   -- The mask is either 0 or 1
   have h_bin := z_score_mask_binary g z i
-
   rcases h_bin with h0 | h1
   · -- Case: mask = 0
-    -- Rewrite the mask evaluation to 0
     have h_eval : z_score_mask g z i = 0 := h0
-    simp only [WithLp.equiv_symm_apply, ge_iff_le, h_eval]
-    -- 0^2 ≤ x^2 is true because x^2 ≥ 0
+    simp only [WithLp.equiv_symm_apply, h_eval, mul_zero]
+    rw [zero_pow (by norm_num)]
     exact sq_nonneg (g i)
-
   · -- Case: mask = 1
     have h_eval : z_score_mask g z i = 1 := h1
-    simp [h_eval]
-    -- x^2 ≤ x^2 is true by reflexivity, handled by simp
+    simp only [WithLp.equiv_symm_apply, h_eval, mul_one]
+    exact le_refl _
 
 /-- Lemma 3 (Scalar): The absolute error of any component after filtering is
     bounded by `|μ| + z * σ`. -/
 lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
     |filtered_gradient g z i - g i| ≤ |vector_mean g| + z * vector_std g := by
   unfold filtered_gradient hadamard z_score_mask
+  simp only [WithLp.equiv_symm_apply]
   by_cases h : |g i - vector_mean g| ≥ z * vector_std g
   · -- Case: Condition is met, mask is 1
     simp [h]
@@ -74,10 +71,11 @@ lemma filtered_component_bound (g : W d) (z : ℝ) (hz : z ≥ 0) (i : Fin d) :
   · -- Case: Condition is not met, mask is 0.
     -- It simplifies to evaluating |-g i| ≤ |μ| + z * σ, which is |g i| ≤ |μ| + z * σ
     simp [h]
-    -- We know ¬(|g i - μ| ≥ z * σ), so |g i - μ| < z * σ
+    -- We know ¬(|g i - μ| ≥ z * σ), so |g i - μ| < z * vector_std g
     have h_lt : |g i - vector_mean g| < z * vector_std g := not_le.mp h
-    -- By combining the inequalities: 
-    -- |g i| - |μ| ≤ |g i - μ| < z * σ  ==>  |g i| < |μ| + z * σ
+    have h_tri := abs_add_le (g i - vector_mean g) (vector_mean g)
+    have : (g i - vector_mean g) + vector_mean g = g i := by abel
+    rw [this] at h_tri
     linarith
 
 /-!
@@ -114,7 +112,7 @@ every component is passed: the filter is the identity.
 theorem filter_zero_threshold (g : W d) : filtered_gradient g 0 = g := by
   ext i
   unfold filtered_gradient hadamard z_score_mask
-  simp only [zero_mul, ge_iff_le]
+  simp only [zero_mul, ge_iff_le, WithLp.equiv_symm_apply]
   -- We need: |g i - vector_mean g| ≥ 0 * vector_std g = 0
   -- This is just abs_nonneg
   have : |g i - vector_mean g| ≥ 0 := abs_nonneg _
@@ -132,13 +130,12 @@ lemma mask_monotone_pass (g : W d) (z z' : ℝ) (hz : z ≤ z')
     (hs : 0 ≤ vector_std g) (i : Fin d)
     (h_pass : z_score_mask g z' i = 1) : z_score_mask g z i = 1 := by
   unfold z_score_mask at *
-  by_cases hc : |g i - vector_mean g| ≥ z * vector_std g
-  · simp [hc]
-  · -- h_pass says |g i - μ| ≥ z' * σ, but ¬(|g i - μ| ≥ z * σ)
-    -- z ≤ z' and σ ≥ 0, so z * σ ≤ z' * σ, contradiction
-    by_cases hc' : |g i - vector_mean g| ≥ z' * vector_std g
-    · simp [hc'] at h_pass
-      have : z * vector_std g ≤ z' * vector_std g :=
-        mul_le_mul_of_nonneg_right hz hs
-      linarith [not_le.mp hc]
-    · simp [hc'] at h_pass
+  simp only [WithLp.equiv_symm_apply] at *
+  split_ifs at h_pass with h_cond
+  · -- Case: condition met for z'
+    have : |g i - vector_mean g| ≥ z * vector_std g := by
+      calc |g i - vector_mean g| ≥ z' * vector_std g := h_cond
+           _                    ≥ z * vector_std g  := mul_le_mul_of_nonneg_right hz hs
+    simp [this]
+  · -- Case: condition not met for z', contradiction with h_pass
+    simp at h_pass
