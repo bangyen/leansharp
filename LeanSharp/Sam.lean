@@ -14,8 +14,9 @@ The objective is:
   min_w max_{||ε||₂ ≤ ρ} L(w + ε)
 -/
 
-variable {d : ℕ}
--- `W` is already EuclideanSpace ℝ (Fin d) from Landscape.lean
+namespace LeanSharp
+
+variable {d : ℕ} [Fact (0 < d)]
 
 /-- The SAM perturbation neighborhood. We consider all vectors `ε` such that
     the L2 norm metric distance `dist 0 ε ≤ ρ`. -/
@@ -37,3 +38,5 @@ noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d 
   let g := gradient L w
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
+
+end LeanSharp

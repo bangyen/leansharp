@@ -7,6 +7,8 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Algebra.Order.Ring.Defs
 
+set_option linter.unusedSectionVars false
+
 /-!
 # Phase 4: ZSharp Convergence Bound
 
@@ -18,7 +20,9 @@ Here, we mathematically formalize the conditions required to prove that
 ZSharp converges on a well-behaved (convex, smooth) landscape.
 -/
 
-variable {d : ℕ}
+namespace LeanSharp
+
+variable {d : ℕ} [Fact (0 < d)]
 
 -- The loss function we are optimizing.
 variable (L : W d → ℝ)
@@ -40,12 +44,6 @@ def is_strongly_convex (μ : ℝ) : Prop :=
   μ > 0 ∧ ∀ w v : W d,
     L v ≥ L w + @inner ℝ (W d) _ (gradient L w) (v - w) + (μ / 2) * ‖v - w‖^2
 
-/-!
-## ZSharp Optimization Step
-
-We define a single step of the non-stochastic ZSharp optimizer.
--/
-
 /-- The parameter update for a single step of ZSharp.
     w_{t+1} = w_t - η * filtered_gradient(∇L(w_t + ε), z) -/
 noncomputable def zsharp_step (w : W d) (η ρ z : ℝ) : W d :=
@@ -53,12 +51,6 @@ noncomputable def zsharp_step (w : W d) (η ρ z : ℝ) : W d :=
   let g_adv := gradient L (w + ε)
   let g_filtered := filtered_gradient g_adv z
   w - η • g_filtered
-
-/-!
-## Convergence Lemmas
-
-To prove the final theorem, we decompose the proof into three main lemmas.
--/
 
 /-- Lipschitz Gradient Bound: under L-smoothness and optimality of w_star,
     the gradient magnitude at any w is bounded by L_smooth * ‖w - w_star‖. -/
@@ -71,8 +63,8 @@ lemma gradient_bound (L_smooth : ℝ) (h_smooth : is_L_smooth L L_smooth)
   exact hb
 
 /-- Lemma 1: Gradient Descent Contraction.
-    Under μ-strong convexity and L-smoothness, with step size η ≤ μ/L²,
-    a GD step contracts the squared distance to w* by factor (1 - η*μ) < 1. -/
+    Under μ-strong convexity and L-smoothness, a GD step contracts the squared
+    distance to w* by factor (1 - η*μ) < 1. -/
 lemma gd_contraction (η L_smooth μ : ℝ)
     (h_smooth : is_L_smooth L L_smooth)
     (h_convex : is_strongly_convex L μ)
@@ -80,13 +72,11 @@ lemma gd_contraction (η L_smooth μ : ℝ)
     (hμL : μ < L_smooth)
     (hη : 0 < η)
     (hη_bound : η ≤ 1 / L_smooth)
-    -- Tight condition ensuring (1 - 2ηµ + η²L²) ≤ (1 - ηµ): need ηL² ≤ µ
     (hη_tight : η * L_smooth ^ 2 ≤ μ) :
     ∃ c ∈ Set.Ioo 0 1, ∀ w : W d,
         ‖(w - η • gradient L w) - w_star‖^2 ≤ c * ‖w - w_star‖^2 := by
   obtain ⟨hL, h_lip⟩ := h_smooth
   obtain ⟨hμ, h_sc⟩ := h_convex
-  -- c = 1 - η * μ ∈ (0, 1)
   use 1 - η * μ
   have hημ_pos : 0 < η * μ := mul_pos hη hμ
   have hημ_lt_1 : η * μ < 1 := by
@@ -96,48 +86,33 @@ lemma gd_contraction (η L_smooth μ : ℝ)
     calc η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
          _     ≤ 1            := hL_inv
   constructor
-  · -- c ∈ Ioo 0 1: i.e. 0 < 1 - ηµ < 1
-    constructor <;> linarith
+  · constructor <;> linarith
   · intro w
-    -- ‖w_{t+1} - w*‖² = ‖w-w*‖² - 2η⟨g,w-w*⟩ + η²‖g‖²
     have h_expand : ‖(w - η • gradient L w) - w_star‖^2 =
         ‖w - w_star‖^2 - 2 * η * @inner ℝ _ _ (gradient L w) (w - w_star) +
         η^2 * ‖gradient L w‖^2 := by
-      -- (w - η•g) - w* = (w - w*) - η•g
       have hrw : (w - η • gradient L w) - w_star = (w - w_star) - η • gradient L w := by abel
-      rw [hrw]
-      -- Apply norm_sub_sq_real: ‖a - b‖² = ‖a‖² - 2⟨a,b⟩ + ‖b‖²
-      rw [norm_sub_sq_real]
-      -- Simplify ⟨w - w*, η•g⟩ = η * ⟨g, w - w*⟩ and ‖η•g‖² = η² * ‖g‖²
-      rw [inner_smul_right, real_inner_comm, norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+      rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm,
+          norm_smul, Real.norm_eq_abs, abs_of_pos hη]
       ring
-    -- Strong convexity: ⟨g, w-w*⟩ ≥ µ‖w-w*‖²
     have h_sc_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L w) (w - w_star) := by
-      -- Apply h_sc at (w*, w): L(w) ≥ L(w*) + ⟨∇L(w*), w - w*⟩ + µ/2 * ‖w - w*‖²
-      -- Since ∇L(w*) = 0: L(w) ≥ L(w*) + µ/2 * ‖w - w*‖²
       have h_sc2 := h_sc w_star w
       simp only [h_opt, inner_zero_left] at h_sc2
-      -- Apply h_sc at (w, w*): L(w*) ≥ L(w) + ⟨∇L(w), w* - w⟩ + µ/2 * ‖w* - w‖²
       have h_sc1 := h_sc w w_star
-      -- ⟨∇L(w), w* - w⟩ = -⟨∇L(w), w - w*⟩
       have h_inner_flip : @inner ℝ _ _ (gradient L w) (w_star - w) =
           -@inner ℝ _ _ (gradient L w) (w - w_star) := by
         rw [show w_star - w = -(w - w_star) from (neg_sub w w_star).symm, inner_neg_right]
-      -- ‖w* - w‖ = ‖w - w*‖
       have h_norm_eq : ‖w_star - w‖ = ‖w - w_star‖ := by rw [norm_sub_rev]
       rw [h_inner_flip, h_norm_eq] at h_sc1
-      -- Combine: µ/2 * ‖·‖² ≤ L(w) - L(w*) ≤ ⟨g,w-w*⟩ - µ/2 * ‖·‖²
-      -- → µ * ‖·‖² ≤ ⟨g,w-w*⟩
       linarith
-    -- L-smoothness: ‖g‖ ≤ L‖w-w*‖
     have h_smooth_bound : ‖gradient L w‖^2 ≤ L_smooth^2 * ‖w - w_star‖^2 := by
       have hb := h_lip w w_star
       rw [h_opt, sub_zero] at hb
       nlinarith [sq_nonneg (‖gradient L w‖ - L_smooth * ‖w - w_star‖),
                  norm_nonneg (gradient L w), norm_nonneg (w - w_star)]
-    -- Combine: ≤ (1 - 2ηµ + η²L²)‖·‖² ≤ (1 - ηµ)‖·‖² since η²L² ≤ ηµ (from hη_tight)
     rw [h_expand]
-    have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
+    have h_sq_eta : η^2 ≥ 0 := sq_nonneg η
+    have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [h_sq_eta, hη_tight]
     nlinarith [h_sc_bound, h_smooth_bound, sq_nonneg ‖w - w_star‖,
                mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
 
@@ -146,41 +121,27 @@ lemma gd_contraction (η L_smooth μ : ℝ)
 lemma sam_perturbation_bound (w : W d) (ρ : ℝ) (hρ : ρ > 0) :
     ‖sam_perturbation L w ρ‖ ≤ ρ := by
   unfold sam_perturbation
-  -- split on whether gradient is zero
   by_cases h : ‖gradient L w‖ = 0
-  · -- gradient is zero, perturbation is 0
-    simp only [h, if_true, norm_zero]
-    linarith
-  · -- gradient is nonzero, perturbation is (ρ / ‖g‖) • g
-    simp only [h, if_false]
-    -- ‖(ρ / ‖g‖) • g‖ = |ρ / ‖g‖| * ‖g‖
-    rw [norm_smul]
-    -- |ρ / ‖g‖| = ρ / ‖g‖ since both are positive
+  · simp only [h, if_true, norm_zero]; linarith
+  · simp only [h, if_false, norm_smul]
     have hg_pos : 0 < ‖gradient L w‖ := by
       exact lt_of_le_of_ne (norm_nonneg _) (Ne.symm h)
     rw [Real.norm_of_nonneg (div_nonneg (le_of_lt hρ) (le_of_lt hg_pos))]
-    -- ρ / ‖g‖ * ‖g‖ = ρ, so the bound is exactly ρ
-    field_simp
-    exact le_refl _
+    field_simp; exact le_refl _
 
 /-- Lemma 3: Z-Score Quantization Error.
-    The filter introduces a bounded quantization error. Since masked components `g i` satisfy
-    `|g i - μ| < z * σ`, their magnitude is bounded by `|μ| + z * σ`.
-    Thus the total squared $L_2$ error is bounded by `d * (|μ| + z * σ)^2`. -/
+    The total squared $L_2$ error introduced by the filter is bounded by
+    $d \cdot (|μ| + z \cdot σ)^2$. -/
 lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
     ‖filtered_gradient g z - g‖^2 ≤ d * (|vector_mean g| + z * vector_std g)^2 := by
-  -- ‖x‖^2 for EuclideanSpace is defined as the sum of squared components
   have h_norm_sq :
       ‖filtered_gradient g z - g‖^2 = ∑ i : Fin d, (filtered_gradient g z i - g i)^2 := by
-    rw [EuclideanSpace.norm_sq_eq]
-    simp [Real.norm_eq_abs, sq_abs]
+    rw [EuclideanSpace.norm_sq_eq]; simp [Real.norm_eq_abs, sq_abs]
   rw [h_norm_sq]
-  -- The bound for a single component's squared error
   have h_comp_sq : ∀ i : Fin d,
       (filtered_gradient g z i - g i)^2 ≤ (|vector_mean g| + z * vector_std g)^2 := by
     intro i
     have h_abs := filtered_component_bound g z hz i
-    let a := filtered_gradient g z i - g i
     let b := |vector_mean g| + z * vector_std g
     have h_b_nonneg : 0 ≤ b := by
       have h1 : 0 ≤ |vector_mean g| := abs_nonneg _
@@ -188,53 +149,23 @@ lemma z_score_error_bound (g : W d) (z : ℝ) (hz : z ≥ 0) :
         apply mul_nonneg hz
         unfold vector_std; exact Real.sqrt_nonneg _
       linarith
-    -- We have |a| ≤ b
-    have h_abs_le : |a| ≤ b := h_abs
-    -- Since b is non-negative, |b| = b
-    have h_b_abs : |b| = b := abs_of_nonneg h_b_nonneg
-    -- |a| ≤ |b|
-    have h_abs_le_abs : |a| ≤ |b| := by linarith
-    -- Then a^2 ≤ b^2 via Mathlib
-    have h_sq := sq_le_sq.mpr h_abs_le_abs
-    -- b^2 = (|μ| + z*σ)^2
-    have h_b_sq : b^2 = (|vector_mean g| + z * vector_std g)^2 := by rfl
-    linarith
-  -- Sum the component bounds and simplify: ∑ C^2 = d * C^2
+    have h_abs_le_abs : |filtered_gradient g z i - g i| ≤ |b| := by
+      rw [abs_of_nonneg h_b_nonneg]; exact h_abs
+    exact sq_le_sq.mpr h_abs_le_abs
   calc (∑ i : Fin d, (filtered_gradient g z i - g i)^2)
       ≤ ∑ i : Fin d, (|vector_mean g| + z * vector_std g)^2 :=
           Finset.sum_le_sum fun i _ => h_comp_sq i
     _ = d * (|vector_mean g| + z * vector_std g)^2 := by
            simp [Finset.sum_const, nsmul_eq_mul]
 
-/-!
-## Convergence Theorem Statement
-
-If we were to write a full machine learning theory paper, the ultimate goal
-would be to prove the following theorem bounding the distance to the minimum
-at step `t+1` based on the parameters at step `t`.
-
-Since ZSharp introduces a non-linear thresholding operator (the Z-score filter),
-this proof requires bounding the quantization error introduced by `filtered_gradient`.
--/
-
-/-- The formal statement of ZSharp convergence under standard assumptions.
-    It posits that there exists a contraction factor `c ∈ (0, 1)` such that
-    the distance to the optimal parameters decreases geometrically. -/
+/-- The formal statement of ZSharp convergence holds.
+    It posits that there exists a contraction factor `c ∈ (0, 1)`. -/
 def zsharp_convergence_holds (η ρ z L_smooth μ : ℝ) : Prop :=
   is_L_smooth L L_smooth →
   is_strongly_convex L μ →
-  -- Assumptions on learning rate and SAM radius
   η > 0 ∧ ρ > 0 →
-  -- The bound statement:
   ∃ c : ℝ, 0 < c ∧ c < 1 ∧
     ∀ w : W d, ‖zsharp_step L w η ρ z - w_star‖^2 ≤ c * ‖w - w_star‖^2
-
-/-!
-## Main Convergence Theorem
-
-We now formally state and prove that ZSharp converges geometrically,
-combining all three lemmas.
--/
 
 /-- Lower bound for adversarial gradient inner product. -/
 lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
@@ -242,12 +173,10 @@ lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
     (h_opt_eps : gradient L (w_star + ε) = 0) :
     μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
   obtain ⟨hμ, h_sc⟩ := h_convex
-  -- L(w+ε) ≥ L(w*+ε) + ⟨∇L(w*+ε), w-w*⟩ + µ/2 ‖w-w*‖²
   have h_sc2 := h_sc (w_star + ε) (w + ε)
   simp only [h_opt_eps, inner_zero_left] at h_sc2
   have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
   rw [heq] at h_sc2
-  -- L(w*+ε) ≥ L(w+ε) + ⟨∇L(w+ε), w*+ε - (w+ε)⟩ + µ/2 ‖w*+ε - (w+ε)‖²
   have h_sc1 := h_sc (w + ε) (w_star + ε)
   have h_inner_flip : @inner ℝ _ _ (gradient L (w + ε)) (w_star + ε - (w + ε)) =
       -@inner ℝ _ _ (gradient L (w + ε)) (w - w_star) := by
@@ -258,34 +187,25 @@ lemma inner_g_adv_bound (w w_star : W d) (ε : W d) (L : W d → ℝ) (μ : ℝ)
   linarith
 
 /-- The Alignment Condition:
-    A statistical assumption that the filtered gradient `g_f` maintains sufficient
-    alignment with the true descent direction `w - w_star`.
-    Specifically, it must satisfy the same lower bound as the unfiltered gradient. -/
+    A statistical assumption that the filtered gradient maintains sufficient
+    alignment with the true descent direction. -/
 def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ : ℝ) : Prop :=
   let g_adv := gradient L (w + ε)
   let g_f := filtered_gradient g_adv z
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star)
 
-/-- Bound for the inner product error introduced by filtering.
-    This is used if one wants to prove the alignment condition from first principles. -/
+/-- Bound for the inner product error introduced by filtering. -/
 lemma inner_filter_error (g_adv g_f w w_star : W d) :
     @inner ℝ _ _ g_f (w - w_star) = @inner ℝ _ _ g_adv (w - w_star) -
       @inner ℝ _ _ (g_adv - g_f) (w - w_star) := by
   rw [inner_sub_left, sub_sub_cancel]
 
-/-- ZSharp converges geometrically to `w_star` under standard assumptions.
-    The proof composes:
-    1. Gradient descent contraction (Lemma 1) — applied at perturbed point w + ε
-    2. SAM perturbation bound (Lemma 2) — ‖ε‖ ≤ ρ
-    3. Z-score filter norm contraction — ‖g_f‖ ≤ ‖g_adv‖
-    4. Flat-minimum condition — ∇L(w_star + ε) = 0 for all ‖ε‖ ≤ ρ -/
+/-- Main Theorem: ZSharp converges geometrically to `w_star` under standard assumptions. -/
 theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
     (hη_tight : η * L_smooth ^ 2 ≤ μ)
     (hη_bound : η ≤ 1 / L_smooth)
     (hμL : μ < L_smooth)
-    -- Flat-minimum condition: w_star is optimal throughout the ρ-ball
     (h_flat : ∀ ε : W d, ‖ε‖ ≤ ρ → gradient L (w_star + ε) = 0)
-    -- Alignment assumption for the filter
     (h_align : ∀ w : W d, let ε := sam_perturbation L w ρ
                           alignment_condition L w w_star ε z μ) :
     zsharp_convergence_holds L w_star η ρ z L_smooth μ := by
@@ -297,22 +217,19 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
   have hμ_pos : μ > 0 := hμ
   have h_c_pos : 0 < c := by
     rw [hc_def]
-    have hη_L_le_1 : η * L_smooth ≤ 1 := by
-      have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
-      field_simp at h1; exact h1
     have hημ_lt_1 : η * μ < 1 := by
       have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+      have hη_L_le_1 : η * L_smooth ≤ 1 := by
+        have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
+        field_simp at h1; exact h1
       linarith
     linarith
-  have h_c_lt_1 : c < 1 := by
-    rw [hc_def]
-    have : 0 < η * μ := mul_pos hη hμ
-    linarith
+  have h_c_lt_1 : c < 1 := by rw [hc_def]; linarith [mul_pos hη hμ]
   refine ⟨c, h_c_pos, h_c_lt_1, fun w => ?_⟩
   simp only [zsharp_step]
-  set ε := sam_perturbation L w ρ with hε_def
-  set g_adv := gradient L (w + ε) with hg_adv_def
-  set g_f := filtered_gradient g_adv z with hg_f_def
+  let ε := sam_perturbation L w ρ
+  let g_adv := gradient L (w + ε)
+  let g_f := filtered_gradient g_adv z
   have h_eps_bound : ‖ε‖ ≤ ρ := sam_perturbation_bound L w ρ hρ
   have h_opt_eps : gradient L (w_star + ε) = 0 := h_flat ε h_eps_bound
   have h_gbound : ‖g_adv‖ ≤ L_smooth * ‖w - w_star‖ := by
@@ -320,32 +237,18 @@ theorem zsharp_convergence (η ρ z L_smooth μ : ℝ)
     have heq : (w + ε) - (w_star + ε) = w - w_star := by abel
     rw [heq] at hb; exact hb
   have h_fbound : ‖g_f‖ ≤ ‖g_adv‖ := filter_norm_contraction g_adv z
-  have h_inner_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) := by
-    -- We use the alignment_condition assumption directly here.
-    -- In the noise-free/ideal filter case, g_f ≈ g_adv.
-    -- Here we utilize the property that filtering (masking) preserves the lower bound
-    -- under the assumption that the mask doesn't remove the dominant descent direction.
-    exact h_align w
+  have h_inner_bound : μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) := h_align w
   have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
     have hgf_le : ‖g_f‖ ≤ L_smooth * ‖w - w_star‖ := le_trans h_fbound h_gbound
     apply sq_le_sq.mpr
-    rw [abs_of_nonneg (norm_nonneg _),
-        abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
+    rw [abs_of_nonneg (norm_nonneg _), abs_of_nonneg (mul_nonneg (le_of_lt hL) (norm_nonneg _))]
     exact hgf_le
   have hrw : (w - η • g_f) - w_star = (w - w_star) - η • g_f := by abel
-  -- The norm expansion: ‖(w-w*) - η•g_f‖² = ‖w-w*‖² - 2η⟨g_f, w-w*⟩ + η²‖g_f‖²
-  have h_expand : ‖(w - w_star) - η • g_f‖^2 =
-      ‖w - w_star‖^2 - 2 * η * (@inner ℝ _ _ g_f (w - w_star)) + η^2 * ‖g_f‖^2 := by
-    rw [norm_sub_sq_real, inner_smul_right, real_inner_comm]
-    simp only [norm_smul, Real.norm_eq_abs, abs_of_pos hη]
-    ring
-  -- Putting it all together
-  rw [hrw, h_expand]
-  have h_term1 : -2 * η * (@inner ℝ _ _ g_f (w - w_star)) ≤ -2 * η * (μ * ‖w - w_star‖^2) := by
-    nlinarith [h_inner_bound, hη]
-  have h_term2 : η^2 * ‖g_f‖^2 ≤ (η * L_smooth)^2 * ‖w - w_star‖^2 := by
-    rw [mul_pow]; nlinarith [h_gf_sq, hη]
-  have hηL_bound : (η * L_smooth)^2 ≤ η * μ := by
-    calc (η * L_smooth)^2 = η * (η * L_smooth^2) := by ring
-      _ ≤ η * μ := mul_le_mul_of_nonneg_left hη_tight (le_of_lt hη)
-  nlinarith [sq_nonneg ‖w - w_star‖]
+  rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
+  simp only [norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+  have h_sq_eta : η^2 ≥ 0 := sq_nonneg η
+  have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [h_sq_eta, hη_tight]
+  nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
+             mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
+
+end LeanSharp
