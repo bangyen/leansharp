@@ -31,8 +31,9 @@ The Z-Score SAM formalization is divided into four logical layers, from foundati
 - ✅ **Stochastic Gradient Model**: Formalization of empirical gradients with bounded variance.
 - ✅ **Stochastic ZSharp Convergence**: Proof that the Z-score filtered gradient descent converges in expectation even under stochastic noise.
 
-### 4. Generalization & Sharpness (`Generalization.lean`)
+### 4. Generalization & Sharpness (`Generalization.lean`, `HessianContraction.lean`)
 - ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian.
+- 🚧 **Hessian Contraction Bound**: Formal connection bounding the Z-score filtered gradient's curvature descent by the native Maximum Eigenvalue of the Hessian.
 - ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
 - ✅ **Uniform Stability**: Stability bounds for the Z-score filtered update rule.
 
