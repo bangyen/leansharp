@@ -68,6 +68,3 @@ axiom hessian_symmetric (L : W d → ℝ) (w : W d) :
   (hessian L w).toLinearMap.IsSymmetric
 
 end LeanSharp
-
--- A perturbation vector ε in the parameter space.
-variable {d : ℕ} [Fact (0 < d)] (ε : LeanSharp.W d)

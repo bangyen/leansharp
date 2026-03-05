@@ -53,12 +53,6 @@ noncomputable def hadamard (a b : W d) : W d :=
 noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
   hadamard g (z_score_mask g z)
 
-/-- The full parameter update given learning rate `η`.
-    Applies the Z-score filter to the adversarial gradient. -/
-noncomputable def zsharp_sam_update (L : W d → ℝ) (w : W d) (η : ℝ) (ρ : ℝ) (z : ℝ) : W d :=
-  let ε := sam_perturbation L w ρ
-  let g_adv := gradient L (w + ε)
-  let g_filtered := filtered_gradient g_adv z
-  w - η • g_filtered
+
 
 end LeanSharp

@@ -29,9 +29,7 @@ def perturbation_neighborhood (ρ : ℝ) : Set (W d) :=
 noncomputable def sam_objective (L : W d → ℝ) (w : W d) (ρ : ℝ) : ℝ :=
   sSup (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))
 
-/-- Property that `w_star` is a critical point (optimum) of `L`. -/
-def is_optimum (L : W d → ℝ) (w_star : W d) : Prop :=
-  gradient L w_star = 0
+
 
 /-- The exact first-order approximation perturbation `ε*(w)`. -/
 noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d :=
