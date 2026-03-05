@@ -45,10 +45,9 @@ theorem zsharp_curvature_bound (L : W d → ℝ) (w : W d) (g : W d) (z : ℝ)
   -- From h_spectral, we have v^T H v ≤ λ_max * ‖v‖^2
   have h1 : hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖^2 := h_spectral v
 
-  -- From Filters.lean (well, conceptually), ‖v‖^2 ≤ ‖g‖^2 because of the Hadamard mask.
-  -- (We will admit the core $L_2$ mask contraction lemma to isolate this geometric proof)
+  -- From Filters.lean, ‖v‖^2 ≤ ‖g‖^2 because of the Hadamard mask.
   have h_mask_contraction : ‖v‖^2 ≤ ‖g‖^2 := by
-    sorry
+    exact filtered_gradient_norm_sq_le g z
 
   -- Since λ_max ≥ 0, we can multiply the inequality ‖v‖^2 ≤ ‖g‖^2 by λ_max
   have h2 : sharpness L w hT * ‖v‖^2 ≤ sharpness L w hT * ‖g‖^2 := by

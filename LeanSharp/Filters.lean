@@ -47,6 +47,29 @@ noncomputable def hadamard (a b : W d) : W d :=
 noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
   hadamard g (z_score_mask g z)
 
+/-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
+    by the original. -/
+theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
+    ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
+  have hd : 0 < d := Fact.out
+  have H1 : ‖filtered_gradient g z‖^2 = ∑ i : Fin d, ‖(filtered_gradient g z) i‖^2 := by
+    exact EuclideanSpace.norm_sq_eq (filtered_gradient g z)
+  have H2 : ‖g‖^2 = ∑ i : Fin d, ‖g i‖^2 := by
+    exact EuclideanSpace.norm_sq_eq g
+  rw [H1, H2]
+  apply Finset.sum_le_sum
+  intro i _
+  unfold filtered_gradient hadamard z_score_mask
+  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, Real.norm_eq_abs]
+  have h_base : ‖(WithLp.equiv 2 (Fin d → ℝ) g) i *
+                  if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| ≥ z * vector_std g then (1 : ℝ) else 0‖^2
+                ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
+    split_ifs
+    · simp
+    · simp
+      positivity
+  exact h_base
+
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
     one component of the gradient. -/
 theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
