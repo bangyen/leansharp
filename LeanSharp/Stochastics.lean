@@ -1,4 +1,5 @@
 import LeanSharp.Landscape
+import LeanSharp.Sam
 import Mathlib.Data.Finset.Sum
 
 /-!
@@ -20,8 +21,8 @@ variable (DataPoint : Type*)
 -- Given parameter weights `w` and a single `DataPoint`, it returns a Real loss.
 variable (sample_loss : W d → DataPoint → ℝ)
 
--- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s. 
--- Here, we use a function from `Fin n → DataPoint` to represent a 
+-- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s.
+-- Here, we use a function from `Fin n → DataPoint` to represent a
 -- fixed-size dataset of `n` items.
 variable {n : ℕ} (S : Fin n → DataPoint)
 
@@ -31,7 +32,7 @@ noncomputable def n_real (n : ℕ) : ℝ := (n : ℝ)
 /-- The empirical risk (loss) over the entire dataset `S` given parameters `w`.
     $L_S(w) = \frac{1}{n} \sum_{i=1}^n \ell(w; S[i])$ -/
 noncomputable def empirical_risk (w : W d) : ℝ :=
-  if n = 0 then 0 else 
+  if n = 0 then 0 else
   (∑ i : Fin n, sample_loss w (S i)) / n_real n
 
 /-!
@@ -46,5 +47,29 @@ variable {b : ℕ} (B : Fin b → Fin n)
 
 /-- The minibatch loss function over subset `B`. -/
 noncomputable def minibatch_risk (w : W d) : ℝ :=
-  if b = 0 then 0 else 
+  if b = 0 then 0 else
   (∑ i : Fin b, sample_loss w (S (B i))) / n_real b
+
+/-- The full gradient (full batch) over the entire dataset. -/
+noncomputable def full_gradient (w : W d) : W d :=
+  gradient (empirical_risk DataPoint sample_loss S) w
+
+/-- The minibatch gradient (stochastic gradient). -/
+noncomputable def minibatch_gradient (w : W d) (B : Fin b → Fin n) : W d :=
+  gradient (minibatch_risk DataPoint sample_loss S B) w
+
+/-- The stochastic error (noise) at a given point `w` for minibatch `B`. -/
+noncomputable def stochastic_error (w : W d) (B : Fin b → Fin n) : W d :=
+  minibatch_gradient DataPoint sample_loss S w B - full_gradient DataPoint sample_loss S w
+
+/-- A property for a collection of minibatches being unbiased.
+    In the discrete formalization, we say the average over all possible minibatches
+    of size `b` equals the full gradient. -/
+def is_unbiased (DataPoint : Type*) (sample_loss : W d → DataPoint → ℝ) (S : Fin n → DataPoint)
+    (w : W d) (batches : Set (Fin b → Fin n)) : Prop :=
+  sorry
+
+/-- The bounded variance assumption: the expected squared norm of the
+    stochastic error is bounded by some constant σ². -/
+def has_bounded_variance (w : W d) (batches : Set (Fin b → Fin n)) (σ : ℝ) : Prop :=
+  ∀ B ∈ batches, ‖stochastic_error DataPoint sample_loss S w B‖^2 ≤ σ^2
