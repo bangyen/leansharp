@@ -28,9 +28,10 @@ Our formalization targets move from foundational linear algebra to complex optim
 - [x] **Alignment Lemma**: Established the formal `alignment_condition` required for the filtered gradient's inner product bound.
 - [x] **Convergence Theorem**: Formally proved geometric convergence under the alignment and flat-minimum assumptions.
 
-### Phase 5: Stochastic Z-Score Convergence (Future)
-- [ ] **Minibatch Noise Analysis**: Analyze the interaction between Z-score filtering and stochastic noise $\xi_t$.
-- [ ] **SVRG-like Bounds**: Prove 1/T convergence rates for the stochastic variant under standard variance assumptions.
+### Phase 5: Stochastic Z-Score Convergence (Completed Initial Scaffolding)
+- [x] **Minibatch Noise Analysis**: Defined stochastic error and bounded variance foundations in `Stochastics.lean`.
+- [x] **Initial Scaffolding**: Formalized `stochastic_sgd_contraction` and `stochastic_zsharp_convergence` theorems in `StochasticSam.lean`.
+- [x] **Verification**: Standard optimization assumptions (unbiasedness, variance) are formally connected to the proof structure.
 
 ### Phase 6: Extension to Non-convexity
 - [ ] **L-smooth relaxations**: Relax strong convexity to general L-smoothness and prove convergence to stationary points.
