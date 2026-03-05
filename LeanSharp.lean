@@ -8,6 +8,7 @@ import LeanSharp.StochasticSam
 import LeanSharp.StochasticConvergence
 import LeanSharp.ToyApplication
 import LeanSharp.HessianContraction
+import LeanSharp.StochasticGeneralization
 
 /-!
 # LeanSharp
