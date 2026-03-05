@@ -3,6 +3,7 @@ import LeanSharp.Sam
 import LeanSharp.Filters
 import LeanSharp.Theorems
 import LeanSharp.SamBound
+import LeanSharp.Stochastics
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
@@ -14,6 +15,9 @@ landscape and the statistical generalization performance of the model.
 
 Sharpness is typically defined as the maximum eigenvalue of the Hessian:
 λ_max(∇²L(w)).
+
+A complementary perspective is Uniform Stability, which measures how much a
+learning algorithm's output changes when a single data point is replaced.
 -/
 
 variable {d : ℕ} [Fact (0 < d)]
@@ -49,3 +53,22 @@ theorem sam_sharpness_link (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ
   unfold pac_bayes_sharpness_bound
   -- This proof requires linking the quadratic form of the Hessian to the lambda_max bound.
   sorry
+
+/-!
+## Uniform Stability
+
+Uniform stability β measures the sensitivity of the algorithm to the data.
+For Z-score SAM, we conjecture that the filtering operation reduces β by
+discarding high-variance (and thus high-sensitivity) gradient components.
+-/
+
+/-- The stability of a learning algorithm A on dataset S. -/
+def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W d) (β : ℝ) : Prop :=
+  ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
+  ‖A S - A S'‖ ≤ β / (n : ℝ)
+
+/-- Conjecture: The Z-score filtered gradient update (zsharp_update)
+    exhibits lower uniform stability β compared to standard SAM updates. -/
+def zsharp_stability_conjecture {DataPoint : Type*} {n : ℕ} (β_sam β_zsharp : ℝ) : Prop :=
+  ∀ (A_sam : Dataset DataPoint n → W d) (A_zsharp : Dataset DataPoint n → W d),
+  uniform_stability A_sam β_sam → uniform_stability A_zsharp β_zsharp

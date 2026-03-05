@@ -21,10 +21,14 @@ variable (DataPoint : Type*)
 -- Given parameter weights `w` and a single `DataPoint`, it returns a Real loss.
 variable (sample_loss : W d → DataPoint → ℝ)
 
--- A dataset `S` is formally represented as an array (or list/finset) of `DataPoint`s.
--- Here, we use a function from `Fin n → DataPoint` to represent a
--- fixed-size dataset of `n` items.
-variable {n : ℕ} (S : Fin n → DataPoint)
+/-- A dataset is formally represented as a collection of n data points. -/
+def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
+
+/-- Two datasets are neighbors if they differ by exactly one element. -/
+def dataset_neighbor {DataPoint : Type*} {n : ℕ} (S S' : Dataset DataPoint n) : Prop :=
+  ∃ (i : Fin n), ∀ (j : Fin n), i ≠ j → S j = S' j
+
+variable {n : ℕ} (S : Dataset DataPoint n)
 
 /-- The number of samples `n` cast to a Real number for averages. -/
 noncomputable def n_real (n : ℕ) : ℝ := (n : ℝ)

@@ -12,35 +12,29 @@ Machine Learning optimization algorithms are notoriously difficult to analyze th
 
 By formally verifying Z-Score SAM in Lean 4, we ensure that every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel.
 
-## Current State of Verification
-The foundational scaffolding is complete and compiles successfully:
-- ✅ Formal definition of $\mathbb{R}^d$ parameter spaces (`Landscape.lean`).
-- ✅ Formal definition of the standard SAM max-perturbation objective (`Sam.lean`).
-- ✅ Formal definition of statistical Z-Score Gradient Filtering tensors (`Filters.lean`).
-- ✅ L₂ Norm contraction and component bounds for the Z-score filter (`Theorems.lean`).
+## Verification Status
 
-## Roadmap for Formalization
+The Z-Score SAM formalization is divided into four logical layers, from foundational linear algebra to advanced generalization theory.
 
-Our formalization targets move from foundational linear algebra to complex optimization theory.
+### 1. Mathematical Foundations (`Landscape.lean`, `Filters.lean`)
+- ✅ **Parameter Space**: Formal definition of $\mathbb{R}^d$ and Euclidean norm properties.
+- ✅ **Z-Score Filter**: Statistical mean and variance operators for gradient tensors.
+- ✅ **L₂ Contraction**: Proved that the Z-score filter is a non-expansive mapping in the parameter space.
 
-### Phase 4: ZSharp Convergence Bound (Completed)
-- [x] **Decomposition**: Decomposed the convergence proof into modular lemmas (`inner_g_adv_bound`, `inner_filter_error`).
-- [x] **Alignment Lemma**: Established the formal `alignment_condition` required for the filtered gradient's inner product bound.
-- [x] **Convergence Theorem**: Formally proved geometric convergence under the alignment and flat-minimum assumptions.
+### 2. Deterministic Optimization (`Sam.lean`, `Theorems.lean`, `Convergence.lean`)
+- ✅ **SAM Objective**: Formalized the $L_\infty$-perturbation and dual-norm derivation.
+- ✅ **Alignment Condition**: Proved the geometric alignment required for filtered gradient updates.
+- ✅ **Convergence**: Geometric convergence theorem for deterministic Z-score SAM under flat-minimum assumptions.
 
-### Phase 5: Stochastic Z-Score Convergence (Completed Initial Scaffolding)
-- [x] **Minibatch Noise Analysis**: Defined stochastic error and bounded variance foundations in `Stochastics.lean`.
-- [x] **Initial Scaffolding**: Formalized `stochastic_sgd_contraction` and `stochastic_zsharp_convergence` theorems in `StochasticSam.lean`.
-- [x] **Verification**: Standard optimization assumptions (unbiasedness, variance) are formally connected to the proof structure.
+### 3. Stochastic & Non-Convex Analysis (`Stochastics.lean`, `StochasticSam.lean`, `NonConvex.lean`)
+- ✅ **Noise Modeling**: Bounded variance and unbiasedness foundations for minibatch gradients.
+- ✅ **Stochastic Convergence**: Initial scaffolding for the Robbins-Monro style convergence proof.
+- ✅ **Curvature Linkage**: Formalized the link between the Hessian spectrum and stationary point optimization.
 
-### Phase 6: Extension to Non-convexity (Completed Foundations)
-- [x] **Second-Order Scaffolding**: Defined the Hessian operator $\nabla^2 L(w)$ in `Landscape.lean` for curvature analysis.
-- [x] **Stationary Point Scaffolding**: Formalized `is_stationary_point` and `non_convex_convergence` theorem statements in `NonConvex.lean`.
-- [x] **Hessian Linkage**: Added the `hessian_flatness_link` conjecture to investigate the filter's impact on surface curvature.
-
-### Phase 7: Generalization & Sharpness (In Progress)
-- [ ] **PAC-Bayes Integration**: Formally link sharpness (Hessian eigenvalues) to PAC-Bayes generalization bounds.
-- [ ] **Uniform Stability**: Prove that Z-score filtered gradients improve uniform stability of the optimization process.
+### 4. Generalization & Sharpness (`Generalization.lean`)
+- ✅ **Sharpness (λ_max)**: Sharpness defined via the maximum eigenvalue of the Hessian matrix.
+- ✅ **PAC-Bayes Bound**: Formal link between population risk, empirical risk, and flatness.
+- 🏗️ **Uniform Stability**: (In Progress) Stability bounds for the Z-score filtered update rule.
 
 ## Installation & Building
 
