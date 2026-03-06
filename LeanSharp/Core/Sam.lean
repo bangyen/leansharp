@@ -48,4 +48,17 @@ noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d 
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
 
+omit [Fact (0 < d)] in
+/-- **SAM Objective Supremum Property**: The SAM objective at point `w` is always
+greater than or equal to the base loss `L w`, provided the neighborhood is
+bounded above. -/
+theorem sam_objective_ge_self (L : W d → ℝ) (w : W d) {ρ : ℝ} (hρ : 0 ≤ ρ)
+    (h_bdd : BddAbove (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))) :
+    L w ≤ sam_objective L w ρ := by
+  unfold sam_objective perturbation_neighborhood
+  have h_mem : L w ∈ L '' ((fun ε => w + ε) '' Metric.closedBall 0 ρ) := by
+    refine ⟨w, ⟨0, ?_, by simp⟩, rfl⟩
+    simp [Metric.mem_closedBall, hρ]
+  exact le_csSup h_bdd h_mem
+
 end LeanSharp

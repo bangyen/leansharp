@@ -56,12 +56,8 @@ theorem sam_bound_from_gap (L_D L_S : W d → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
         (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
     sam_generalization_bound_holds L_D L_S h ρ := by
   intro w hρ
-  have h_sam_ge : L_S w ≤ sam_empirical_max L_S w ρ := by
-    unfold sam_empirical_max sam_objective perturbation_neighborhood
-    have h_mem : L_S w ∈ L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 ρ) := by
-      refine ⟨w, ⟨0, ?_, by simp⟩, rfl⟩
-      simp [Metric.mem_closedBall, le_of_lt hρ]
-    exact le_csSup (h_bdd w ρ) h_mem
+  have h_sam_ge : L_S w ≤ sam_empirical_max L_S w ρ :=
+    sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w ρ)
   have h_gap_spec := h_gap w ρ hρ
   linarith [h_gap_spec, h_sam_ge]
 
