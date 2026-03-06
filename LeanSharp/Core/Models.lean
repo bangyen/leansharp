@@ -18,47 +18,117 @@ backpropagation algorithm, integrated with Z-score gradient filtering.
 ## Main definitions
 
 * `Layer`: An abstract structure for a neural network layer.
-* `NeuralNetwork`: A composition of multiple `Layer`s.
-* `backprop`: Recursive computation of gradients through the network layers.
-* `zsharp_layer_update`: Applies Z-score filtering to a specific layer's parameters.
+* `Chain`: A recursive structure for composing multiple `Layer`s.
+* `ChainGrads`: A type-indexed structure for storing gradients of a specific `Chain`.
+* `backprop_chain`: Recursive computation of filtered gradients through a chain.
+* `raw_backprop_chain`: Standard backpropagation without Z-score filtering (for theory).
+* `zsharp_layer_stability`: Proof that Z-score filtering preserves update norm bounds.
 -/
 
 namespace LeanSharp
 
 /-- A Neural Network Layer is characterized by its input/output spaces,
-its parameter space, and its forward/backward maps. -/
-structure Layer (Input Output : Type*) where
+    its parameter space, and its forward/backward maps. -/
+structure Layer (Input : Type) (Output : Type) where
   ParamDim : ℕ
   forward : W ParamDim → Input → Output
-  /-- Simplified derivative: returns (gradient w.r.t params, gradient w.r.t input) -/
-  deriv : W ParamDim → Input → W ParamDim × Input
+  /-- Backward pass: takes params, input, and gradient w.r.t output.
+      Returns (gradient w.r.t params, gradient w.r.t input). -/
+  backward : W ParamDim → Input → Output → W ParamDim × Input
 
-/-- A Multi-Layer Neural Network is composed of layers.
-For formal simplicity, we define a 2-layer MLP as a starting point. -/
-structure MLP2 (Input Hidden Output : Type*) where
-  L1 : Layer Input Hidden
-  L2 : Layer Hidden Output
+/-- A Chain of layers composing Input -> ... -> Output. -/
+inductive Chain : Type → Type → Type 1 where
+  | single {In Out : Type} : Layer In Out → Chain In Out
+  | append {In Mid Out : Type} : Chain In Mid → Layer Mid Out → Chain In Out
 
-/-- Recursive backpropagation for a 2-layer MLP.
-Returns the filtered gradient for both layers. -/
-noncomputable def backprop_mlp2 {Input Hidden Output : Type*} (net : MLP2 Input Hidden Output)
-    (w1 : W net.L1.ParamDim) (w2 : W net.L2.ParamDim) (x : Input) (z : ℝ) :
-    W net.L1.ParamDim × W net.L2.ParamDim :=
-  -- Forward pass L1
-  let h := net.L1.forward w1 x
-  -- Derivative L2 (w.r.t hidden output and w2)
-  let (g_w2, _g_h) := net.L2.deriv w2 h
-  -- Derivative L1 (w.r.t input and w1, using g_h chain rule)
-  -- Note: In a full formalization, net.L1.deriv would be multiplied by g_h.
-  let (g_w1, _) := net.L1.deriv w1 x
-  -- Apply Z-score filtering to each layer's parameter gradient
-  (filtered_gradient g_w1 z, filtered_gradient g_w2 z)
+/-- Parameters for a specific chain. -/
+inductive ChainParams : {In Out : Type} → Chain In Out → Type 1 where
+  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainParams (.single L)
+  | append {In Mid Out : Type} {prev : Chain In Mid} {L : Layer Mid Out} :
+      ChainParams prev → W L.ParamDim → ChainParams (.append prev L)
+
+/-- Gradients for a specific chain. -/
+inductive ChainGrads : {In Out : Type} → Chain In Out → Type 1 where
+  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainGrads (.single L)
+  | append {In Mid Out : Type} {prev : Chain In Mid} {L : Layer Mid Out} :
+      ChainGrads prev → W L.ParamDim → ChainGrads (.append prev L)
+
+/-- The squared Frobenius/Euclidean norm of all parameters in a chain. -/
+noncomputable def chain_params_norm_sq {In Out : Type} {c : Chain In Out} :
+    ChainParams c → ℝ :=
+  match c with
+  | .single _ => fun p =>
+      match p with
+      | .single _ w => ‖w‖^2
+  | .append _ _ => fun p =>
+      match p with
+      | .append p_prev w => chain_params_norm_sq p_prev + ‖w‖^2
+
+/-- The squared Frobenius/Euclidean norm of all gradients in a chain. -/
+noncomputable def chain_grads_norm_sq {In Out : Type} {c : Chain In Out} :
+    ChainGrads c → ℝ :=
+  match c with
+  | .single _ => fun g =>
+      match g with
+      | .single _ w => ‖w‖^2
+  | .append _ _ => fun g =>
+      match g with
+      | .append g_prev w => chain_grads_norm_sq g_prev + ‖w‖^2
+
+/-- Forward pass through a chain of layers. -/
+def forward_chain {In Out : Type} {c : Chain In Out} :
+    ChainParams c → In → Out :=
+  match c with
+  | .single L => fun p x =>
+      match p with
+      | .single _ w => L.forward w x
+  | .append _ L => fun p (x : In) =>
+      match p with
+      | .append p_prev w => L.forward w (forward_chain p_prev x)
+
+/-- Recursive backpropagation through a chain.
+    Applies Z-score filtering at each layer. -/
+noncomputable def backprop_chain {In Out : Type} {c : Chain In Out}
+    (z : ℝ) (p : ChainParams c) (x : In) (g_out : Out) :
+    ChainGrads c × In :=
+  match c with
+  | .single L =>
+      match p with
+      | .single _ w =>
+          let (g_w, g_in) := L.backward w x g_out
+          (.single L (filtered_gradient g_w z), g_in)
+  | .append _ L =>
+      match p with
+      | .append p_prev w =>
+          let mid_in := forward_chain p_prev x
+          let (g_w_L, g_mid) := L.backward w mid_in g_out
+          let (g_prevs, g_in) := backprop_chain z p_prev x g_mid
+          (.append g_prevs (filtered_gradient g_w_L z), g_in)
+
+/-- Recursive backpropagation through a chain without filtering.
+    Used for stability proofs. -/
+noncomputable def raw_backprop_chain {In Out : Type} {c : Chain In Out}
+    (p : ChainParams c) (x : In) (g_out : Out) :
+    ChainGrads c × In :=
+  match c with
+  | .single L =>
+      match p with
+      | .single _ w =>
+          let (g_w, g_in) := L.backward w x g_out
+          (.single L g_w, g_in)
+  | .append _ L =>
+      match p with
+      | .append p_prev w =>
+          let mid_in := forward_chain p_prev x
+          let (g_w_L, g_mid) := L.backward w mid_in g_out
+          let (g_prevs, g_in) := raw_backprop_chain p_prev x g_mid
+          (.append g_prevs g_w_L, g_in)
 
 /-- **Layer-wise Stability**: Z-score filtering at each layer preserves the
 norm of the layer's parameter update. -/
-theorem zsharp_layer_stability {In Out : Type*} (L : Layer In Out) [Fact (0 < L.ParamDim)]
-    (w : W L.ParamDim) (x : In) (z : ℝ) :
-    ‖(L.deriv w x).1‖ ≥ ‖filtered_gradient (L.deriv w x).1 z‖ := by
+theorem zsharp_layer_stability {In Out : Type} (L : Layer In Out) [Fact (0 < L.ParamDim)]
+    (w : W L.ParamDim) (x : In) (g_out : Out) (z : ℝ) :
+    ‖(L.backward w x g_out).1‖ ≥ ‖filtered_gradient (L.backward w x g_out).1 z‖ := by
   apply filtered_norm_bound
 
 end LeanSharp

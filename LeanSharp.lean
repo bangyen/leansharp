@@ -3,20 +3,26 @@ Copyright (c) 2024 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Core.Landscape
-import LeanSharp.Core.Sam
 import LeanSharp.Core.Filters
-import LeanSharp.Theory.SamBound
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Models
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Taylor
+
+import LeanSharp.Examples.ToyApplication
+
+import LeanSharp.Stochastic.StochasticConvergence
+import LeanSharp.Stochastic.StochasticGeneralization
+import LeanSharp.Stochastic.StochasticSam
+
 import LeanSharp.Theory.Convergence
 import LeanSharp.Theory.Generalization
-import LeanSharp.Stochastic.StochasticSam
-import LeanSharp.Stochastic.StochasticConvergence
-import LeanSharp.Examples.ToyApplication
 import LeanSharp.Theory.HessianContraction
-import LeanSharp.Stochastic.StochasticGeneralization
-import LeanSharp.Utils.Tactics
+import LeanSharp.Theory.ModelTheorems
 import LeanSharp.Theory.Rates
-import LeanSharp.Core.Models
+import LeanSharp.Theory.SamBound
+
+import LeanSharp.Utils.Tactics
 
 /-!
 # LeanSharp

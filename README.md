@@ -21,15 +21,16 @@ All theorems in LeanSharp are formally verified with **zero axioms** and **zero 
 - ✅ **Theory & Convergence** (`Theory/`): Geometric convergence for ZSharp, generalization bounds (PAC-Bayes), and Z-score uniform stability.
 - ✅ **Curvature & Sharpness** (`Theory/`): Spectral bounds relating maximum Hessian eigenvalues to Z-score gradient contraction.
 - ✅ **Stochastic Stability** (`Stochastic/`): Probabilistic convergence and variance contraction bounds.
+- ✅ **Deep Model Foundations** (`Core/Models` & `Theory/ModelTheorems`): Inductive layer-wise recursive architecture and formalized global stability for multi-layer networks.
 - ✅ **Mathematical Purity**: Verified by CI to have no axioms and no linter warnings.
 - ✅ **Toy Application** (`Examples/`): Computable verification on 2D quadratic landscapes.
+- ✅ **Taylor Descent Lemma** (`Core/Taylor`): Second-order Taylor bounds for L-smooth loss functions and SAM objective.
 
 ## Roadmap & Future Work
 
 While the core theory is now verified, the following research directions are planned:
 - **ZSharp Universality**: Formally prove that the empirical distribution of Z-scores converges to the standard Gaussian as $d \to \infty$.
 - **Explicit Convergence Rates**: Formalize specific $O(1/T)$ or $O(1/\sqrt{T})$ rates for specific classes of functions (e.g., PŁ functions).
-- **Deep Models**: Extend formalization to structured multi-layer neural network architectures and backpropagation.
 - **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian (e.g., Cauchy) noise.
 - **Third-Order Analysis**: Define third-derivative tensors to analyze Z-score filtering against higher-order geometry.
 - **Sobolev Space Foundations**: Transition to Sobolev spaces for advanced regularity and functional analysis.
