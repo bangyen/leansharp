@@ -25,6 +25,8 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 ## Roadmap & Future Work
 
 While the core theory is now verified, the following research directions are planned:
+- **Z-Score Filter Algebra**: Formally prove that the `filtered_gradient` preserves or amplifies outlier components (vectors with high Z-scores).
+- **L-Smooth Convergence Bound**: Prove the standard contraction $L(w_{t+1}) \le L(w_t) - \frac{\eta}{2} \|\nabla L(w_t)\|^2$ for L-smooth functions.
 - **ZSharp Universality**: Formally prove that the empirical distribution of Z-scores converges to the standard Gaussian as $d \to \infty$.
 - **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian (e.g., Cauchy) noise.
 - **Third-Order Analysis**: Define third-derivative tensors to analyze Z-score filtering against higher-order geometry.
