@@ -18,10 +18,9 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Hessian symmetry, L-smoothness, Z-score Hadamard filtering, and Taylor descent lemma.
-- ✅ **Stability & Rates** (`Theory/`): Geometric convergence, explicit $O(1/T)$ and $O(1/\sqrt{T})$ rates, and global variance contraction for stochastic ZSharp.
+- ✅ **Stability & Rates** (`Theory/`): Geometric convergence, explicit $O(1/T)$ and $O(1/\sqrt{T})$ rates, and global variance contraction (validated on toy quadratic landscapes).
 - ✅ **Deep Model Foundations** (`LeanSharp/Models`): Recursive layer architecture with confirmed global gradient stability for multi-layer chains.
 - ✅ **Generalization Theory** (`Theory/`): PAC-Bayesian bounds and Z-score uniform stability theorems.
-- ✅ **Pure & Verified**: Confirmed by CI to be axiom-free and linter-compliant, with computable validation on toy quadratic landscapes.
 
 ## Roadmap & Future Work
 
