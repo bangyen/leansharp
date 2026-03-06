@@ -15,22 +15,18 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 
 ## Verification Status
 
-All theorems in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
+All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
-- ✅ **Core Foundations** (`Core/`): Hessian symmetry, L-smoothness, and Z-score hadamard filtering.
-- ✅ **Theory & Convergence** (`Theory/`): Geometric convergence for ZSharp, generalization bounds (PAC-Bayes), and Z-score uniform stability.
-- ✅ **Curvature & Sharpness** (`Theory/`): Spectral bounds relating maximum Hessian eigenvalues to Z-score gradient contraction.
-- ✅ **Stochastic Stability** (`Stochastic/`): Probabilistic convergence and variance contraction bounds.
-- ✅ **Deep Model Foundations** (`Core/Models` & `Theory/ModelTheorems`): Inductive layer-wise recursive architecture and formalized global stability for multi-layer networks.
-- ✅ **Mathematical Purity**: Verified by CI to have no axioms and no linter warnings.
-- ✅ **Toy Application** (`Examples/`): Computable verification on 2D quadratic landscapes.
-- ✅ **Taylor Descent Lemma** (`Core/Taylor`): Second-order Taylor bounds for L-smooth loss functions and SAM objective.
+- ✅ **Optimizers & Curvature** (`Core/`): Hessian symmetry, L-smoothness, Z-score Hadamard filtering, and Taylor descent lemma.
+- ✅ **Stability & Rates** (`Theory/`): Geometric convergence, explicit $O(1/T)$ and $O(1/\sqrt{T})$ rates, and global variance contraction for stochastic ZSharp.
+- ✅ **Deep Model Foundations** (`LeanSharp/Models`): Recursive layer architecture with confirmed global gradient stability for multi-layer chains.
+- ✅ **Generalization Theory** (`Theory/`): PAC-Bayesian bounds and Z-score uniform stability theorems.
+- ✅ **Pure & Verified**: Confirmed by CI to be axiom-free and linter-compliant, with computable validation on toy quadratic landscapes.
 
 ## Roadmap & Future Work
 
 While the core theory is now verified, the following research directions are planned:
 - **ZSharp Universality**: Formally prove that the empirical distribution of Z-scores converges to the standard Gaussian as $d \to \infty$.
-- **Explicit Convergence Rates**: Formalize specific $O(1/T)$ or $O(1/\sqrt{T})$ rates for specific classes of functions (e.g., PŁ functions).
 - **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian (e.g., Cauchy) noise.
 - **Third-Order Analysis**: Define third-derivative tensors to analyze Z-score filtering against higher-order geometry.
 - **Sobolev Space Foundations**: Transition to Sobolev spaces for advanced regularity and functional analysis.
