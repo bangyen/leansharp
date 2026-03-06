@@ -18,6 +18,7 @@ import LeanSharp.Stochastic.StochasticSam
 import LeanSharp.Tactic.ZSolve
 
 import LeanSharp.Theory.Convergence
+import LeanSharp.Theory.FilterAlgebra
 import LeanSharp.Theory.Generalization
 import LeanSharp.Theory.HessianContraction
 import LeanSharp.Theory.ModelTheorems

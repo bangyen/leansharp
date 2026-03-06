@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Filters
 import LeanSharp.Tactic.ZSolve
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Algebra.Order.Field.Basic
 
 /-!
 # Z-Score Filter Algebra
@@ -83,5 +84,19 @@ theorem sparse_signal_recovery [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
   split_ifs with h_cond
   · rfl
   · contradiction
+
+/-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
+This ensures the algorithm's behavior is scale-agnostic. -/
+theorem z_score_mask_scale_invariance [Fact (0 < d)] (g : W d) (z : ℝ) {k : ℝ} (hk : 0 < k) :
+    z_score_mask (k • g) z = z_score_mask g z := by
+  apply (WithLp.equiv 2 (Fin d → ℝ)).injective
+  ext i
+  unfold z_score_mask
+  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, vector_mean_smul, vector_std_smul hk.le]
+  congr! 1
+  -- Scale cancellation
+  have h_pt : (k • g).ofLp i = k * g.ofLp i := rfl
+  rw [h_pt, ← mul_sub, abs_mul, abs_of_pos hk, mul_left_comm]
+  simp [hk]
 
 end LeanSharp
