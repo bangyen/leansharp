@@ -97,6 +97,16 @@ noncomputable def hadamard (a b : W d) : W d :=
 noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
   hadamard g (z_score_mask g z)
 
+/-- **Binary Mask Norm Bound**: Multiplying a scalar by 0 or 1 does not increase its
+norm squared. -/
+lemma norm_sq_mul_binary_le (x : ℝ) (P : Prop) [Decidable P] :
+    ‖x * (if P then (1 : ℝ) else 0)‖^2 ≤ ‖x‖^2 := by
+  split_ifs
+  · simp only [mul_one, le_refl]
+  · simp only [mul_zero, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
+      Real.norm_eq_abs, sq_abs]
+    positivity
+
 /-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
 by the original. -/
 theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
@@ -110,16 +120,7 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
   intro i _
   unfold filtered_gradient hadamard z_score_mask
   simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, Real.norm_eq_abs]
-  have h_base : ‖(WithLp.equiv 2 (Fin d → ℝ) g) i *
-      if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g|
-        ≥ z * vector_std g then (1 : ℝ) else 0‖^2
-    ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
-    split_ifs with h_cond
-    · simp only [mul_one, le_refl]
-    · simp only [mul_zero, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
-        Real.norm_eq_abs, sq_abs]
-      positivity
-  exact h_base
+  exact norm_sq_mul_binary_le ((WithLp.equiv 2 (Fin d → ℝ) g) i) _
 
 /-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
 theorem filtered_norm_bound (g : W d) (z : ℝ) :
