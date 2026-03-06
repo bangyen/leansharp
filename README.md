@@ -27,6 +27,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 ### Research Moonshots (Mathlib Under Construction)
 The following directions are "Grand Challenges" currently limited by foundational gaps in Mathlib:
 - **ZSharp Universality**: Proving high-dimensional Gaussian convergence for Z-scores (requires Berry-Esseen / Stein's method foundations).
+- **Heavy-Tailed Noise**: Formalizing non-Gaussian probability oracles (e.g., Cauchy) is currently limited by the complexity of advanced measure theory in Lean.
 - **Sobolev Foundations**: Transitioning to Lebesgue spaces with AE-equivalence classes.
 - **Third-Order Descent**: Multivariate Taylor remainder theory for multilinear maps (requires ongoing MUC calculus refactor).
 
