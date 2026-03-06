@@ -7,6 +7,7 @@ import LeanSharp.Core.Sam
 import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Data.NNReal.Basic
 import Mathlib.Tactic.Linarith
 
@@ -128,6 +129,25 @@ theorem smooth_one_step_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : 
     (h_eta : 0 < η)
     (h_eta_bound : η ≤ 1 / (M : ℝ)) :
     L (w - η • gradient L w) ≤ L w - (η / 2) * ‖gradient L w‖ ^ 2 := by
-  sorry
+  set g := gradient L w
+  have h_descent := smooth_descent L w (-(η • g)) M h_diff h_smooth
+  have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
+  have h_bound : (M : ℝ) * η ≤ 1 := by
+    if hM : (M : ℝ) = 0 then
+      rw [hM] at h_eta_bound; simp [div_zero] at h_eta_bound; linarith
+    else
+      have hM_pos : 0 < (M : ℝ) := (NNReal.coe_nonneg M).lt_of_ne (Ne.symm hM)
+      calc (M : ℝ) * η
+        _ ≤ (M : ℝ) * (1 / (M : ℝ)) := mul_le_mul_of_nonneg_left h_eta_bound hM_pos.le
+        _ = 1 := mul_one_div_cancel hM_pos.ne.symm
+  have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
+    simp [inner_neg_right, inner_smul_right]
+  have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by
+    simp [norm_neg, norm_smul, mul_pow]
+  calc L (w - η • g)
+    _ = L (w + -(η • g)) := by rw [h_step]
+    _ ≤ L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
+    _ ≤ L w - (η / 2) * ‖g‖ ^ 2 := by
+      nlinarith [h_bound, h_inner_desc, h_norm_desc]
 
 end LeanSharp
