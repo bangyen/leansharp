@@ -100,6 +100,7 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
                           alignment_condition L w w_star ε z μ L_smooth) :
     zsharp_convergence_holds L w_star η ρ z L_smooth μ := by
   intro h_smooth h_convex ⟨hη, hρ⟩
+  -- Step 1: Define the contraction factor and verify its properties
   set c := 1 - η * μ with hc_def
   have hμ := h_convex.1
   have hL := h_smooth.1
@@ -117,14 +118,18 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
   simp only [zsharp_step]
   let ε := sam_perturbation L w ρ
   let g_f := filtered_gradient (gradient L (w + ε)) z
+  -- Step 2: Bound the filtered gradient norm squared using the alignment condition
   obtain ⟨h_inner_bound, h_gf_bound⟩ := h_align w
   have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
     apply sq_le_sq.mpr
-    rw [abs_of_nonneg (norm_nonneg _), abs_of_nonneg (mul_nonneg (le_of_lt hL) (norm_nonneg _))]
+    rw [abs_of_nonneg (norm_nonneg _),
+        abs_of_nonneg (mul_nonneg (le_of_lt hL) (norm_nonneg _))]
     exact h_gf_bound
+  -- Step 3: Rearrange the quadratic expansion of the update step
   have hrw : (w - η • g_f) - w_star = (w - w_star) - η • g_f := by abel
   rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
   simp only [norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+  -- Step 4: Final substitution and linarith to confirm the geometric bound
   have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
   nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
              mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
