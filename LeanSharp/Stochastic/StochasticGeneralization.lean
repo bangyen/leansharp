@@ -35,7 +35,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded

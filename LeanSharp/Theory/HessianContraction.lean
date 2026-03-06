@@ -28,7 +28,7 @@ namespace LeanSharp
 
 open Real ContinuousLinearMap
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- The quadratic form $v^T H v$ for some vector $v$ and Hessian $H$. -/
 noncomputable def hessian_quadratic_form (L : W d → ℝ) (w v : W d) : ℝ :=

@@ -26,7 +26,6 @@ namespace LeanSharp
 filtering layer-wise results in a total parameter update whose norm is bounded
 by the norm of the raw (unfiltered) backpropagation gradients. -/
 theorem zsharp_chain_stability {In Out : Type} (c : Chain In Out)
-    (h_pos : ∀ {I O} (L : Layer I O), Fact (0 < L.ParamDim))
     (z : ℝ) (p : ChainData c) (x : In) (g_out : Out) :
     chain_data_norm_sq (backprop_chain z p x g_out).1 ≤
     chain_data_norm_sq (raw_backprop_chain p x g_out).1 := by

@@ -34,7 +34,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **Stochastic Alignment Condition**: A generalization of the alignment condition
@@ -46,9 +46,6 @@ def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω 
   Integrable (fun ω => ‖g_f ω‖^2) ∧
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
   η^2 * 𝔼[fun ω => ‖g_f ω‖^2] ≥ η * μ * ‖w - w_star‖^2
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
@@ -110,7 +107,5 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
         apply sub_le_sub_left
         exact h_align.2.2
     _ = (1 - η * μ) * ‖w - w_star‖^2 := by unfold A; ring
-
-end NoDimFact
 
 end LeanSharp

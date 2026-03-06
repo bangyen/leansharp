@@ -64,7 +64,7 @@ theorem single_outlier_extraction (g : W d) (z : ℝ) (i : Fin d)
 
 /-- **Norm Reduction**: The L2 norm of the filtered gradient is always
 less than or equal to the norm of the original gradient. -/
-theorem filtered_norm_le [Fact (0 < d)] (g : W d) (z : ℝ) :
+theorem filtered_norm_le (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖ ≤ ‖g‖ := by
   have h_sq := filtered_gradient_norm_sq_le g z
   have h_sqrt := Real.sqrt_le_sqrt h_sq

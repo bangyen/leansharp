@@ -84,8 +84,8 @@ def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
   let gradL := gradient L w
   Integrable g_f ∧
   Integrable (fun ω => ‖g_f ω‖^2) ∧
-  𝔼[fun ω => inner ℝ (g_f ω) gradL] - (η * L_smooth / 2) * 𝔼[fun ω => ‖g_f ω‖^2] ≥
-    (1 / 2) * ‖gradL‖^2 - (η * L_smooth / 2) * σsq
+  𝔼[fun ω => inner ℝ (g_f ω) (gradient L w)] - (η * L_smooth / 2) * 𝔼[fun ω => ‖g_f ω‖^2] ≥
+    (1 / 2) * ‖gradient L w‖^2 - (η * L_smooth / 2) * σsq
 
 section NoDimFact
 omit [Fact (0 < d)]

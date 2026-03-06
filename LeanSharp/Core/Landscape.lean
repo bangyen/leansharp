@@ -58,13 +58,13 @@ noncomputable def hessian (L : W d → ℝ) (w : W d) : W d →L[ℝ] W d :=
 /-- A function $L: W \to \mathbb{R}$ has an $L_2$-integrable gradient if
 $\int_W \|\text{gradient } L(w)\|_2^2 dw < \infty$. -/
 def is_L2_integrable (L : W d → ℝ) : Prop :=
-  ∃ (_ : MeasureTheory.MeasureSpace (W d)),
+  ∃ _ : MeasureTheory.MeasureSpace (W d),
     MeasureTheory.Integrable (fun w => ‖gradient L w‖^2)
 
 /-- A loss function is "Sobolev Regular" if it belongs to $H^1(W)$,
 meaning its value and gradient are both $L_2$-integrable. -/
 def is_sobolev_regular (L : W d → ℝ) : Prop :=
-  ∃ (_ : MeasureTheory.MeasureSpace (W d)),
+  ∃ _ : MeasureTheory.MeasureSpace (W d),
     MeasureTheory.Integrable L ∧ is_L2_integrable L
 
 section NoDimFact

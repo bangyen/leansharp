@@ -36,7 +36,7 @@ namespace LeanSharp
 
 open BigOperators
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- The mean of a vector in `W = ℝ^d`. -/
 noncomputable def vector_mean (g : W d) : ℝ :=
@@ -50,9 +50,6 @@ noncomputable def vector_variance (g : W d) : ℝ :=
 /-- The standard deviation `σ` is the square root of the variance. -/
 noncomputable def vector_std (g : W d) : ℝ :=
   Real.sqrt (vector_variance g)
-
-section Unconstrained
-omit [Fact (0 < d)]
 
 @[simp]
 lemma vector_mean_smul (k : ℝ) (g : W d) :
@@ -84,8 +81,6 @@ lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W d) :
     positivity
   rw [Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq hk]
 
-end Unconstrained
-
 /-- The Z-score Mask operator. Returns a new vector in `W`. -/
 noncomputable def z_score_mask (g : W d) (z : ℝ) : W d :=
   let μ := vector_mean g
@@ -106,7 +101,6 @@ noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
 by the original. -/
 theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
-  have hd : 0 < d := Fact.out
   have H1 : ‖filtered_gradient g z‖^2 = ∑ i : Fin d, ‖(filtered_gradient g z) i‖^2 := by
     exact EuclideanSpace.norm_sq_eq (filtered_gradient g z)
   have H2 : ‖g‖^2 = ∑ i : Fin d, ‖g i‖^2 := by
@@ -117,10 +111,10 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
   unfold filtered_gradient hadamard z_score_mask
   simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, Real.norm_eq_abs]
   have h_base : ‖(WithLp.equiv 2 (Fin d → ℝ) g) i *
-                  if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g|
-                    ≥ z * vector_std g then (1 : ℝ) else 0‖^2
-                ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
-    split_ifs
+      if |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g|
+        ≥ z * vector_std g then (1 : ℝ) else 0‖^2
+    ≤ ‖(WithLp.equiv 2 (Fin d → ℝ) g) i‖^2 := by
+    split_ifs with h_cond
     · simp only [mul_one, le_refl]
     · simp only [mul_zero, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
         Real.norm_eq_abs, sq_abs]
@@ -141,7 +135,7 @@ theorem filtered_norm_bound_sq (g : W d) (z : ℝ) :
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
-theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
+theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
   let μ := vector_mean g
   let σ := vector_std g
