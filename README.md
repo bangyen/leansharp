@@ -24,11 +24,19 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 ## Roadmap & Future Work
 
-### Research Moonshots (Mathlib Under Construction)
-The following directions are "Grand Challenges" currently limited by foundational gaps in Mathlib:
+### Immediate Roadmap
+These items represent the next phase of formalization, balancing theoretical impact with Lean implementation feasibility:
+- **Tensor Generalization**: Transitioning from `Fin d` vectors to generic `Fintype` indices, enabling out-of-the-box support for multi-dimensional parameter tensors (matrices, 3D/4D weights).
+- **Deterministic Stability**: Proving Lipschitz properties and perturbation sensitivity of the Z-score filter (e.g., bounding the change in filtered output relative to input perturbations).
+- **Tactic Hardening**: Expanding `zsharp_solve` to automatically normalize `abs` and `ge_iff_le` expressions, reducing manual proof overhead for future analysis.
+
+### Future Directions (Mathlib Under Construction)
+The following "Grand Challenges" are currently limited by foundational gaps or high combinatorial complexity in Lean 4:
 - **ZSharp Universality**: Proving high-dimensional Gaussian convergence for Z-scores (requires Berry-Esseen / Stein's method foundations).
 - **Heavy-Tailed Noise**: Formalizing non-Gaussian probability oracles (e.g., Cauchy) is currently limited by the complexity of advanced measure theory in Lean.
 - **Sobolev Foundations**: Transitioning to Lebesgue spaces with AE-equivalence classes.
+- **Stochastic Noise Models**: Proving statistical convergence to "true" gradients under isotropic Gaussian noise (limited by the boilerplate of measure-theoretic expectations).
+- **Median-Based Robustness**: Formalizing median-based filtering as an alternative to Z-scores (limited by the combinatorial and order-theoretic complexity of sorting in Lean).
 - **Third-Order Descent**: Multivariate Taylor remainder theory for multilinear maps (requires ongoing MUC calculus refactor).
 
 ## Installation & Building
@@ -43,4 +51,16 @@ lake build
 ```
 
 ## Contributing
-This repo uses standard Mathlib naming conventions. If you're a Lean 4 wizard interested in ML optimization theory, feel free to submit PRs targeting the Roadmap!
+This repo uses standard Mathlib naming conventions. If you're a Lean 4 wizard interested in ML optimization theory, feel free to submit PRs targeting the roadmap!
+
+## Citation
+
+If you use this work in your research, please cite:
+
+```bibtex
+@misc{pham_leansharp_2026,
+  author = {Pham, Bangyen},
+  title = {LeanSharp: Formal Verification of Sharpness-Aware Minimization with Z-Score Gradient Filtering in Lean 4},
+  year = {2026},
+  url = {[https://github.com/bangyen/leansharp](https://github.com/bangyen/leansharp)}
+}
