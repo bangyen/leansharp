@@ -90,6 +90,22 @@ def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
 section NoDimFact
 omit [Fact (0 < d)]
 
+/-- **Contraction Factor Validation**: Under standard step-size and smoothness bounds,
+the contraction factor $1 - ημ$ is strictly between 0 and 1. -/
+lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
+    (hη : 0 < η) (hμ : 0 < μ) (hL : 0 < L_smooth)
+    (hη_bound : η ≤ 1 / L_smooth) (hμL : μ < L_smooth) :
+    0 < 1 - η * μ ∧ 1 - η * μ < 1 := by
+  constructor
+  · have hημ_lt_1 : η * μ < 1 := by
+      have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+      have hη_L_le_1 : η * L_smooth ≤ 1 := by
+        have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
+        field_simp at h1; exact h1
+      linarith
+    linarith
+  · linarith [mul_pos hη hμ]
+
 /-- **Main Theorem**: ZSharp converges geometrically to `w_star` under smoothness,
 strong convexity, and the alignment condition. -/
 theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ : ℝ)
@@ -102,18 +118,8 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
   intro h_smooth h_convex ⟨hη, hρ⟩
   -- Step 1: Define the contraction factor and verify its properties
   set c := 1 - η * μ with hc_def
-  have hμ := h_convex.1
-  have hL := h_smooth.1
-  have h_c_pos : 0 < c := by
-    rw [hc_def]
-    have hημ_lt_1 : η * μ < 1 := by
-      have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
-      have hη_L_le_1 : η * L_smooth ≤ 1 := by
-        have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
-        field_simp at h1; exact h1
-      linarith
-    linarith
-  have h_c_lt_1 : c < 1 := by rw [hc_def]; linarith [mul_pos hη hμ]
+  obtain ⟨h_c_pos, h_c_lt_1⟩ :=
+    zsharp_contraction_factor_valid η μ L_smooth hη h_convex.1 h_smooth.1 hη_bound hμL
   refine ⟨c, h_c_pos, h_c_lt_1, fun w => ?_⟩
   simp only [zsharp_step]
   let ε := sam_perturbation L w ρ
@@ -123,14 +129,14 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
   have h_gf_sq : ‖g_f‖^2 ≤ (L_smooth * ‖w - w_star‖)^2 := by
     apply sq_le_sq.mpr
     rw [abs_of_nonneg (norm_nonneg _),
-        abs_of_nonneg (mul_nonneg (le_of_lt hL) (norm_nonneg _))]
+        abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
     exact h_gf_bound
   -- Step 3: Rearrange the quadratic expansion of the update step using the helper lemma
   rw [norm_descent_step_sq w w_star g_f η]
   -- Step 4: Final substitution and linarith to confirm the geometric bound
   have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
   nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
-             mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt hμ) (sq_nonneg ‖w - w_star‖))]
+             mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt h_convex.1) (sq_nonneg ‖w - w_star‖))]
 
 end NoDimFact
 
