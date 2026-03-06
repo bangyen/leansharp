@@ -105,6 +105,23 @@ theorem hessian_symmetric (L : W d → ℝ) (w : W d)
   rw [key, real_inner_comm, key]
   exact h_sym
 
+/-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
+descent step $w - ηg$ relative to a target $w^*$. -/
+lemma norm_descent_step_sq (w w_star g : W d) (η : ℝ) :
+    ‖(w - η • g) - w_star‖^2 = ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
+  have hrw : (w - η • g) - w_star = (w - w_star) - η • g := by abel
+  rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
+  simp only [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+  ring
+
+/-- **Squared Norm of Difference with Scalar Multiple**:
+‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/
+lemma norm_sub_smul_sq (a b : W d) (η : ℝ) :
+    ‖a - η • b‖^2 = ‖a‖^2 - 2 * η * inner ℝ b a + η^2 * ‖b‖^2 := by
+  rw [norm_sub_sq_real, inner_smul_right, real_inner_comm]
+  simp only [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+  ring
+
 end NoDimFact
 
 end LeanSharp

@@ -60,33 +60,29 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
   have hrw : ∀ ω, stochastic_zsharp_step w η z g_adv ω - w_star = A - η • B ω := by
     intro ω; unfold stochastic_zsharp_step A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
-  -- Step 1: Expand the squared distance using the update rule
+  -- Step 1: Expand the squared distance using the helper lemma
   have h_body : (fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖^2) =
-                (fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + ‖η • B ω‖^2) := by
+                (fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2) := by
     funext ω
-    rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
-    ring_nf
+    rw [hrw, norm_sub_smul_sq A (B ω) η]
   rw [h_body]
   -- Step 2: Verify integrability of the expansion terms to apply linearity of expectation
   have h_int_B2 : Integrable (fun ω => ‖B ω‖^2) := h_align.2.1
-  have h_itg_smul_B : Integrable (fun ω => ‖η • B ω‖^2) := by
-    have : (fun ω => ‖η • B ω‖^2) = (fun ω => η^2 * ‖B ω‖^2) := by
-      funext ω; rw [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
-    rw [this]
-    exact Integrable.const_mul h_int_B2 (η^2)
+  have h_itg_eta_B2 : Integrable (fun ω => η^2 * ‖B ω‖^2) :=
+    Integrable.const_mul h_int_B2 (η^2)
   have h_int_inner : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
     Integrable.const_mul (h_align.1.inner_const A) _
   have h_int_A2 : Integrable (fun _ : Ω => ‖A‖^2) := integrable_const (‖A‖^2)
   -- Step 3: Use linearity of expectation and the stochastic alignment condition
-  calc (∫ ω, ‖A‖^2 - 2 * η * inner ℝ (B ω) A + ‖η • B ω‖^2 ∂volume)
+  calc (∫ ω, ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2 ∂volume)
       -- Distribute the integral over the sum
       _ = (∫ ω, ‖A‖^2 - 2 * η * inner ℝ (B ω) A ∂volume) +
-          (∫ ω, ‖η • B ω‖^2 ∂volume) := by
+          (∫ ω, η^2 * ‖B ω‖^2 ∂volume) := by
           apply integral_add
           · apply Integrable.sub h_int_A2 h_int_inner
-          · exact h_itg_smul_B
+          · exact h_itg_eta_B2
       _ = (∫ ω, ‖A‖^2 ∂volume) - (∫ ω, 2 * η * inner ℝ (B ω) A ∂volume) +
-          (∫ ω, ‖η • B ω‖^2 ∂volume) := by
+          (∫ ω, η^2 * ‖B ω‖^2 ∂volume) := by
           rw [integral_sub h_int_A2 h_int_inner]
       -- Pull out constants from the integrals
       _ = ‖A‖^2 - 2 * η * (∫ ω, inner ℝ (B ω) A ∂volume) +
@@ -95,10 +91,8 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
           have h1 : (∫ ω, 2 * η * inner ℝ (B ω) A ∂volume) =
                     2 * η * (∫ ω, inner ℝ (B ω) A ∂volume) :=
             integral_const_mul (2 * η) (fun ω => inner ℝ (B ω) A)
-          have h2 : (∫ ω, ‖η • B ω‖^2 ∂volume) = η^2 * (∫ ω, ‖B ω‖^2 ∂volume) := by
-            rw [integral_congr_ae (ae_of_all volume (fun ω =>
-              by rw [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]))]
-            rw [integral_const_mul]
+          have h2 : (∫ ω, η^2 * ‖B ω‖^2 ∂volume) = η^2 * (∫ ω, ‖B ω‖^2 ∂volume) :=
+            integral_const_mul (η^2) (fun ω => ‖B ω‖^2)
           rw [h1, h2]
       -- Move the inner product through the integral
       _ = ‖A‖^2 - 2 * η * inner ℝ (∫ ω, B ω ∂volume) A +

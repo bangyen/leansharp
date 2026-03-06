@@ -125,10 +125,8 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
     rw [abs_of_nonneg (norm_nonneg _),
         abs_of_nonneg (mul_nonneg (le_of_lt hL) (norm_nonneg _))]
     exact h_gf_bound
-  -- Step 3: Rearrange the quadratic expansion of the update step
-  have hrw : (w - η • g_f) - w_star = (w - w_star) - η • g_f := by abel
-  rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
-  simp only [norm_smul, Real.norm_eq_abs, abs_of_pos hη]
+  -- Step 3: Rearrange the quadratic expansion of the update step using the helper lemma
+  rw [norm_descent_step_sq w w_star g_f η]
   -- Step 4: Final substitution and linarith to confirm the geometric bound
   have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
   nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
