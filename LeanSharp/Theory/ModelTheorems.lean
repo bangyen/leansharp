@@ -40,14 +40,19 @@ theorem zsharp_chain_stability {In Out : Type} (c : Chain In Out)
   | append prev L ih =>
     cases p with
     | append p_prev w =>
-        -- Stability for the current layer
-        have h_L : ‖filtered_gradient (L.backward w (forward_chain p_prev x) g_out).1 z‖^2 ≤
-                   ‖(L.backward w (forward_chain p_prev x) g_out).1‖^2 := by
+        -- Step 1: Stability for the current layer
+        -- The Z-score filter norm reduction ensures ‖filtered(g)‖² ≤ ‖g‖²
+        have h_curr_layer : ‖filtered_gradient
+          (L.backward w (forward_chain p_prev x) g_out).1 z‖^2 ≤
+                           ‖(L.backward w (forward_chain p_prev x) g_out).1‖^2 := by
           apply filtered_norm_bound_sq
-        -- Inductive stability for the rest of the chain
-        have h_prev := ih p_prev x (L.backward w (forward_chain p_prev x) g_out).2
+        -- Step 2: Inductive stability for the previous layers of the chain
+        -- Induction hypothesis 'ih' requires generalization over 'x'
+        let prev_g_out := (L.backward w (forward_chain p_prev x) g_out).2
+        have h_prev_layers := ih p_prev x prev_g_out
+        -- Step 3: Combine layer stability with chain stability via total norm sum
         unfold backprop_chain raw_backprop_chain chain_data_norm_sq
         simp only
-        exact add_le_add h_prev h_L
+        exact add_le_add h_prev_layers h_curr_layer
 
 end LeanSharp

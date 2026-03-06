@@ -102,44 +102,40 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
       have hμ : μ > 0 := h_convex.1
       have h_pos_t : 0 < t := Nat.pos_of_ne_zero ht
       have h_step_val : η t = 1 / (μ * (t + 1)) := h_step t
-      have h_contraction : 1 - (η t) * μ = (t : ℝ) / (t + 1) := by
+      -- Step 1: Calculate the contraction factor
+      have h_contraction_factor : 1 - (η t) * μ = (t : ℝ) / (t + 1) := by
         rw [h_step_val]; field_simp [hμ]; ring
-      -- 𝔼[‖W_{t+1}-w*‖² | W_t] ≤ (1 - ηtμ) ‖W_t - w*‖²
-      -- This step formally requires the law of total expectation over trajectories.
-      -- Given independent noise, 𝔼[ f(W_{t+1}) ] = 𝔼[ 𝔼[ f(W_{t+1}) | W_t ] ].
-      -- We use the point-wise alignment assumption h_align to bound the conditional expectation.
+      -- Step 2: Relate iterate expectation using Tower Property
+      have h_tower_property : 𝔼[fun ω => ‖weight_sequence w0 η z g_adv (t+1) ω - w_star‖^2] =
+                             𝔼[fun ω => volume[fun ω' =>
+                               ‖weight_sequence w0 η z g_adv (t+1) ω' - w_star‖^2 | ℱ t]
+                                 ω] :=
+        (integral_condExp (h_le t)).symm
+      -- Step 3: Apply the conditional descent bound
+      have h_expectation_descent : 𝔼[fun ω =>
+                                   volume[fun ω' =>
+                                     ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2
+                                       | ℱ t] ω]
+                                 ≤ 𝔼[fun ω =>
+                                   (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖^2]
+                                     := by
+        have h_int_cond : Integrable
+          (fun ω =>
+            volume[fun ω' => ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2 | ℱ t] ω)
+              := integrable_condExp
+        have h_int_scaled_norm : Integrable
+          (fun ω => (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖^2) :=
+            Integrable.const_mul (h_int t) (1 - η t * μ)
+        apply integral_mono_ae h_int_cond h_int_scaled_norm (h_cond_bound t)
+      -- Step 4: Finalize the one-step iteration bound
       have h_iter : 𝔼[fun ω => ‖weight_sequence w0 η z g_adv (t + 1) ω - w_star‖^2] ≤
                    ((t : ℝ) / (t + 1)) *
                      𝔼[fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖^2] := by
-        -- 1. 𝔼[W_{t+1}] = 𝔼[ 𝔼[W_{t+1} | ℱ_t] ]
-        have h_tower : 𝔼[fun ω => ‖weight_sequence w0 η z g_adv (t + 1) ω - w_star‖^2] =
-                       𝔼[fun ω =>
-                         volume[fun ω' =>
-                           ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2 | ℱ t] ω] :=
-          (integral_condExp (h_le t)).symm
-        rw [h_tower]
-        -- 2. Substitute (1 - η * μ) with t / (t + 1)
-        rw [← h_contraction]
-        -- 3. Apply the conditional bound inside the expectation
-        have h_int_bound : 𝔼[fun ω =>
-                             volume[fun ω' =>
-                               ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2 | ℱ t] ω]
-                           ≤ 𝔼[fun ω =>
-                             (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖^2] := by
-          have h_int_1 : Integrable
-            (fun ω =>
-              volume[fun ω' => ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖^2 | ℱ t] ω)
-                := integrable_condExp
-          have h_int_2 : Integrable
-            (fun ω =>
-              (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖^2)
-                := Integrable.const_mul (h_int t) (1 - η t * μ)
-          apply integral_mono_ae h_int_1 h_int_2 (h_cond_bound t)
-        apply le_trans h_int_bound
-        -- 4. Pull the constant scalar out of the integral
-        rw [integral_const_mul]
+        rw [h_tower_property]
+        apply le_trans h_expectation_descent
+        rw [integral_const_mul, h_contraction_factor]
+      -- Step 5: Combine with induction hypothesis (ih)
       have h_ih := ih h_pos_t
-      -- Final logic: 𝔼[W_{t+1}] ≤ (t/(t+1)) * (C/t) = C/(t+1)
       calc (𝔼[fun ω => ‖weight_sequence w0 η z g_adv (t + 1) ω - w_star‖^2])
         _ ≤ ((t : ℝ) / (t + 1)) * 𝔼[fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖^2]
           := h_iter
@@ -225,26 +221,27 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
   have h_pos : (T : ℝ) > 0 := Nat.cast_pos.mpr hT
   have h_eta0 : η 0 = 1 / Real.sqrt (T : ℝ) := h_step 0
   have h_eta_nz : η 0 ≠ 0 := by rw [h_eta0]; positivity
-  calc (1 / (T : ℝ)) * (∑ t ∈ Finset.range T, 𝔼[fun ω
+  -- Define the average gradient term to improve calc block readability
+  let avg_grad_norm_sq := (1 / (T : ℝ)) * (∑ t ∈ Finset.range T, 𝔼[fun ω
       => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2])
-    _ = (2 / ((T : ℝ) * η 0)) * ((η 0 / 2) * ∑ t ∈ Finset.range T, 𝔼[fun ω
-          => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2]) := by
-        field_simp [h_eta_nz, h_pos]
-    _ ≤ (2 / ((T : ℝ) * η 0))
-          * (L w0 - sInf (Set.range L) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq) := by
-        apply mul_le_mul_of_nonneg_left
-        · linarith [h_telescope, h_inf]
-        · have : η 0 > 0 := by rw [h_eta0]; positivity
-          positivity
-    _ = (2 / Real.sqrt (T : ℝ))
-          * (L w0 - sInf (Set.range L)) + (L_smooth * σsq) / Real.sqrt (T : ℝ) := by
-        rw [h_eta0]
-        field_simp [h_pos, h_eta_nz]
-        rw [Real.sq_sqrt (le_of_lt h_pos)]
-        ring
-    _ = C / Real.sqrt (T : ℝ) := by
-        simp [C]
-        field_simp [h_pos]
+  -- Step 5: Final logic - Combine the telescoping bound with the average gradient norm
+  let S := ∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖^2]
+  have h_avg_eq : avg_grad_norm_sq = (2 / ((T : ℝ) * η 0)) * ((η 0 / 2) * S) := by
+    unfold avg_grad_norm_sq; field_simp [h_eta_nz, h_pos]; ring
+  have h_final_bound_raw : avg_grad_norm_sq ≤ (2 / ((T : ℝ) * η 0)) *
+      (L w0 - sInf (Set.range L) + (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq) := by
+    rw [h_avg_eq]
+    apply mul_le_mul_of_nonneg_left _ (by rw [h_eta0]; positivity)
+    linarith [h_telescope, h_inf]
+  -- Step 6: Substitute η_0 = 1/√T and simplify to the final O(1/√T) rate
+  calc avg_grad_norm_sq
+    _ ≤ (2 / ((T : ℝ) * η 0)) * (L w0 - sInf (Set.range L) +
+          (T : ℝ) * ((η 0)^2 * L_smooth / 2) * σsq) := h_final_bound_raw
+    _ = (2 / Real.sqrt (T : ℝ)) * (L w0 - sInf (Set.range L)) +
+          (L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+        rw [h_eta0]; field_simp [h_pos, h_eta_nz]
+        rw [Real.sq_sqrt (le_of_lt h_pos)]; ring
+    _ = C / Real.sqrt (T : ℝ) := by simp [C]; field_simp [h_pos]
 
 end NoDimFact
 
