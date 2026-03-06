@@ -70,6 +70,13 @@ def is_sobolev_regular (L : W d → ℝ) : Prop :=
 section NoDimFact
 omit [Fact (0 < d)]
 
+/-- **Riesz Inner Product Identity**: The inner product with the Riesz representation
+of a linear form `φ` is simply the evaluation of `φ`. -/
+lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
+    inner ℝ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
+  rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
+  simp [LinearIsometryEquiv.apply_symm_apply]
+
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
 Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib.
 
@@ -97,12 +104,7 @@ theorem hessian_symmetric (L : W d → ℝ) (w : W d)
   simp only [ContinuousLinearMap.coe_comp, LinearMap.coe_toContinuousLinearMap,
              LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
              LinearIsometryEquiv.coe_toLinearEquiv]
-  have key : ∀ (φ : W d →L[ℝ] ℝ) (z : W d),
-      @inner ℝ _ _ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
-    intro φ z
-    rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
-    simp [LinearIsometryEquiv.apply_symm_apply]
-  rw [key, real_inner_comm, key]
+  rw [inner_riesz_symm_apply, real_inner_comm, inner_riesz_symm_apply]
   exact h_sym
 
 /-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
