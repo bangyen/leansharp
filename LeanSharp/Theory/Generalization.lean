@@ -36,6 +36,8 @@ landscape and the statistical generalization performance of the model.
 
 namespace LeanSharp
 
+set_option linter.unusedSectionVars false
+
 open Real NNReal
 
 variable {d : ℕ} [Fact (0 < d)]
@@ -61,6 +63,8 @@ noncomputable def sharpness (L : W d → ℝ) (w : W d)
 def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ) : Prop :=
   L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + C
 
+section
+omit [Fact (0 < d)]
 /-- **SAM Generalization Theorem**: Links the population risk to the empirical risk
 via the Taylor bound proved in `Taylor.lean`.
 
@@ -73,6 +77,7 @@ theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ)
     L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
   have h_taylor := sam_taylor_bound L_S w ρ M h_smooth h_diff hρ
   linarith [h_gen, h_taylor]
+end
 
 /-!
 ## Uniform Stability

@@ -27,8 +27,10 @@ namespace LeanSharp
 
 open Set InnerProductSpace Real NNReal
 
+variable {d : ℕ}
+
 /-- Auxiliary: the derivative of `t ↦ L(p + t•ε)` is `inner ℝ (∇L) ε`. -/
-private lemma path_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (p ε : W d) (t : ℝ)
+private lemma path_hasDerivAt (L : W d → ℝ) (p ε : W d) (t : ℝ)
     (h_diff : Differentiable ℝ L) :
     HasDerivAt (fun (t : ℝ) => L (p + t • ε)) (inner ℝ (gradient L (p + t • ε)) ε) t := by
   have hf : HasDerivAt (fun (s : ℝ) => p + s • ε) ε t := by
@@ -37,7 +39,7 @@ private lemma path_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (p ε :
   simpa [gradient, InnerProductSpace.toDual_symm_apply] using hcomp
 
 /-- Auxiliary: the function `t ↦ L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²` is continuous. -/
-lemma smooth_descent_aux_continuous {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d)
+lemma smooth_descent_aux_continuous (L : W d → ℝ) (w ε : W d)
     (c m : ℝ) (h_diff : Differentiable ℝ L) :
     Continuous (fun t => L (w + t • ε) - t * c - t ^ 2 * m) := by
   have hLp : Continuous (fun (t : ℝ) => L (w + t • ε)) := by
@@ -48,7 +50,7 @@ lemma smooth_descent_aux_continuous {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (
   exact hLp.sub h2 |>.sub h3
 
 /-- Auxiliary: the derivative of the smooth descent auxiliary function. -/
-lemma smooth_descent_aux_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d)
+lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
     (c m t : ℝ) (h_diff : Differentiable ℝ L) :
     HasDerivAt (fun t => L (w + t • ε) - t * c - t ^ 2 * m)
       (inner ℝ (gradient L (w + t • ε)) ε - c - 2 * t * m) t := by
@@ -60,7 +62,7 @@ lemma smooth_descent_aux_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (
   convert h1.sub h2 |>.sub h3 using 1
 
 /-- **The L-Smooth Descent Lemma**: `L(w + ε) ≤ L(w) + ⟪∇L(w), ε⟫ + M/2 · ‖ε‖²`. -/
-theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
+theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L)) :
     L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
@@ -114,7 +116,7 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
   linarith
 
 /-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
-theorem sam_taylor_bound {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (ρ : ℝ)
+theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
     (M : ℝ≥0)
     (h_smooth : LipschitzWith M (gradient L))
     (h_diff : Differentiable ℝ L)
@@ -145,7 +147,7 @@ theorem sam_taylor_bound {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (�
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
 $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
-theorem smooth_one_step_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (M : ℝ≥0) (η : ℝ)
+theorem smooth_one_step_descent (L : W d → ℝ) (w : W d) (M : ℝ≥0) (η : ℝ)
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L))
     (h_eta : 0 < η)

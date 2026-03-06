@@ -33,11 +33,15 @@ not increase the variance of the stochastic estimator.
 
 namespace LeanSharp
 
+set_option linter.unusedSectionVars false
+
 open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
+section
+omit [Fact (0 < d)]
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
 variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/
 theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (z σsq : ℝ)
@@ -65,4 +69,5 @@ theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (
       unfold has_bounded_variance at h_var
       linarith
 
+end
 end LeanSharp
