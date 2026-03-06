@@ -40,18 +40,6 @@ open ProbabilityTheory MeasureTheory
 variable {d : ℕ} [Fact (0 < d)]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-/-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm.
-
-Because the Z-score filter is implemented via a Hadamard element-wise mask
-with values in $\{0, 1\}$, the $L_2$-norm of the filtered gradient is always less
-than or equal to the original gradient. -/
-theorem filtered_norm_bound (g : W d) (z : ℝ) :
-    ‖filtered_gradient g z‖ ≤ ‖g‖ := by
-  have h_sq := filtered_gradient_norm_sq_le g z
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
-
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
 variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/
 theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (z σsq : ℝ)

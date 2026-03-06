@@ -92,6 +92,18 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
       positivity
   exact h_base
 
+/-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
+theorem filtered_norm_bound (g : W d) (z : ℝ) :
+    ‖filtered_gradient g z‖ ≤ ‖g‖ := by
+  have h_sq := filtered_gradient_norm_sq_le g z
+  have h_sqrt := Real.sqrt_le_sqrt h_sq
+  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
+  exact h_sqrt
+
+/-- **Mask Contraction**: The L2 norm squared variant of the bound. -/
+theorem filtered_norm_bound_sq (g : W d) (z : ℝ) :
+    ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := filtered_gradient_norm_sq_le g z
+
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
 theorem z_score_nonempty (g : W d) {z : ℝ} (hz_le : z ≤ 1) :

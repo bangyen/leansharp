@@ -41,43 +41,26 @@ inductive Chain : Type → Type → Type 1 where
   | single {In Out : Type} : Layer In Out → Chain In Out
   | append {In Mid Out : Type} : Chain In Mid → Layer Mid Out → Chain In Out
 
-/-- Parameters for a specific chain. -/
-inductive ChainParams : {In Out : Type} → Chain In Out → Type 1 where
-  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainParams (.single L)
+/-- Data (parameters or gradients) for a specific chain. -/
+inductive ChainData : {In Out : Type} → Chain In Out → Type 1 where
+  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainData (.single L)
   | append {In Mid Out : Type} {prev : Chain In Mid} {L : Layer Mid Out} :
-      ChainParams prev → W L.ParamDim → ChainParams (.append prev L)
+      ChainData prev → W L.ParamDim → ChainData (.append prev L)
 
-/-- Gradients for a specific chain. -/
-inductive ChainGrads : {In Out : Type} → Chain In Out → Type 1 where
-  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainGrads (.single L)
-  | append {In Mid Out : Type} {prev : Chain In Mid} {L : Layer Mid Out} :
-      ChainGrads prev → W L.ParamDim → ChainGrads (.append prev L)
-
-/-- The squared Frobenius/Euclidean norm of all parameters in a chain. -/
-noncomputable def chain_params_norm_sq {In Out : Type} {c : Chain In Out} :
-    ChainParams c → ℝ :=
+/-- The squared Frobenius/Euclidean norm of all elements in a ChainData. -/
+noncomputable def chain_data_norm_sq {In Out : Type} {c : Chain In Out} :
+    ChainData c → ℝ :=
   match c with
-  | .single _ => fun p =>
-      match p with
+  | .single _ => fun d =>
+      match d with
       | .single _ w => ‖w‖^2
-  | .append _ _ => fun p =>
-      match p with
-      | .append p_prev w => chain_params_norm_sq p_prev + ‖w‖^2
-
-/-- The squared Frobenius/Euclidean norm of all gradients in a chain. -/
-noncomputable def chain_grads_norm_sq {In Out : Type} {c : Chain In Out} :
-    ChainGrads c → ℝ :=
-  match c with
-  | .single _ => fun g =>
-      match g with
-      | .single _ w => ‖w‖^2
-  | .append _ _ => fun g =>
-      match g with
-      | .append g_prev w => chain_grads_norm_sq g_prev + ‖w‖^2
+  | .append _ _ => fun d =>
+      match d with
+      | .append d_prev w => chain_data_norm_sq d_prev + ‖w‖^2
 
 /-- Forward pass through a chain of layers. -/
 def forward_chain {In Out : Type} {c : Chain In Out} :
-    ChainParams c → In → Out :=
+    ChainData c → In → Out :=
   match c with
   | .single L => fun p x =>
       match p with
@@ -89,8 +72,8 @@ def forward_chain {In Out : Type} {c : Chain In Out} :
 /-- Recursive backpropagation through a chain.
     Applies Z-score filtering at each layer. -/
 noncomputable def backprop_chain {In Out : Type} {c : Chain In Out}
-    (z : ℝ) (p : ChainParams c) (x : In) (g_out : Out) :
-    ChainGrads c × In :=
+    (z : ℝ) (p : ChainData c) (x : In) (g_out : Out) :
+    ChainData c × In :=
   match c with
   | .single L =>
       match p with
@@ -108,8 +91,8 @@ noncomputable def backprop_chain {In Out : Type} {c : Chain In Out}
 /-- Recursive backpropagation through a chain without filtering.
     Used for stability proofs. -/
 noncomputable def raw_backprop_chain {In Out : Type} {c : Chain In Out}
-    (p : ChainParams c) (x : In) (g_out : Out) :
-    ChainGrads c × In :=
+    (p : ChainData c) (x : In) (g_out : Out) :
+    ChainData c × In :=
   match c with
   | .single L =>
       match p with
@@ -123,12 +106,5 @@ noncomputable def raw_backprop_chain {In Out : Type} {c : Chain In Out}
           let (g_w_L, g_mid) := L.backward w mid_in g_out
           let (g_prevs, g_in) := raw_backprop_chain p_prev x g_mid
           (.append g_prevs g_w_L, g_in)
-
-/-- **Layer-wise Stability**: Z-score filtering at each layer preserves the
-norm of the layer's parameter update. -/
-theorem zsharp_layer_stability {In Out : Type} (L : Layer In Out) [Fact (0 < L.ParamDim)]
-    (w : W L.ParamDim) (x : In) (g_out : Out) (z : ℝ) :
-    ‖(L.backward w x g_out).1‖ ≥ ‖filtered_gradient (L.backward w x g_out).1 z‖ := by
-  apply filtered_norm_bound
 
 end LeanSharp

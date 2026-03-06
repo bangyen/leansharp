@@ -27,34 +27,28 @@ filtering layer-wise results in a total parameter update whose norm is bounded
 by the norm of the raw (unfiltered) backpropagation gradients. -/
 theorem zsharp_chain_stability {In Out : Type} (c : Chain In Out)
     (h_pos : ∀ {I O} (L : Layer I O), Fact (0 < L.ParamDim))
-    (z : ℝ) (p : ChainParams c) (x : In) (g_out : Out) :
-    chain_grads_norm_sq (backprop_chain z p x g_out).1 ≤
-    chain_grads_norm_sq (raw_backprop_chain p x g_out).1 := by
+    (z : ℝ) (p : ChainData c) (x : In) (g_out : Out) :
+    chain_data_norm_sq (backprop_chain z p x g_out).1 ≤
+    chain_data_norm_sq (raw_backprop_chain p x g_out).1 := by
   -- Optimization: Generalize variables for induction to ensure ih is flexible.
   induction c generalizing x with
   | single L =>
       cases p with
       | single _ w =>
-          unfold backprop_chain raw_backprop_chain chain_grads_norm_sq
+          unfold backprop_chain raw_backprop_chain chain_data_norm_sq
           simp only
-          -- ‖filtered_gradient g z‖^2 ≤ ‖g‖^2
-          apply sq_le_sq.mpr
-          rw [abs_norm, abs_norm]
-          apply @filtered_norm_bound _ (h_pos L)
+          apply filtered_norm_bound_sq
   | append prev L ih =>
-      cases p with
-      | append p_prev w =>
-          -- Stability for the current layer
-          have h_L : ‖filtered_gradient (L.backward w (forward_chain p_prev x) g_out).1 z‖^2 ≤
-                     ‖(L.backward w (forward_chain p_prev x) g_out).1‖^2 := by
-            apply sq_le_sq.mpr
-            rw [abs_norm, abs_norm]
-            apply @filtered_norm_bound _ (h_pos L)
-          -- Inductive stability for the rest of the chain
-          -- We must match the terms exactly
-          have h_prev := ih p_prev x (L.backward w (forward_chain p_prev x) g_out).2
-          unfold backprop_chain raw_backprop_chain chain_grads_norm_sq
-          simp only
-          exact add_le_add h_prev h_L
+    cases p with
+    | append p_prev w =>
+        -- Stability for the current layer
+        have h_L : ‖filtered_gradient (L.backward w (forward_chain p_prev x) g_out).1 z‖^2 ≤
+                   ‖(L.backward w (forward_chain p_prev x) g_out).1‖^2 := by
+          apply filtered_norm_bound_sq
+        -- Inductive stability for the rest of the chain
+        have h_prev := ih p_prev x (L.backward w (forward_chain p_prev x) g_out).2
+        unfold backprop_chain raw_backprop_chain chain_data_norm_sq
+        simp only
+        exact add_le_add h_prev h_L
 
 end LeanSharp
