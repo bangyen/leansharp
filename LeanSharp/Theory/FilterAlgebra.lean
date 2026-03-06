@@ -62,4 +62,26 @@ theorem single_outlier_extraction [Fact (1 < d)] (g : W d) (z : ℝ) (i : Fin d)
       rw [h_μ, sub_zero]; exact h_not
     exact filtered_gradient_zero_of_not_outlier g z j h_μ_j
 
+/-- **Norm Reduction**: The L2 norm of the filtered gradient is always
+less than or equal to the norm of the original gradient. -/
+theorem filtered_norm_le [Fact (0 < d)] (g : W d) (z : ℝ) :
+    ‖filtered_gradient g z‖ ≤ ‖g‖ := by
+  have h_sq := filtered_gradient_norm_sq_le g z
+  have h_sqrt := Real.sqrt_le_sqrt h_sq
+  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
+  exact h_sqrt
+
+/-- **Sparse Signal Recovery**: In a regime where one component is much larger
+than the rest (an outlier), the Z-score filter preserves it. -/
+theorem sparse_signal_recovery [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
+    (h_sparse : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| ≥ z * vector_std g) :
+    (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
+    (WithLp.equiv 2 (Fin d → ℝ) g) i := by
+  apply filtered_gradient_coord_preservation
+  unfold z_score_mask
+  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply]
+  split_ifs with h_cond
+  · rfl
+  · contradiction
+
 end LeanSharp

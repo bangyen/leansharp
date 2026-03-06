@@ -18,17 +18,17 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Hessian symmetry, L-smoothness, Z-score Hadamard filtering, and Taylor descent lemma.
-- ✅ **Stability & Rates** (`Theory/`): Geometric convergence, explicit $O(1/T)$ and $O(1/\sqrt{T})$ rates, and global variance contraction (validated on toy quadratic landscapes).
-- ✅ **Deep Model Foundations** (`LeanSharp/Models`): Recursive layer architecture with confirmed global gradient stability for multi-layer chains.
-- ✅ **Generalization Theory** (`Theory/`): PAC-Bayesian bounds and Z-score uniform stability theorems.
+- ✅ **Stability & Robustness** (`Theory/`): Geometric convergence, explicit $O(1/T)$ rates, and **Outlier Signal Preservation** (formal proof that Z-scores extract sparse signals).
+- ✅ **Stochastic Convergence** (`Stochastic/`): Expected squared distance bounds and variance contraction under filtered stochastic gradients.
+- ✅ **Tactic Support** (`Tactic/`): Custom `zsharp_solve` tactic for automated Z-score algebraic proofs.
 
 ## Roadmap & Future Work
 
-While the core theory is now verified, the following research directions are planned:
-- **ZSharp Universality**: Formally prove that the empirical distribution of Z-scores converges to the standard Gaussian as $d \to \infty$.
-- **Heavy-Tailed Noise**: Rigorously prove ZSharp's superiority over standard SGD under non-Gaussian (e.g., Cauchy) noise.
-- **Third-Order Analysis**: Define third-derivative tensors to analyze Z-score filtering against higher-order geometry.
-- **Sobolev Space Foundations**: Transition to Sobolev spaces for advanced regularity and functional analysis.
+### Research Moonshots (Mathlib Under Construction)
+The following directions are "Grand Challenges" currently limited by foundational gaps in Mathlib:
+- **ZSharp Universality**: Proving high-dimensional Gaussian convergence for Z-scores (requires Berry-Esseen / Stein's method foundations).
+- **Sobolev Foundations**: Transitioning to Lebesgue spaces with AE-equivalence classes.
+- **Third-Order Descent**: Multivariate Taylor remainder theory for multilinear maps (requires ongoing MUC calculus refactor).
 
 ## Installation & Building
 
