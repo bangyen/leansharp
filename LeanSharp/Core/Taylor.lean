@@ -36,6 +36,29 @@ private lemma path_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (p ε :
   have hcomp := (h_diff (p + t • ε)).hasFDerivAt.comp_hasDerivAt t hf
   simpa [gradient, InnerProductSpace.toDual_symm_apply] using hcomp
 
+/-- Auxiliary: the function `t ↦ L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²` is continuous. -/
+lemma smooth_descent_aux_continuous {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d)
+    (c m : ℝ) (h_diff : Differentiable ℝ L) :
+    Continuous (fun t => L (w + t • ε) - t * c - t ^ 2 * m) := by
+  have hLp : Continuous (fun (t : ℝ) => L (w + t • ε)) := by
+    apply h_diff.continuous.comp
+    exact continuous_const.add (continuous_id.smul continuous_const)
+  have h2 : Continuous (fun (t : ℝ) => t * c) := continuous_id.mul continuous_const
+  have h3 : Continuous (fun (t : ℝ) => t ^ 2 * m) := (continuous_id.pow 2).mul continuous_const
+  exact hLp.sub h2 |>.sub h3
+
+/-- Auxiliary: the derivative of the smooth descent auxiliary function. -/
+lemma smooth_descent_aux_hasDerivAt {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d)
+    (c m t : ℝ) (h_diff : Differentiable ℝ L) :
+    HasDerivAt (fun t => L (w + t • ε) - t * c - t ^ 2 * m)
+      (inner ℝ (gradient L (w + t • ε)) ε - c - 2 * t * m) t := by
+  have h1 := path_hasDerivAt L w ε t h_diff
+  have h2 : HasDerivAt (fun (s : ℝ) => s * c) c t := by
+    simpa using (hasDerivAt_id t).mul_const c
+  have h3 : HasDerivAt (fun (s : ℝ) => s ^ 2 * m) (2 * t * m) t := by
+    simpa using (hasDerivAt_id t).pow 2 |>.mul_const m
+  convert h1.sub h2 |>.sub h3 using 1
+
 /-- **The L-Smooth Descent Lemma**: `L(w + ε) ≤ L(w) + ⟪∇L(w), ε⟫ + M/2 · ‖ε‖²`. -/
 theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
     (h_diff : Differentiable ℝ L)
@@ -49,13 +72,9 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
   have hφ' : ∀ t : ℝ, HasDerivAt φ
       (inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m) t := by
     intro t
-    have h1 := path_hasDerivAt L w ε t h_diff
-    have h2 : HasDerivAt (fun (s : ℝ) => s * c) c t := by
-      simpa using (hasDerivAt_id t).mul_const c
-    have h3 : HasDerivAt (fun (s : ℝ) => s ^ 2 * m) (2 * t * m) t := by
-      simpa using (hasDerivAt_id t).pow 2 |>.mul_const m
-    convert h1.sub h2 |>.sub h3 using 1
-    simp [inner_sub_left]; ring
+    have h_deriv := smooth_descent_aux_hasDerivAt L w ε c m t h_diff
+    convert h_deriv using 1
+    simp [inner_sub_left, c]
   have hφ'_nonpos : ∀ (t : ℝ), 0 ≤ t → t ≤ 1 →
       inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m ≤ 0 := by
     intro t h0t ht1
@@ -74,13 +93,8 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
     have h_2tm : 2 * t * m = (M : ℝ) * t * ‖ε‖ ^ 2 := by simp [m]; ring
     linarith [h_bound, h_2tm]
   -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
-  have hφ_cont : ContinuousOn φ (Icc 0 1) := by
-    have hLp : Continuous (fun (t : ℝ) => L (w + t • ε)) := by
-      apply h_diff.continuous.comp
-      exact continuous_const.add (continuous_id.smul continuous_const)
-    have h2 : Continuous (fun (t : ℝ) => t * c) := continuous_id.mul continuous_const
-    have h3 : Continuous (fun (t : ℝ) => t ^ 2 * m) := (continuous_id.pow 2).mul continuous_const
-    refine hLp.continuousOn.sub h2.continuousOn |>.sub h3.continuousOn
+  have hφ_cont : ContinuousOn φ (Icc 0 1) :=
+    (smooth_descent_aux_continuous L w ε c m h_diff).continuousOn
   have hφ_le : φ 1 ≤ φ 0 := by
     let B := fun (_ : ℝ) => φ 0
     let B' := fun (_ : ℝ) => (0 : ℝ)

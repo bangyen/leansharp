@@ -88,7 +88,6 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
     Integrable.const_mul (h_align.1.inner_const A) (2 * η)
   have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖^2) :=
     Integrable.const_mul h_int_B2 (η^2)
-
   calc 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2]
       _ = 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖^2] :=
           integral_add (h_int_A2.sub h_int_2ηB) h_int_η2B2
