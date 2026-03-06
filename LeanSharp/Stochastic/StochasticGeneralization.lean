@@ -11,7 +11,7 @@ import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Basic
 import Mathlib.MeasureTheory.Integral.Lebesgue.Norm
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
-import LeanSharp.Utils.Tactics
+import LeanSharp.Tactic.ZSolve
 
 /-!
 # Stochastic Generalization Bounds

@@ -15,14 +15,14 @@ import LeanSharp.Stochastic.StochasticConvergence
 import LeanSharp.Stochastic.StochasticGeneralization
 import LeanSharp.Stochastic.StochasticSam
 
+import LeanSharp.Tactic.ZSolve
+
 import LeanSharp.Theory.Convergence
 import LeanSharp.Theory.Generalization
 import LeanSharp.Theory.HessianContraction
 import LeanSharp.Theory.ModelTheorems
 import LeanSharp.Theory.Rates
 import LeanSharp.Theory.SamBound
-
-import LeanSharp.Utils.Tactics
 
 /-!
 # LeanSharp
