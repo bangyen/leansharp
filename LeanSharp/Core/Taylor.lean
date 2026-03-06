@@ -8,6 +8,7 @@ import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Data.NNReal.Basic
+import Mathlib.Tactic.Linarith
 
 /-!
 # Taylor Descent Lemma for SAM
@@ -117,5 +118,16 @@ theorem sam_taylor_bound {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (�
       apply mul_le_mul_of_nonneg_left this
       positivity
     linarith [hdescent, hcs, hsq]
+
+/-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
+with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
+$L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
+theorem smooth_one_step_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (M : ℝ≥0) (η : ℝ)
+    (h_diff : Differentiable ℝ L)
+    (h_smooth : LipschitzWith M (gradient L))
+    (h_eta : 0 < η)
+    (h_eta_bound : η ≤ 1 / (M : ℝ)) :
+    L (w - η • gradient L w) ≤ L w - (η / 2) * ‖gradient L w‖ ^ 2 := by
+  sorry
 
 end LeanSharp
