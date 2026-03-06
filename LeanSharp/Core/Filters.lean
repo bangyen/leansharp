@@ -134,6 +134,31 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
 theorem filtered_norm_bound_sq (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := filtered_gradient_norm_sq_le g z
 
+/-- **Variance Sum Equality**: The sum of squared deviations from the mean is equal to
+the dimension times the variance (square of standard deviation). -/
+lemma sum_sq_deviation_eq_d_var (g : W d) :
+    (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) = d * (vector_std g)^2 := by
+  have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
+  have h_sq_std : (vector_std g)^2 = vector_variance g := Real.sq_sqrt h_var_pos
+  rw [h_sq_std]
+  unfold vector_variance
+  by_cases hd : (d : ℝ) = 0
+  · have : d = 0 := by exact_mod_cast hd
+    subst this
+    simp
+  · rw [mul_div_cancel₀ _ hd]
+
+/-- **Sum of Squares Bound**: If every squared deviation is strictly less than σ²,
+the total sum is strictly less than d * σ². -/
+lemma sum_sq_deviation_lt_d_var {σ : ℝ}
+    (h_lt : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2 < σ^2)
+    [Nonempty (Fin d)] :
+    (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 := by
+  calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2)
+      < (∑ i : Fin d, σ^2) :=
+        Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_lt i)
+    _ = d * σ^2 := by simp
+
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
 theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
@@ -168,25 +193,13 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
       rw [sq_lt_sq, abs_of_nonneg h_nonneg]
       exact h_lt
     -- Summing the inequalities across all components: Σ (g_i - μ)² < d * σ².
-    have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 := by
-      haveI : Nonempty (Fin d) := ⟨⟨0, ‹0 < d›⟩⟩
-      calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2)
-          < (∑ i : Fin d, σ^2) :=
-            Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
-        _ = d * σ^2 := by simp
+    haveI : Nonempty (Fin d) := ⟨⟨0, ‹0 < d›⟩⟩
+    have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 :=
+      sum_sq_deviation_lt_d_var h_sq
     -- Step 3: Deriving the contradiction from the definition of variance
     -- By definition of σ², Σ (g_i - μ)² MUST equal d * σ².
-    have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) = d * σ^2 := by
-      have h_d_pos : 0 < (d : ℝ) := by positivity
-      have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
-      have h_sq_std : (Real.sqrt (vector_variance g))^2 = vector_variance g :=
-        Real.sq_sqrt h_var_pos
-      unfold σ at hσ h_sq_std ⊢
-      rw [vector_std, h_sq_std]
-      unfold vector_variance
-      dsimp
-      have : (d : ℝ) ≠ 0 := by positivity
-      rw [mul_div_cancel₀ _ ‹_›]
+    have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) = d * σ^2 :=
+      sum_sq_deviation_eq_d_var g
     -- The inequality Σ (g_i - μ)² < d * σ² contradicts Σ (g_i - μ)² = d * σ².
     linarith
 
