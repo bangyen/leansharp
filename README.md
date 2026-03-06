@@ -1,9 +1,10 @@
-# LeanSharp 🛡️
+# LeanSharp
 
 **Formal Verification of Sharpness-Aware Minimization with Z-Score Gradient Filtering in Lean 4.**
 
 [![Lean 4 Version](https://img.shields.io/badge/Lean-4.28.0-blue.svg)](https://leanprover.github.io/)
 [![Mathlib4](https://img.shields.io/badge/Mathlib-4-brightgreen.svg)](https://github.com/leanprover-community/mathlib4)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 LeanSharp is the formal, mathematical sister-project to [ZSharp](https://github.com/bangyen/zsharp). While ZSharp provides an empirical PyTorch implementation of Z-Score filtered SAM (achieving +5.26% accuracy over SGD), this repository constructs a completely rigorous foundation for the algorithm using the [Lean 4](https://leanprover.github.io/) interactive theorem prover.
 
@@ -62,5 +63,5 @@ If you use this work in your research, please cite:
   author = {Pham, Bangyen},
   title = {LeanSharp: Formal Verification of Sharpness-Aware Minimization with Z-Score Gradient Filtering in Lean 4},
   year = {2026},
-  url = {[https://github.com/bangyen/leansharp](https://github.com/bangyen/leansharp)}
+  url = {https://github.com/bangyen/leansharp}
 }
