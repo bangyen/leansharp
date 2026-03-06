@@ -47,6 +47,15 @@ def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω 
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
   η^2 * 𝔼[fun ω => ‖g_f ω‖^2] ≥ η * μ * ‖w - w_star‖^2
 
+/-- **Integral Inner Product Identity**: The integral of an inner product with a
+constant vector is the inner product of the integral. -/
+lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
+    {f : Ω → W d} (hf : Integrable f) (c : W d) :
+    (∫ ω, inner ℝ (f ω) c ∂volume) = inner ℝ (∫ ω, f ω ∂volume) c := by
+  have h_comm : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) := by
+    funext ω; rw [real_inner_comm]
+  rw [congr_arg (integral volume) h_comm, integral_inner hf c, real_inner_comm]
+
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
@@ -68,45 +77,28 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
   rw [h_body]
   -- Step 2: Verify integrability of the expansion terms to apply linearity of expectation
   have h_int_B2 : Integrable (fun ω => ‖B ω‖^2) := h_align.2.1
-  have h_itg_eta_B2 : Integrable (fun ω => η^2 * ‖B ω‖^2) :=
-    Integrable.const_mul h_int_B2 (η^2)
-  have h_int_inner : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
-    Integrable.const_mul (h_align.1.inner_const A) _
-  have h_int_A2 : Integrable (fun _ : Ω => ‖A‖^2) := integrable_const (‖A‖^2)
+  have h_int : Integrable (fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2) := by
+    apply Integrable.add
+    · apply Integrable.sub (integrable_const _)
+      exact Integrable.const_mul (h_align.1.inner_const A) (2 * η)
+    · exact Integrable.const_mul h_int_B2 (η^2)
   -- Step 3: Use linearity of expectation and the stochastic alignment condition
-  calc (∫ ω, ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2 ∂volume)
-      -- Distribute the integral over the sum
-      _ = (∫ ω, ‖A‖^2 - 2 * η * inner ℝ (B ω) A ∂volume) +
-          (∫ ω, η^2 * ‖B ω‖^2 ∂volume) := by
-          apply integral_add
-          · apply Integrable.sub h_int_A2 h_int_inner
-          · exact h_itg_eta_B2
-      _ = (∫ ω, ‖A‖^2 ∂volume) - (∫ ω, 2 * η * inner ℝ (B ω) A ∂volume) +
-          (∫ ω, η^2 * ‖B ω‖^2 ∂volume) := by
-          rw [integral_sub h_int_A2 h_int_inner]
-      -- Pull out constants from the integrals
-      _ = ‖A‖^2 - 2 * η * (∫ ω, inner ℝ (B ω) A ∂volume) +
-          η^2 * (∫ ω, ‖B ω‖^2 ∂volume) := by
-          rw [integral_const, probReal_univ, one_smul]
-          have h1 : (∫ ω, 2 * η * inner ℝ (B ω) A ∂volume) =
-                    2 * η * (∫ ω, inner ℝ (B ω) A ∂volume) :=
-            integral_const_mul (2 * η) (fun ω => inner ℝ (B ω) A)
-          have h2 : (∫ ω, η^2 * ‖B ω‖^2 ∂volume) = η^2 * (∫ ω, ‖B ω‖^2 ∂volume) :=
-            integral_const_mul (η^2) (fun ω => ‖B ω‖^2)
-          rw [h1, h2]
-      -- Move the inner product through the integral
-      _ = ‖A‖^2 - 2 * η * inner ℝ (∫ ω, B ω ∂volume) A +
-          η^2 * (∫ ω, ‖B ω‖^2 ∂volume) := by
-          have h_int : (∫ ω, inner ℝ (B ω) A ∂volume) = inner ℝ (∫ ω, B ω ∂volume) A := by
-            have h_comm : (fun ω => inner ℝ (B ω) A) = (fun ω => inner ℝ A (B ω)) := by
-              funext ω; rw [real_inner_comm]
-            rw [congr_arg (integral volume) h_comm, integral_inner h_align.1 A,
-                real_inner_comm]
-          rw [h_int]
-      _ = ‖A‖^2 - (2 * η * inner ℝ (∫ ω, B ω ∂volume) A -
-          η^2 * (∫ ω, ‖B ω‖^2 ∂volume)) := by
-          ring
-      -- Apply the descent condition from stochastic_alignment_condition
+  have h_int_A2 : Integrable (fun _ : Ω => ‖A‖^2) := integrable_const (‖A‖^2)
+  have h_int_2ηB : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
+    Integrable.const_mul (h_align.1.inner_const A) (2 * η)
+  have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖^2) :=
+    Integrable.const_mul h_int_B2 (η^2)
+
+  calc 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2]
+      _ = 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖^2] :=
+          integral_add (h_int_A2.sub h_int_2ηB) h_int_η2B2
+      _ = 𝔼[fun _ => ‖A‖^2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖^2] := by
+          congr 1; exact integral_sub h_int_A2 h_int_2ηB
+      _ = ‖A‖^2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η^2 * 𝔼[fun ω => ‖B ω‖^2] := by
+          rw [integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
+      _ = ‖A‖^2 - 2 * η * inner ℝ 𝔼[B] A + η^2 * 𝔼[fun ω => ‖B ω‖^2] := by
+          rw [integral_inner_const h_align.1 A]
+      _ = ‖A‖^2 - (2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2]) := by ring
       _ ≤ ‖A‖^2 - (η * μ * ‖A‖^2) := by
           apply sub_le_sub_left
           exact h_align.2.2
