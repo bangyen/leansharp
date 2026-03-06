@@ -1,7 +1,9 @@
 name = "leansharp"
-version = "0.1.0"
-keywords = ["math"]
+version = "1.0.0"
+description = "Formal Verification of Sharpness-Aware Minimization with Z-Score Gradient Filtering"
+keywords = ["math", "machine-learning", "optimization", "formal-verification"]
 defaultTargets = ["LeanSharp"]
+lintDriver = "batteries/runLinter"
 
 [leanOptions]
 pp.unicode.fun = true                 # pretty-prints `fun a ↦ b`

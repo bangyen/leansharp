@@ -53,10 +53,8 @@ omit [Fact (0 < d)]
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
-theorem stochastic_zsharp_convergence (L : W d → ℝ) (w_star : W d) {g_adv : Ω → W d} (w : W d)
-    (η ρ z σsq μ : ℝ)
-    (_h_sgd : is_stochastic_gradient L g_adv (w + sam_perturbation L w ρ))
-    (_h_var : has_bounded_variance L g_adv (w + sam_perturbation L w ρ) σsq)
+theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W d)
+    (η z μ : ℝ)
     (h_align : stochastic_alignment_condition w_star w η z μ g_adv) :
     𝔼[fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖^2] ≤
       (1 - η * μ) * ‖w - w_star‖^2 := by

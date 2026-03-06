@@ -5,11 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read # Read access to repository contents
-  pages: write # Write access to GitHub Pages
-  id-token: write # Write access to ID tokens
+  contents: read 
+  pages: write 
+  id-token: write 
 
 jobs:
   build:
@@ -38,3 +37,8 @@ jobs:
             exit 1
           fi
           echo "✓ No axiom declarations found. All theorems formally proved."
+
+      - name: Run Linters
+        run: |
+          lake lint
+          lake exe lint-style

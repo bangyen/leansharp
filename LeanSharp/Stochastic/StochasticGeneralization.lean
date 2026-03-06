@@ -33,8 +33,6 @@ not increase the variance of the stochastic estimator.
 
 namespace LeanSharp
 
-set_option linter.unusedSectionVars false
-
 open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]

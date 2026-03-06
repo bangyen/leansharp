@@ -52,7 +52,6 @@ ordinary Rademacher / PAC-Bayes generalization bound. -/
 theorem sam_bound_from_gap (L_D L_S : W d → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
     (h_gap : ∀ (w : W d) (r : ℝ), r > 0 →
         L_D w ≤ L_S w + h (‖w‖ ^ 2 / r ^ 2))
-    (_h_mono : Monotone h)
     (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
         (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
     sam_generalization_bound_holds L_D L_S h ρ := by

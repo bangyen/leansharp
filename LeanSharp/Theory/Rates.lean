@@ -50,7 +50,7 @@ omit [Fact (0 < d)]
 Under strong convexity and appropriate step size decay $\eta_t = 1 / (\mu t)$,
 the expected squared distance to the optimum decreases at a rate of $1/T$. -/
 theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
-    (η : ℕ → ℝ) (z μ σsq ρ : ℝ) (g_adv : ℕ → Ω → W d) [Nonempty Ω]
+    (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W d) [Nonempty Ω]
     -- Add the filtration and measurability assumptions
     (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ (‹MeasureSpace Ω›.toMeasurableSpace))
@@ -59,11 +59,6 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
       volume[fun ω' => ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖ ^ 2 | ℱ t] ω ≤
       (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)
     (h_convex : is_strongly_convex L μ)
-    (h_sgd : ∀ t ω, is_stochastic_gradient L (g_adv t)
-      (weight_sequence w0 η z g_adv t ω + sam_perturbation L (weight_sequence w0 η z g_adv t ω) ρ))
-    (h_var : ∀ t ω, has_bounded_variance L (g_adv t)
-      (weight_sequence w0 η z g_adv t ω + sam_perturbation L
-        (weight_sequence w0 η z g_adv t ω) ρ) σsq)
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
     (h_align : ∀ t ω, stochastic_alignment_condition w_star
       (weight_sequence w0 η z g_adv t ω) (η t) z μ (g_adv t))
@@ -91,9 +86,7 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) (w0 : W d)
       -- Since η0 = 1/μ, the bound is 0.
       have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 (η 0) z (g_adv 0) ω - w_star‖^2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖^2 := by
-        apply stochastic_zsharp_convergence L w_star w0 (η 0) ρ z σsq μ
-        · exact h_sgd 0 (Classical.arbitrary Ω)
-        · exact h_var 0 (Classical.arbitrary Ω)
+        apply stochastic_zsharp_convergence w_star w0 (η 0) z μ
         · exact h_align 0 (Classical.arbitrary Ω)
       have h_zero : 1 - (η 0) * μ = 0 := by
         rw [h_eta0]; field_simp [h_convex.1]; ring

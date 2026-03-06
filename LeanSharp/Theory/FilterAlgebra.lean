@@ -23,7 +23,7 @@ open BigOperators
 
 /-- **Coordinate Preservation**: Components that pass the Z-score filter
 are preserved identically in the filtered gradient. -/
-theorem filtered_gradient_coord_preservation [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
+theorem filtered_gradient_coord_preservation (g : W d) (z : ℝ) (i : Fin d)
     (h_mask : (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1) :
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
     (WithLp.equiv 2 (Fin d → ℝ) g) i := by
@@ -31,7 +31,7 @@ theorem filtered_gradient_coord_preservation [Fact (0 < d)] (g : W d) (z : ℝ) 
 
 /-- **Zero Outlier Amplification**: If the mean is zero, the filtered gradient
 preserves all components exceeding $z \cdot \sigma$. -/
-lemma outlier_preservation_zero_mean [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
+lemma outlier_preservation_zero_mean (g : W d) (z : ℝ) (i : Fin d)
     (h_μ : vector_mean g = 0)
     (h_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i| ≥ z * vector_std g) :
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
@@ -39,20 +39,19 @@ lemma outlier_preservation_zero_mean [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin
   zsharp_solve
 
 /-- **Non-Outlier Extraction**: If a component is NOT an outlier, it is zeroed out by the filter. -/
-theorem filtered_gradient_zero_of_not_outlier [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
+theorem filtered_gradient_zero_of_not_outlier (g : W d) (z : ℝ) (i : Fin d)
     (h_not_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < z * vector_std g) :
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i = 0 := by
   zsharp_solve
 
 /-- **Signal-to-Noise Amplification (Idealized)**: In the case where there is exactly
 one outlier and the mean is zero, the filtered gradient is exactly that outlier. -/
-theorem single_outlier_extraction [Fact (1 < d)] (g : W d) (z : ℝ) (i : Fin d)
+theorem single_outlier_extraction (g : W d) (z : ℝ) (i : Fin d)
     (h_μ : vector_mean g = 0)
     (h_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i| ≥ z * vector_std g)
     (h_others : ∀ j : Fin d, j ≠ i → |(WithLp.equiv 2 (Fin d → ℝ) g) j| < z * vector_std g) :
     filtered_gradient g z = (WithLp.equiv 2 (Fin d → ℝ)).symm
       (fun j => if j = i then (WithLp.equiv 2 (Fin d → ℝ) g) i else 0) := by
-  haveI : Fact (0 < d) := ⟨by linarith [Fact.out (p := 1 < d)]⟩
   apply (WithLp.equiv 2 (Fin d → ℝ)).injective
   ext j
   simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
@@ -74,7 +73,7 @@ theorem filtered_norm_le [Fact (0 < d)] (g : W d) (z : ℝ) :
 
 /-- **Sparse Signal Recovery**: In a regime where one component is much larger
 than the rest (an outlier), the Z-score filter preserves it. -/
-theorem sparse_signal_recovery [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
+theorem sparse_signal_recovery (g : W d) (z : ℝ) (i : Fin d)
     (h_sparse : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| ≥ z * vector_std g) :
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
     (WithLp.equiv 2 (Fin d → ℝ) g) i := by
@@ -87,7 +86,7 @@ theorem sparse_signal_recovery [Fact (0 < d)] (g : W d) (z : ℝ) (i : Fin d)
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/
-theorem z_score_mask_scale_invariance [Fact (0 < d)] (g : W d) (z : ℝ) {k : ℝ} (hk : 0 < k) :
+theorem z_score_mask_scale_invariance (g : W d) (z : ℝ) {k : ℝ} (hk : 0 < k) :
     z_score_mask (k • g) z = z_score_mask g z := by
   apply (WithLp.equiv 2 (Fin d → ℝ)).injective
   ext i
