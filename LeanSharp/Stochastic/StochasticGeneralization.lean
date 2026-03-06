@@ -46,45 +46,49 @@ theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (
     (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2))
     (h_int_g : Integrable (fun ω => ‖g_adv ω‖ ^ 2)) :
     𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] ≤ σsq + ‖gradient L w‖ ^ 2 := by
-  -- By monotonicity of expectation (integration), E[X] ≤ E[Y]
+  -- Step 1: Use monotonicity of the integral to bound the filtered expectation
+  -- E[‖g_f‖²] ≤ E[‖g‖²] because ‖g_f‖ ≤ ‖g‖ component-wise.
   have h_exp_bound : 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] ≤
-                     𝔼[fun ω => ‖g_adv ω‖ ^ 2] :=
+                      𝔼[fun ω => ‖g_adv ω‖ ^ 2] :=
     integral_mono h_int_fg h_int_g (by intro ω; exact filtered_gradient_norm_sq_le (g_adv ω) z)
-  -- Variance bias decomposition: 𝔼[‖g‖²] = 𝔼[‖g - 𝔼[g]‖²] + ‖𝔼[g]‖²
-  -- Since 𝔼[g_adv] = gradient L w (h_unbiased), the identity holds.
+  -- Step 2: Expand the base expectation using the Bias-Variance Decomposition
+  -- Identity: 𝔼[‖g‖²] = 𝔼[‖g - 𝔼[g]‖²] + ‖𝔼[g]‖²
   have h_var_expansion : 𝔼[fun ω => ‖g_adv ω‖ ^ 2] =
-                         𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
+                          𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
     let c := gradient L w
-    -- Integrability checks
+    -- Verify integrability for all expansion terms
     have h_int_c2 : Integrable (fun _ : Ω => ‖c‖ ^ 2) := integrable_const _
     have h_int_mc : Integrable (fun ω => g_adv ω - c) := h_unbiased.1.sub (integrable_const c)
     have h_int_inner : Integrable (fun ω => 2 * inner ℝ (g_adv ω - c) c) :=
       Integrable.const_mul (h_int_mc.inner_const c) 2
     have h_int_diff2 : Integrable (fun ω => ‖g_adv ω - c‖ ^ 2) := by
-      -- Since ‖g‖^2 is integrable and other terms are integrable, the diff is integrable.
+      -- ‖g-c‖² = ‖g‖² + ‖c‖² - 2⟨g, c⟩
       have h1 : (fun ω => ‖g_adv ω - c‖ ^ 2) =
                 (fun ω => ‖g_adv ω‖ ^ 2 + ‖c‖ ^ 2 - 2 * inner ℝ (g_adv ω) c) := by
         ext ω; rw [norm_sub_sq_real]; ring
       rw [h1]; apply Integrable.sub (h_int_g.add h_int_c2)
       exact Integrable.const_mul (h_unbiased.1.inner_const c) 2
     calc 𝔼[fun ω => ‖g_adv ω‖ ^ 2]
+        -- Expand ‖g‖² = ‖(g - c) + c‖²
         = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g_adv ω - c) c] := by
           apply integral_congr_ae; apply ae_of_all; intro ω
           dsimp; nth_rw 1 [← sub_add_cancel (g_adv ω) c]; rw [norm_add_sq_real]; ring
-      _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2 + ‖c‖ ^ 2] +
-          𝔼[fun ω => 2 * inner ℝ (g_adv ω - c) c] := by
-          apply integral_add (h_int_diff2.add h_int_c2) h_int_inner
-      _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + 𝔼[fun _ => ‖c‖ ^ 2] +
-          𝔼[fun ω => 2 * inner ℝ (g_adv ω - c) c] := by
-          rw [integral_add h_int_diff2 h_int_c2]
-      _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + ‖c‖ ^ 2 + 0 := by
-          congr
-          · simp [integral_const]
-          · rw [integral_const_mul]
-            rw [integral_congr_ae (ae_of_all _ (fun ω => by rw [real_inner_comm]))]
-            rw [integral_inner h_int_mc c, integral_sub h_unbiased.1 (integrable_const c)]
-            simp [h_unbiased.2, c, integral_const]
-      _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + ‖c‖ ^ 2 := by rw [add_zero]
+        _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2 + ‖c‖ ^ 2] +
+            𝔼[fun ω => 2 * inner ℝ (g_adv ω - c) c] := by
+            apply integral_add (h_int_diff2.add h_int_c2) h_int_inner
+        _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + 𝔼[fun _ => ‖c‖ ^ 2] +
+            𝔼[fun ω => 2 * inner ℝ (g_adv ω - c) c] := by
+            rw [integral_add h_int_diff2 h_int_c2]
+        -- E[⟨g - E[g], c⟩] = ⟨E[g] - E[g], c⟩ = 0
+        _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + ‖c‖ ^ 2 + 0 := by
+            congr
+            · simp [integral_const]
+            · rw [integral_const_mul]
+              rw [integral_congr_ae (ae_of_all _ (fun ω => by rw [real_inner_comm]))]
+              rw [integral_inner h_int_mc c, integral_sub h_unbiased.1 (integrable_const c)]
+              simp [h_unbiased.2, c, integral_const]
+        _ = 𝔼[fun ω => ‖g_adv ω - c‖ ^ 2] + ‖c‖ ^ 2 := by rw [add_zero]
+  -- Step 3: Combine the contraction and decomposition to reach the final variance bound
   calc 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2]
       ≤ 𝔼[fun ω => ‖g_adv ω‖ ^ 2] := h_exp_bound
     _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := h_var_expansion

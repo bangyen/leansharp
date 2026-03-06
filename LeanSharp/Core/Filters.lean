@@ -140,14 +140,15 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
   let μ := vector_mean g
   let σ := vector_std g
   haveI : 0 < d := Fact.out
+  -- Step 1: Handle the vanishing variance case (all components are equal)
   by_cases hσ : σ = 0
-  · -- Case σ = 0: All are kept.
+  · -- Case σ = 0: The filter naturally keeps all components.
     use ⟨0, ‹0 < d›⟩
     simp [z_score_mask, σ, hσ]
-  · -- Case σ > 0: Contradiction if all are zeroed.
-    by_contra h
+  -- Step 2: Handle the non-vanishing variance case via contradiction
+  · by_contra h
     push_neg at h
-    -- If (mask g z) i ≠ 1, then it must be 0.
+    -- If no component is kept, then |g_i - μ| < zσ for all i.
     have h_abs : ∀ i : Fin d, |(WithLp.equiv 2 (Fin d → ℝ) g) i - μ| < z * σ := by
       intro i
       have hi := h i
@@ -156,7 +157,7 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
       split_ifs at hi with h_cond
       · contradiction
       · push_neg at h_cond; exact h_cond
-    -- Since z ≤ 1, |g i - μ| < σ.
+    -- Since z ≤ 1, this implies |g_i - μ| < σ for all i.
     have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2 < σ^2 := by
       intro i
       have hlt := h_abs i
@@ -165,14 +166,15 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
       have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - μ| < σ := hlt.trans_le hsz
       rw [sq_lt_sq, abs_of_nonneg h_nonneg]
       exact h_lt
-    -- Summing gives Σ (g_i - μ)² < d * σ².
+    -- Summing the inequalities across all components: Σ (g_i - μ)² < d * σ².
     have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 := by
       haveI : Nonempty (Fin d) := ⟨⟨0, ‹0 < d›⟩⟩
       calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2)
           < (∑ i : Fin d, σ^2) :=
             Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
         _ = d * σ^2 := by simp
-    -- But Σ |g i - μ|² = d * σ² by definition.
+    -- Step 3: Deriving the contradiction from the definition of variance
+    -- By definition of σ², Σ (g_i - μ)² MUST equal d * σ².
     have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) = d * σ^2 := by
       have h_d_pos : 0 < (d : ℝ) := by positivity
       have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
@@ -184,6 +186,7 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
       dsimp
       have : (d : ℝ) ≠ 0 := by positivity
       rw [mul_div_cancel₀ _ ‹_›]
+    -- The inequality Σ (g_i - μ)² < d * σ² contradicts Σ (g_i - μ)² = d * σ².
     linarith
 
 end LeanSharp

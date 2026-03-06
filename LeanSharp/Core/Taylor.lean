@@ -41,9 +41,11 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L)) :
     L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
+  -- Step 1: Define the auxiliary path function φ(t) = L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²
   let c := inner ℝ (gradient L w) ε
   let m := (M : ℝ) / 2 * ‖ε‖ ^ 2
   let φ : ℝ → ℝ := fun t => L (w + t • ε) - t * c - t ^ 2 * m
+  -- Step 2: Show that the derivative of φ is non-positive on [0, 1]
   have hφ' : ∀ t : ℝ, HasDerivAt φ
       (inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m) t := by
     intro t
@@ -71,6 +73,7 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
         _ = (M : ℝ) * t * ‖ε‖ ^ 2 := by ring
     have h_2tm : 2 * t * m = (M : ℝ) * t * ‖ε‖ ^ 2 := by simp [m]; ring
     linarith [h_bound, h_2tm]
+  -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
   have hφ_cont : ContinuousOn φ (Icc 0 1) := by
     have hLp : Continuous (fun (t : ℝ) => L (w + t • ε)) := by
       apply h_diff.continuous.comp
@@ -88,8 +91,10 @@ theorem smooth_descent {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w ε : W d) (
     have h_deriv_le : ∀ (x : ℝ), x ∈ Ico 0 1 →
         (inner ℝ (gradient L (w + x • ε) - gradient L w) ε - 2 * x * m) ≤ B' x :=
       fun x hx => hφ'_nonpos x hx.1 (le_of_lt hx.2)
+    -- This tactic applies the Mean Value Theorem variant for derivatives
     exact image_le_of_deriv_right_le_deriv_boundary hφ_cont
       (fun t ht => (hφ' t).hasDerivWithinAt) ha hB hB' h_deriv_le (right_mem_Icc.mpr zero_le_one)
+  -- Step 4: Recover the descent bound from φ(1) ≤ φ(0)
   have hφ0 : φ 0 = L w := by simp [φ]
   simp [φ, hφ0, m, c] at hφ_le
   linarith
@@ -106,11 +111,14 @@ theorem sam_taylor_bound {d : ℕ} [Fact (0 < d)] (L : W d → ℝ) (w : W d) (�
   · exact ⟨L w, w, ⟨0, by simpa [Metric.mem_closedBall] using hρ, by simp⟩, rfl⟩
   · rintro v ⟨_, ⟨ε, hε_norm, rfl⟩, rfl⟩
     rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
+    -- Step 1: Apply the smooth descent lemma to the perturbation ε
     have hdescent := smooth_descent L w ε M h_diff h_smooth
+    -- Step 2: Bound the first-order term using Cauchy-Schwarz
     have hcs : inner ℝ (gradient L w) ε ≤ ‖gradient L w‖ * ρ := by
       calc inner ℝ (gradient L w) ε
           ≤ ‖gradient L w‖ * ‖ε‖ := real_inner_le_norm _ _
         _ ≤ ‖gradient L w‖ * ρ := by apply mul_le_mul_of_nonneg_left hε_norm (norm_nonneg _)
+    -- Step 3: Bound the second-order term using ‖ε‖ ≤ ρ
     have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
       have : ‖ε‖ ^ 2 ≤ ρ ^ 2 := by
         apply sq_le_sq.mpr
