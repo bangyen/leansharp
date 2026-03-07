@@ -77,6 +77,34 @@ lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
   rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
   simp [LinearIsometryEquiv.apply_symm_apply]
 
+/-- **Hessian Riesz Composition Definition**: Relates the Hessian operator
+to the second Fréchet derivative via the Riesz isometry. -/
+lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
+    (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
+    hessian L w = (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
+        fderiv ℝ (fderiv ℝ L) w := by
+  have h_comp : HasFDerivAt (gradient L)
+      ((InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
+        fderiv ℝ (fderiv ℝ L) w) w := by
+    unfold gradient
+    exact (InnerProductSpace.toDual ℝ (W d)).symm.hasFDerivAt.comp w h_grad_diff
+  exact h_comp.fderiv
+
+/-- **Hessian Symmetry Reduction**: Reduces the self-adjointness of the Hessian
+to the symmetry of the second Fréchet derivative. -/
+lemma hessian_symmetry_reduction (L : W d → ℝ) (w : W d)
+    (H : W d →L[ℝ] W d →L[ℝ] ℝ)
+    (h_hess : hessian L w = (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L H)
+    (h_sym : ∀ x y, (H x) y = (H y) x) :
+    (hessian L w).toLinearMap.IsSymmetric := by
+  intro x y
+  rw [h_hess]
+  simp only [ContinuousLinearMap.coe_comp, LinearMap.coe_toContinuousLinearMap,
+             LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
+             LinearIsometryEquiv.coe_toLinearEquiv]
+  rw [inner_riesz_symm_apply, real_inner_comm, inner_riesz_symm_apply]
+  exact h_sym x y
+
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
 Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib.
 
@@ -86,26 +114,13 @@ theorem hessian_symmetric (L : W d → ℝ) (w : W d)
     (h_diff : ∀ p : W d, HasFDerivAt L (fderiv ℝ L p) p)
     (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
     (hessian L w).toLinearMap.IsSymmetric := by
-  intro x y
-  -- Schwarz: (D²L)(w)(x)(y) = (D²L)(w)(y)(x)
-  have h_sym : ((fderiv ℝ (fderiv ℝ L) w) x) y = ((fderiv ℝ (fderiv ℝ L) w) y) x :=
-    second_derivative_symmetric h_diff h_grad_diff x y
-  -- hessian equals (toDual.symm CLM) ∘L D²L(w)
-  have h_grad_hasFDeriv : HasFDerivAt (gradient L)
-      ((InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L fderiv ℝ (fderiv ℝ L) w)
-      w := by
-    unfold gradient
-    exact (InnerProductSpace.toDual ℝ (W d)).symm.hasFDerivAt.comp w h_grad_diff
-  have h_hess_eq : hessian L w =
-      (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
-        fderiv ℝ (fderiv ℝ L) w :=
-    h_grad_hasFDeriv.fderiv
-  rw [h_hess_eq]
-  simp only [ContinuousLinearMap.coe_comp, LinearMap.coe_toContinuousLinearMap,
-             LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
-             LinearIsometryEquiv.coe_toLinearEquiv]
-  rw [inner_riesz_symm_apply, real_inner_comm, inner_riesz_symm_apply]
-  exact h_sym
+  -- Step 1: Schwarz's Theorem provides the symmetry of the Fréchet derivative
+  have h_sym : ∀ x y, ((fderiv ℝ (fderiv ℝ L) w) x) y = ((fderiv ℝ (fderiv ℝ L) w) y) x :=
+    fun x y => second_derivative_symmetric h_diff h_grad_diff x y
+  -- Step 2: Relate the Hessian to the Fréchet derivative
+  have h_hess_eq := hessian_def_riesz_comp L w h_grad_diff
+  -- Step 3: Use the symmetry reduction helper
+  exact hessian_symmetry_reduction L w (fderiv ℝ (fderiv ℝ L) w) h_hess_eq h_sym
 
 /-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
 descent step $w - ηg$ relative to a target $w^*$. -/
