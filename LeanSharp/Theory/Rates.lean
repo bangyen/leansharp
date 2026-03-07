@@ -50,8 +50,7 @@ omit [Fact (0 < d)]
 /-- **Strongly Convex Contraction Algebra**: The algebraic simplification
 $1 - \frac{1}{\mu(t+1)} \cdot \mu = \frac{t}{t+1}$ used in convergence rates. -/
 lemma strongly_convex_contraction_algebra (t : ℕ) (μ : ℝ) (hμ : μ ≠ 0) :
-    1 - (1 / (μ * (t + 1))) * μ = (t : ℝ) / (t + 1) := by
-  field_simp; ring
+    1 - (1 / (μ * (t + 1))) * μ = (t : ℝ) / (t + 1) := by field_simp; ring
 
 /-- **Strongly Convex Initial Step**: The $T=1$ base case for the $O(1/T)$ rate induction. -/
 lemma strongly_convex_initial_step (w0 w_star : W d) (η0 μ : ℝ) (z : ℝ) (g0 : Ω → W d)

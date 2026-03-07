@@ -71,8 +71,10 @@ theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ)
     (hρ : 0 ≤ ρ)
     (h_gen : L_D w ≤ sam_objective L_S w ρ + C) :
     L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
-  have h_taylor := sam_taylor_bound L_S w ρ M h_smooth h_diff hρ
-  linarith [h_gen, h_taylor]
+  calc L_D w
+    _ ≤ sam_objective L_S w ρ + C := h_gen
+    _ ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
+      linarith [sam_taylor_bound L_S w ρ M h_smooth h_diff hρ]
 
 /-!
 ## Uniform Stability
@@ -93,11 +95,9 @@ theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
     (h_sam_stable : uniform_stability A_sam β_sam)
     (h_filter_bound : ∀ S S' : Dataset DataPoint n,
       ‖A_zsharp S - A_zsharp S'‖ ≤ ‖A_sam S - A_sam S'‖) :
-    uniform_stability A_zsharp β_sam := by
-  intro S S' h_neighbor
-  have h_base := h_sam_stable S S' h_neighbor
+    uniform_stability A_zsharp β_sam := fun S S' h_neighbor =>
   calc ‖A_zsharp S - A_zsharp S'‖
-      ≤ ‖A_sam S - A_sam S'‖ := h_filter_bound S S'
-    _ ≤ β_sam / (n : ℝ)      := h_base
+    _ ≤ ‖A_sam S - A_sam S'‖ := h_filter_bound S S'
+    _ ≤ β_sam / (n : ℝ)      := h_sam_stable S S' h_neighbor
 
 end LeanSharp
