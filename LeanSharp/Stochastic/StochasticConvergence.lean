@@ -57,7 +57,9 @@ lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
   rw [congr_arg (integral volume) h_comm, integral_inner hf c, real_inner_comm]
 
 /-- **Stochastic Distance Expansion**: The identity for the expected squared distance
-after an update step: $𝔼[‖A - ηB‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ + η^2𝔼[‖B‖ ^ 2]$. -/
+after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
+$η ^ 2 𝔼[‖B‖ ^ 2]$.
+-/
 lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
     (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
     𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
@@ -68,19 +70,23 @@ lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
     Integrable.const_mul h_int_inner (2 * η)
   have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) :=
     Integrable.const_mul h_int_B2 (η^2)
-  have h_int_sub : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) := h_int_A2.sub h_int_2ηB
+  have h_int_sub : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
+    h_int_A2.sub h_int_2ηB
   calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
     _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
         simp_rw [norm_sub_smul_sq]
-    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] +
+        𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
         integral_add h_int_sub h_int_η2B2
-    _ = 𝔼[fun _ => ‖A‖ ^ 2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] := by
+    _ = 𝔼[fun _ => ‖A‖ ^ 2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] +
+        𝔼[fun ω => η ^ 2 * ‖B ω‖ ^ 2] := by
         rw [integral_sub h_int_A2 h_int_2ηB]
     _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] +
         η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_const, probReal_univ, one_smul,
           integral_const_mul, integral_const_mul]
-    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A +
+        η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_inner_const h_int_B A]
 
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
@@ -102,7 +108,8 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
   rw [h_expansion]
   -- Step 2: Apply the stochastic alignment condition
   calc ‖A‖^2 - 2 * η * inner ℝ 𝔼[B] A + η^2 * 𝔼[fun ω => ‖B ω‖^2]
-      _ = ‖A‖^2 - (2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2]) := by ring
+      _ = ‖A‖ ^ 2 - (2 * η * inner ℝ 𝔼[B] A -
+          η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2]) := by ring
       _ ≤ ‖A‖^2 - (η * μ * ‖A‖^2) := by
           apply sub_le_sub_left
           exact h_align.2.2
