@@ -27,11 +27,9 @@ where gradients are observed with zero-mean noise.
 
 namespace LeanSharp
 
-set_option linter.unusedSectionVars false
-
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- A stochastic gradient is a random vector `W d`.
@@ -50,8 +48,6 @@ noncomputable def stochastic_zsharp_step (w : W d) (η z : ℝ) (g_adv : Ω → 
   let g_f := filtered_gradient (g_adv ω) z
   w - η • g_f
 
-section
-omit [Fact (0 < d)]
 /-- **L2 Bias-Variance Decomposition**: The standard identity
 $𝔼[‖g‖^2] = 𝔼[‖g - 𝔼[g]‖^2] + ‖𝔼[g]‖^2$ for any random vector $g$. -/
 theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
@@ -93,6 +89,5 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
             rw [integral_inner h_int_mc c, integral_sub h_int_g h_int_c]
             simp [c, integral_const]
       _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by rw [add_zero]
-end
 
 end LeanSharp

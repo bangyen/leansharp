@@ -36,11 +36,9 @@ landscape and the statistical generalization performance of the model.
 
 namespace LeanSharp
 
-set_option linter.unusedSectionVars false
-
 open Real NNReal
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- A dataset is formally represented as a collection of $n$ data points. -/
 def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
@@ -63,8 +61,6 @@ noncomputable def sharpness (L : W d → ℝ) (w : W d)
 def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ) : Prop :=
   L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + C
 
-section
-omit [Fact (0 < d)]
 /-- **SAM Generalization Theorem**: Links the population risk to the empirical risk
 via the Taylor bound proved in `Taylor.lean`.
 
@@ -77,7 +73,6 @@ theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ)
     L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
   have h_taylor := sam_taylor_bound L_S w ρ M h_smooth h_diff hρ
   linarith [h_gen, h_taylor]
-end
 
 /-!
 ## Uniform Stability
@@ -89,9 +84,6 @@ Uniform stability $\beta$ measures the sensitivity of the algorithm to the data.
 def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W d) (β : ℝ) : Prop :=
   ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **Stability Theorem**: The Z-score filtered gradient update exhibits lower
 uniform stability. -/
@@ -107,7 +99,5 @@ theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
   calc ‖A_zsharp S - A_zsharp S'‖
       ≤ ‖A_sam S - A_sam S'‖ := h_filter_bound S S'
     _ ≤ β_sam / (n : ℝ)      := h_base
-
-end NoDimFact
 
 end LeanSharp
