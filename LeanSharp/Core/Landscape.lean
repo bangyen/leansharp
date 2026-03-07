@@ -82,13 +82,8 @@ to the second Fréchet derivative via the Riesz isometry. -/
 lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
     (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
     hessian L w = (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
-        fderiv ℝ (fderiv ℝ L) w := by
-  have h_comp : HasFDerivAt (gradient L)
-      ((InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
-        fderiv ℝ (fderiv ℝ L) w) w := by
-    unfold gradient
-    exact (InnerProductSpace.toDual ℝ (W d)).symm.hasFDerivAt.comp w h_grad_diff
-  exact h_comp.fderiv
+        fderiv ℝ (fderiv ℝ L) w :=
+  ((InnerProductSpace.toDual ℝ (W d)).symm.hasFDerivAt.comp w h_grad_diff).fderiv
 
 /-- **Hessian Symmetry Reduction**: Reduces the self-adjointness of the Hessian
 to the symmetry of the second Fréchet derivative. -/

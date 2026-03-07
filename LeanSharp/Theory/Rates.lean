@@ -64,8 +64,7 @@ lemma strongly_convex_initial_step (w0 w_star : W d) (η0 μ : ℝ) (z : ℝ) (g
   have h_zero : 1 - η0 * μ = 0 := by
     rw [h_eta0]; field_simp [hμ.ne']; ring
   rw [h_zero, zero_mul] at h_bound
-  refine h_bound.trans ?_
-  linarith [pow_two_nonneg ‖w0 - w_star‖]
+  exact h_bound.trans (by linarith [pow_two_nonneg ‖w0 - w_star‖])
 
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
 lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
@@ -201,12 +200,8 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
   have h_telescope := nonconvex_telescoping_descent L w0 z L_smooth σsq (η 0) η
       h_eta g_adv T h_L_descent
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
-    have h_const : ∫ _ : Ω, sInf (Set.range L) ∂volume = sInf (Set.range L) := by
-      rw [integral_const]
-      have h_vol : (volume (Set.univ : Set Ω)).toReal = 1 := by
-        rw [measure_univ, ENNReal.toReal_one]
-      change (volume Set.univ).toReal • sInf (Set.range L) = sInf (Set.range L)
-      rw [h_vol, one_smul]
+    have h_const : (𝔼[fun _ : Ω => sInf (Set.range L)]) = sInf (Set.range L) := by
+      simp [integral_const, probReal_univ]
     rw [← h_const]
     apply integral_mono (integrable_const _) (h_int_L T)
     intro ω; apply csInf_le h_bdd; apply Set.mem_range_self
