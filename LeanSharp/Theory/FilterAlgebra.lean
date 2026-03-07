@@ -10,10 +10,8 @@ import Mathlib.Algebra.Order.Field.Basic
 
 /-!
 # Z-Score Filter Algebra
-
-This module contains lemmas regarding the algebraic properties of the Z-score filter.
-These are "Green Zone" foundational proofs that do not require external axioms.
--/
+15: These are "Green Zone" foundational proofs that do not require external axioms.
+16: -/
 
 namespace LeanSharp
 
@@ -65,11 +63,7 @@ theorem single_outlier_extraction (g : W d) (z : ℝ) (i : Fin d)
 /-- **Norm Reduction**: The L2 norm of the filtered gradient is always
 less than or equal to the norm of the original gradient. -/
 theorem filtered_norm_le (g : W d) (z : ℝ) :
-    ‖filtered_gradient g z‖ ≤ ‖g‖ := by
-  have h_sq := filtered_gradient_norm_sq_le g z
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
+    ‖filtered_gradient g z‖ ≤ ‖g‖ := filtered_norm_bound g z
 
 /-- **Sparse Signal Recovery**: In a regime where one component is much larger
 than the rest (an outlier), the Z-score filter preserves it. -/
@@ -78,11 +72,7 @@ theorem sparse_signal_recovery (g : W d) (z : ℝ) (i : Fin d)
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
     (WithLp.equiv 2 (Fin d → ℝ) g) i := by
   apply filtered_gradient_coord_preservation
-  unfold z_score_mask
-  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  split_ifs with h_cond
-  · rfl
-  · contradiction
+  simpa [z_score_mask] using h_sparse
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/
@@ -93,9 +83,8 @@ theorem z_score_mask_scale_invariance (g : W d) (z : ℝ) {k : ℝ} (hk : 0 < k)
   unfold z_score_mask
   simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, vector_mean_smul, vector_std_smul hk.le]
   congr! 1
-  -- Scale cancellation
   have h_pt : (k • g).ofLp i = k * g.ofLp i := rfl
   rw [h_pt, ← mul_sub, abs_mul, abs_of_pos hk, mul_left_comm]
-  simp [hk]
+  constructor <;> intro <;> nlinarith
 
 end LeanSharp

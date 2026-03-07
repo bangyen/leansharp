@@ -45,7 +45,7 @@ lemma filtered_variance_contraction (g : Ω → W d) (z : ℝ)
     (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2))
     (h_int_g : Integrable (fun ω => ‖g ω‖ ^ 2)) :
     𝔼[fun ω => ‖filtered_gradient (g ω) z‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-  integral_mono h_int_fg h_int_g (by intro ω; exact filtered_gradient_norm_sq_le (g ω) z)
+  integral_mono h_int_fg h_int_g fun ω => filtered_gradient_norm_sq_le (g ω) z
 
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
 variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/

@@ -122,15 +122,6 @@ theorem hessian_symmetric (L : W d → ℝ) (w : W d)
   -- Step 3: Use the symmetry reduction helper
   exact hessian_symmetry_reduction L w (fderiv ℝ (fderiv ℝ L) w) h_hess_eq h_sym
 
-/-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
-descent step $w - ηg$ relative to a target $w^*$. -/
-lemma norm_descent_step_sq (w w_star g : W d) (η : ℝ) :
-    ‖(w - η • g) - w_star‖^2 = ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
-  have hrw : (w - η • g) - w_star = (w - w_star) - η • g := by abel
-  rw [hrw, norm_sub_sq_real, inner_smul_right, real_inner_comm]
-  simp only [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
-  ring
-
 /-- **Squared Norm of Difference with Scalar Multiple**:
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/
 lemma norm_sub_smul_sq (a b : W d) (η : ℝ) :
@@ -138,6 +129,13 @@ lemma norm_sub_smul_sq (a b : W d) (η : ℝ) :
   rw [norm_sub_sq_real, inner_smul_right, real_inner_comm]
   simp only [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
   ring
+
+/-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
+descent step $w - ηg$ relative to a target $w^*$. -/
+lemma norm_descent_step_sq (w w_star g : W d) (η : ℝ) :
+    ‖(w - η • g) - w_star‖^2 = ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
+  have : (w - η • g) - w_star = (w - w_star) - η • g := by abel
+  rw [this, norm_sub_smul_sq]
 
 end NoDimFact
 

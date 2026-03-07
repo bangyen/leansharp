@@ -111,16 +111,12 @@ lemma norm_sq_mul_binary_le (x : ℝ) (P : Prop) [Decidable P] :
 by the original. -/
 theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
-  have H1 : ‖filtered_gradient g z‖^2 = ∑ i : Fin d, ‖(filtered_gradient g z) i‖^2 := by
-    exact EuclideanSpace.norm_sq_eq (filtered_gradient g z)
-  have H2 : ‖g‖^2 = ∑ i : Fin d, ‖g i‖^2 := by
-    exact EuclideanSpace.norm_sq_eq g
-  rw [H1, H2]
+  simp_rw [EuclideanSpace.norm_sq_eq]
   apply Finset.sum_le_sum
   intro i _
   unfold filtered_gradient hadamard z_score_mask
-  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, Real.norm_eq_abs]
-  exact norm_sq_mul_binary_le ((WithLp.equiv 2 (Fin d → ℝ) g) i) _
+  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply]
+  apply norm_sq_mul_binary_le
 
 /-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
 theorem filtered_norm_bound (g : W d) (z : ℝ) :
@@ -214,7 +210,6 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     use ⟨0, ‹0 < d›⟩
     simp [z_score_mask, σ, hσ]
   -- Step 2: Handle the non-vanishing variance case via contradiction
-  -- Step 2: Handle the non-vanishing variance case via contradiction
   · by_contra h
     push_neg at h
     -- Convert ≠ 1 to = 0 for the contradiction lemma
@@ -223,8 +218,7 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
       have hi := h i
       unfold z_score_mask at hi ⊢
       simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi ⊢
-      split_ifs at hi ⊢ with h_cond
-      · contradiction
+      split_ifs with h_cond <;> simp [*] at hi
       · rfl
     exact z_score_nonempty_contradiction g z hz_le h_zero
 
