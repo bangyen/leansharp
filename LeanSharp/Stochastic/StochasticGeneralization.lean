@@ -55,20 +55,12 @@ theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (
     (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2))
     (h_int_g : Integrable (fun ω => ‖g_adv ω‖ ^ 2)) :
     𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] ≤ σsq + ‖gradient L w‖ ^ 2 := by
-  -- Step 1: Use the Filtered Variance Contraction lemma
-  have h_exp_bound := filtered_variance_contraction g_adv z h_int_fg h_int_g
-  -- Step 2: Expand the base expectation using the Bias-Variance Decomposition helper lemma
-  have h_var_expansion : 𝔼[fun ω => ‖g_adv ω‖ ^ 2] =
-                          𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
-    rw [l2_bias_variance_decomposition g_adv h_int_g h_unbiased.1]
-    rw [h_unbiased.2]
-  -- Step 3: Combine the contraction and decomposition to reach the final variance bound
   calc 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2]
-      ≤ 𝔼[fun ω => ‖g_adv ω‖ ^ 2] := h_exp_bound
-    _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := h_var_expansion
+      ≤ 𝔼[fun ω => ‖g_adv ω‖ ^ 2] :=
+        filtered_variance_contraction g_adv z h_int_fg h_int_g
+    _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
+        rw [l2_bias_variance_decomposition g_adv h_int_g h_unbiased.1, h_unbiased.2]
     _ ≤ σsq + ‖gradient L w‖ ^ 2 := by
-      have h_var := h_base_var
-      unfold has_bounded_variance at h_var
-      linarith
+        simpa [has_bounded_variance] using h_base_var
 
 end LeanSharp

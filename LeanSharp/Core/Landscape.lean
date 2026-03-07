@@ -113,14 +113,10 @@ differentiable at `w` (`h_grad_diff`). Both hold for any C² loss function. -/
 theorem hessian_symmetric (L : W d → ℝ) (w : W d)
     (h_diff : ∀ p : W d, HasFDerivAt L (fderiv ℝ L p) p)
     (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
-    (hessian L w).toLinearMap.IsSymmetric := by
-  -- Step 1: Schwarz's Theorem provides the symmetry of the Fréchet derivative
-  have h_sym : ∀ x y, ((fderiv ℝ (fderiv ℝ L) w) x) y = ((fderiv ℝ (fderiv ℝ L) w) y) x :=
-    fun x y => second_derivative_symmetric h_diff h_grad_diff x y
-  -- Step 2: Relate the Hessian to the Fréchet derivative
-  have h_hess_eq := hessian_def_riesz_comp L w h_grad_diff
-  -- Step 3: Use the symmetry reduction helper
-  exact hessian_symmetry_reduction L w (fderiv ℝ (fderiv ℝ L) w) h_hess_eq h_sym
+    (hessian L w).toLinearMap.IsSymmetric :=
+  hessian_symmetry_reduction L w (fderiv ℝ (fderiv ℝ L) w)
+    (hessian_def_riesz_comp L w h_grad_diff)
+    (fun x y => second_derivative_symmetric h_diff h_grad_diff x y)
 
 /-- **Squared Norm of Difference with Scalar Multiple**:
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/

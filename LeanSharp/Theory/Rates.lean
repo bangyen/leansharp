@@ -140,26 +140,25 @@ lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σs
       𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
       ≤ (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0^2 * L_smooth / 2) * σsq := by
-  have h_rearranged : ∀ t,
-      (η0 / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] ≤
-      (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
-        𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)]) +
-        (η0^2 * L_smooth / 2) * σsq := by
-    intro t; have h_eta := h_step t; have h := h_L_descent t; rw [h_eta] at h; linarith
-  have h_S : ∑ t ∈ Finset.range T,
-      (η0 / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] ≤
-      ∑ t ∈ Finset.range T, ((𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
-        𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)]) +
+  calc (η0 / 2) *
+      (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
+    _ = ∑ t ∈ Finset.range T, (η0 / 2) *
+        𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] := by rw [Finset.mul_sum]
+    _ ≤ ∑ t ∈ Finset.range T, (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
+        𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] +
         (η0 ^ 2 * L_smooth / 2) * σsq) :=
-    Finset.sum_le_sum (fun t _ => h_rearranged t)
-  rw [← Finset.mul_sum] at h_S
-  have h_tele : ∑ t ∈ Finset.range T, (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
-      𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)]) =
-      L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
-    rw [Finset.sum_range_sub' (fun t => 𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)]) T]
-    simp [weight_sequence, integral_const, probReal_univ]
-  rw [Finset.sum_add_distrib, h_tele, Finset.sum_const, nsmul_eq_mul] at h_S
-  exact h_S.trans (by rw [Finset.card_range]; linarith)
+      Finset.sum_le_sum (fun t _ => by have h := h_L_descent t; rw [h_step t] at h; linarith)
+    _ = (∑ t ∈ Finset.range T, (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
+        𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)])) +
+        (∑ t ∈ Finset.range T, (η0 ^ 2 * L_smooth / 2) * σsq) := Finset.sum_add_distrib
+    _ = (𝔼[fun ω => L (weight_sequence w0 η z g_adv 0 ω)] -
+        𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
+        (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
+      rw [Finset.sum_range_sub' (fun t => 𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)])]
+      rw [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
+      ring
+    _ = (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
+        (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by simp [weight_sequence]
 
 /-- **Non-convex Rate Rearrangement**: Final algebraic step for the gradient bound. -/
 lemma nonconvex_avg_grad_rearrange (avg S L0 Linf L_smooth σsq η0 : ℝ) (T : ℕ)
@@ -168,14 +167,11 @@ lemma nonconvex_avg_grad_rearrange (avg S L0 Linf L_smooth σsq η0 : ℝ) (T : 
     (h_η0 : η0 = 1 / Real.sqrt T) (hT : 0 < T) :
     avg ≤ (2 * (L0 - Linf) + L_smooth * σsq) / Real.sqrt T := by
   have hT_pos : (T : ℝ) > 0 := by norm_cast
-  have h_η0_pos : η0 > 0 := by rw [h_η0]; positivity
-  have h_avg_eq : avg = (2 / (T * η0)) * ((η0 / 2) * S) := by
-    rw [h_avg]; field_simp [h_η0_pos.ne', hT_pos.ne']
-  calc avg ≤ (2 / (T * η0)) * (L0 - Linf + T * (η0^2 * L_smooth / 2) * σsq) := by
-        rw [h_avg_eq]; apply mul_le_mul_of_nonneg_left h_S; positivity
-    _ = (2 / Real.sqrt T) * (L0 - Linf) + (L_smooth * σsq) / Real.sqrt T := by
-        rw [h_η0]; field_simp [hT_pos, h_η0_pos.ne']; rw [Real.sq_sqrt hT_pos.le]; ring
-    _ = (2 * (L0 - Linf) + L_smooth * σsq) / Real.sqrt T := by field_simp [hT_pos]
+  calc avg = (2 / (T * η0)) * ((η0 / 2) * S) := by rw [h_avg]; field_simp [h_η0, hT_pos.ne']
+    _ ≤ (2 / (T * η0)) * (L0 - Linf + T * (η0^2 * L_smooth / 2) * σsq) :=
+        mul_le_mul_of_nonneg_left h_S (by rw [h_η0]; positivity)
+    _ = (2 * (L0 - Linf) + L_smooth * σsq) / Real.sqrt T := by
+        rw [h_η0]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
 
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
