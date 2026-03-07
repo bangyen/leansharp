@@ -38,7 +38,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- A function $L$ is $L_{smooth}$-smooth if its gradient is Lipschitz continuous
 with constant $L_{smooth}$. -/
@@ -86,9 +86,6 @@ def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
   Integrable (fun ω => ‖g_f ω‖^2) ∧
   𝔼[fun ω => inner ℝ (g_f ω) (gradient L w)] - (η * L_smooth / 2) * 𝔼[fun ω => ‖g_f ω‖^2] ≥
     (1 / 2) * ‖gradient L w‖^2 - (η * L_smooth / 2) * σsq
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **Contraction Factor Validation**: Under standard step-size and smoothness bounds,
 the contraction factor $1 - ημ$ is strictly between 0 and 1. -/
@@ -143,7 +140,5 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
   -- Step 3: Rearrange the quadratic expansion of the update step using the helper lemma
   apply zsharp_convergence_step_bound w w_star g_f η μ L_smooth
     (le_of_lt hη) h_inner_bound h_gf_sq hη_tight
-
-end NoDimFact
 
 end LeanSharp

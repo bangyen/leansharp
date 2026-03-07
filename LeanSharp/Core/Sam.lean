@@ -29,7 +29,7 @@ of the gradient.
 
 namespace LeanSharp
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- The SAM perturbation neighborhood. We consider all vectors `ε` such that
 the L2 norm metric distance `dist 0 ε ≤ ρ`. -/
@@ -48,7 +48,6 @@ noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d 
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
 
-omit [Fact (0 < d)] in
 /-- **SAM Objective Supremum Property**: The SAM objective at point `w` is always
 greater than or equal to the base loss `L w`, provided the neighborhood is
 bounded above. -/

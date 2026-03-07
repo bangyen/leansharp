@@ -35,7 +35,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- Recursively define the weight iterates for ZSharp. -/
@@ -43,9 +43,6 @@ noncomputable def weight_sequence (w0 : W d) (η : ℕ → ℝ) (z : ℝ)
     (g_adv : ℕ → Ω → W d) : ℕ → Ω → W d
 | 0, _ => w0
 | t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) (η t) z (g_adv t) ω
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
 lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
@@ -192,7 +189,5 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
       _ = (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
           rw [h_rearrange_input]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
   exact h_rearrange
-
-end NoDimFact
 
 end LeanSharp

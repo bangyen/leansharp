@@ -43,7 +43,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- The parameter space $W = \mathbb{R}^d$, represented as a Euclidean space. -/
 abbrev W (d : ℕ) := EuclideanSpace ℝ (Fin d)
@@ -69,9 +69,6 @@ meaning its value and gradient are both $L_2$-integrable. -/
 def is_sobolev_regular (L : W d → ℝ) : Prop :=
   ∃ _ : MeasureTheory.MeasureSpace (W d),
     MeasureTheory.Integrable L ∧ is_L2_integrable L
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **Riesz Inner Product Identity**: The inner product with the Riesz representation
 of a linear form `φ` is simply the evaluation of `φ`. -/
@@ -163,7 +160,5 @@ lemma stochastic_dist_expansion {Ω : Type*} [MeasureSpace Ω]
             integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
     _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (∫ ω, B ω ∂volume) A + η ^ 2 * (∫ ω, ‖B ω‖ ^ 2 ∂volume) := by
         rw [integral_inner_const h_int_B A]
-
-end NoDimFact
 
 end LeanSharp

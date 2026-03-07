@@ -31,7 +31,7 @@ namespace LeanSharp
 open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ}
-variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+variable {Ω : Type*} [MeasureSpace Ω]
 
 /-- A stochastic gradient is a random vector `W d`.
 We typically assume it is based on a true gradient plus some noise `ξ`. -/
@@ -75,8 +75,7 @@ lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
     exact Integrable.const_mul (h_int_g.inner_const c) 2
   refine ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩
 
-set_option linter.unusedSectionVars false in
-omit [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)] in
+omit [MeasureSpace Ω] in
 /-- **L2 Bias-Variance Algebra**: Helper lemma for the algebraic expansion of the norm square. -/
 lemma l2_bias_variance_algebra (g : Ω → W d) (c : W d) :
     (fun ω => ‖g ω‖ ^ 2) = (fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c) := by

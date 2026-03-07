@@ -28,7 +28,7 @@ within a $\rho$-neighborhood plus a complexity pacing function $h$.
 
 namespace LeanSharp
 
-variable {d : ℕ} [Fact (0 < d)]
+variable {d : ℕ}
 
 /-- The maximal empirical risk in the $\rho$-neighborhood.
 This uses the exact `sam_objective` we formalized previously. -/
@@ -40,9 +40,6 @@ States that with high probability, the population risk is bounded by the SAM obj
 def sam_generalization_bound_holds (L_D L_S : W d → ℝ) (h : ℝ → ℝ) (ρ : ℝ) : Prop :=
   ∀ w : W d, ρ > 0 →
     L_D w ≤ sam_empirical_max L_S w ρ + h (‖w‖^2 / ρ^2)
-
-section NoDimFact
-omit [Fact (0 < d)]
 
 /-- **SAM Bound from Gap**: The SAM generalization bound holds given a standard
 generalization gap assumption.
@@ -60,7 +57,5 @@ theorem sam_bound_from_gap (L_D L_S : W d → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
     sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w ρ)
   have h_gap_spec := h_gap w ρ hρ
   linarith [h_gap_spec, h_sam_ge]
-
-end NoDimFact
 
 end LeanSharp
