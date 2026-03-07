@@ -11,9 +11,9 @@ import LeanSharp.Core.Taylor
 
 import LeanSharp.Examples.ToyApplication
 
-import LeanSharp.Stochastic.StochasticConvergence
-import LeanSharp.Stochastic.StochasticGeneralization
-import LeanSharp.Stochastic.StochasticSam
+import LeanSharp.Stochastic.Convergence
+import LeanSharp.Stochastic.Generalization
+import LeanSharp.Stochastic.Sam
 
 import LeanSharp.Tactic.ZSolve
 
