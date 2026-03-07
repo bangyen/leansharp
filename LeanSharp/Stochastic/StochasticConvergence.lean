@@ -52,9 +52,9 @@ constant vector is the inner product of the integral. -/
 lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
     {f : Ω → W d} (hf : Integrable f) (c : W d) :
     (∫ ω, inner ℝ (f ω) c ∂volume) = inner ℝ (∫ ω, f ω ∂volume) c := by
-  have h_comm : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) := by
-    funext ω; rw [real_inner_comm]
-  rw [congr_arg (integral volume) h_comm, integral_inner hf c, real_inner_comm]
+  have : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) :=
+    by funext ω; rw [real_inner_comm]
+  rw [this, integral_inner hf c, real_inner_comm]
 
 /-- **Stochastic Distance Expansion**: The identity for the expected squared distance
 after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
@@ -93,8 +93,8 @@ lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
 Concludes (1 - ημ) · ‖A‖² from the alignment bound. -/
 lemma alignment_algebra_reduction (A : W d) (η μ : ℝ) (bound : ℝ)
     (h_align : bound ≥ η * μ * ‖A‖ ^ 2) :
-    ‖A‖ ^ 2 - bound ≤ (1 - η * μ) * ‖A‖ ^ 2 := by
-  linarith [pow_two_nonneg ‖A‖]
+    ‖A‖ ^ 2 - bound ≤ (1 - η * μ) * ‖A‖ ^ 2 :=
+  by linarith [pow_two_nonneg ‖A‖]
 
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in

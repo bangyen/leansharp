@@ -102,7 +102,7 @@ norm squared. -/
 lemma norm_sq_mul_binary_le (x : ℝ) (P : Prop) [Decidable P] :
     ‖x * (if P then (1 : ℝ) else 0)‖^2 ≤ ‖x‖^2 := by
   split_ifs
-  · simp only [mul_one, le_refl]
+  · simp
   · simp only [mul_zero, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow,
       Real.norm_eq_abs, sq_abs]
     positivity

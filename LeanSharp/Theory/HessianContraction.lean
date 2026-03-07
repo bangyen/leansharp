@@ -42,14 +42,8 @@ lemma curvature_norm_scale_le (L : W d → ℝ) (w v g : W d)
     (h_spectral : ∀ u : W d, hessian_quadratic_form L w u ≤ sharpness L w hT * ‖u‖ ^ 2)
     (h_sharpness_nonneg : 0 ≤ sharpness L w hT)
     (h_norm_le : ‖v‖ ^ 2 ≤ ‖g‖ ^ 2) :
-    hessian_quadratic_form L w v ≤ sharpness L w hT * ‖g‖ ^ 2 := by
-  -- From h_spectral, we have v^T H v ≤ λ_max * ‖v‖ ^ 2
-  have h1 : hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2 := h_spectral v
-  -- Since λ_max ≥ 0, we can multiply the inequality ‖v‖ ^ 2 ≤ ‖g‖ ^ 2 by λ_max
-  have h2 : sharpness L w hT * ‖v‖ ^ 2 ≤ sharpness L w hT * ‖g‖ ^ 2 :=
-    mul_le_mul_of_nonneg_left h_norm_le h_sharpness_nonneg
-  -- Transitivity gives the final bound
-  exact le_trans h1 h2
+    hessian_quadratic_form L w v ≤ sharpness L w hT * ‖g‖ ^ 2 :=
+  (h_spectral v).trans (mul_le_mul_of_nonneg_left h_norm_le h_sharpness_nonneg)
 
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.
@@ -60,10 +54,8 @@ theorem zsharp_curvature_bound (L : W d → ℝ) (w : W d) (g : W d) (z : ℝ)
     (hT : (hessian L w).toLinearMap.IsSymmetric)
     (h_spectral : ∀ v : W d, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
     (h_sharpness_nonneg : 0 ≤ sharpness L w hT) :
-    hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 := by
-  -- Step 1: Use the curvature scaling helper lemma
-  apply curvature_norm_scale_le L w (filtered_gradient g z) g hT h_spectral h_sharpness_nonneg
-  -- Step 2: From Filters.lean, ‖v‖^2 ≤ ‖g‖^2 because of the Hadamard mask
-  exact filtered_gradient_norm_sq_le g z
+    hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 :=
+  curvature_norm_scale_le L w (filtered_gradient g z) g hT h_spectral h_sharpness_nonneg
+    (filtered_gradient_norm_sq_le g z)
 
 end LeanSharp

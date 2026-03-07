@@ -97,12 +97,10 @@ lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
     (hη_bound : η ≤ 1 / L_smooth) (hμL : μ < L_smooth) :
     0 < 1 - η * μ ∧ 1 - η * μ < 1 := by
   constructor
-  · have hημ_lt_1 : η * μ < 1 := by
-      have : η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
-      have hη_L_le_1 : η * L_smooth ≤ 1 := by
-        have h1 := mul_le_mul_of_nonneg_right hη_bound (le_of_lt hL)
-        field_simp at h1; exact h1
-      linarith
+  · have : η * μ < 1 := calc
+      η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+      _     ≤ (1 / L_smooth) * L_smooth := mul_le_mul_of_nonneg_right hη_bound hL.le
+      _     = 1 := div_mul_cancel₀ 1 hL.ne'
     linarith
   · linarith [mul_pos hη hμ]
 
