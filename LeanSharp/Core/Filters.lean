@@ -135,14 +135,10 @@ the dimension times the variance (square of standard deviation). -/
 lemma sum_sq_deviation_eq_d_var (g : W d) :
     (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) = d * (vector_std g)^2 := by
   have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
-  have h_sq_std : (vector_std g)^2 = vector_variance g := Real.sq_sqrt h_var_pos
-  rw [h_sq_std]
-  unfold vector_variance
-  by_cases hd : (d : ℝ) = 0
-  · have : d = 0 := by exact_mod_cast hd
-    subst this
-    simp
-  · rw [mul_div_cancel₀ _ hd]
+  rw [vector_std, Real.sq_sqrt h_var_pos, vector_variance]
+  rcases Nat.eq_zero_or_pos d with rfl | hd
+  · simp
+  · field_simp [hd.ne']
 
 /-- **Sum of Squares Bound**: If every squared deviation is strictly less than σ²,
 the total sum is strictly less than d * σ². -/
