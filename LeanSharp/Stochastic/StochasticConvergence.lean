@@ -43,9 +43,9 @@ provide sufficient descent in expectation. -/
 def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω → W d) : Prop :=
   let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
   Integrable g_f ∧
-  Integrable (fun ω => ‖g_f ω‖^2) ∧
+  Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
-  η^2 * 𝔼[fun ω => ‖g_f ω‖^2] ≥ η * μ * ‖w - w_star‖^2
+  η^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ η * μ * ‖w - w_star‖ ^ 2
 
 /-- **Integral Inner Product Identity**: The integral of an inner product with a
 constant vector is the inner product of the integral. -/
@@ -56,47 +56,52 @@ lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
     funext ω; rw [real_inner_comm]
   rw [congr_arg (integral volume) h_comm, integral_inner hf c, real_inner_comm]
 
+/-- **Stochastic Distance Expansion**: The identity for the expected squared distance
+after an update step: $𝔼[‖A - ηB‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ + η^2𝔼[‖B‖ ^ 2]$. -/
+lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
+    (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
+    𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
+      ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η^2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+  have h_int_A2 : Integrable (fun _ : Ω => ‖A‖ ^ 2) := integrable_const (‖A‖ ^ 2)
+  have h_int_inner : Integrable (fun ω => inner ℝ (B ω) A) := h_int_B.inner_const A
+  have h_int_2ηB : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
+    Integrable.const_mul h_int_inner (2 * η)
+  have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) :=
+    Integrable.const_mul h_int_B2 (η^2)
+  have h_int_sub : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) := h_int_A2.sub h_int_2ηB
+  calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
+        simp_rw [norm_sub_smul_sq]
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
+        integral_add h_int_sub h_int_η2B2
+    _ = 𝔼[fun _ => ‖A‖ ^ 2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] := by
+        rw [integral_sub h_int_A2 h_int_2ηB]
+    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] +
+        η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+        rw [integral_const, probReal_univ, one_smul,
+          integral_const_mul, integral_const_mul]
+    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+        rw [integral_inner_const h_int_B A]
+
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
 theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W d)
     (η z μ : ℝ)
     (h_align : stochastic_alignment_condition w_star w η z μ g_adv) :
-    𝔼[fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖^2] ≤
-      (1 - η * μ) * ‖w - w_star‖^2 := by
+    𝔼[fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖ ^ 2] ≤
+      (1 - η * μ) * ‖w - w_star‖ ^ 2 := by
   let A : W d := w - w_star
   let B (ω : Ω) : W d := filtered_gradient (g_adv ω) z
   have hrw : ∀ ω, stochastic_zsharp_step w η z g_adv ω - w_star = A - η • B ω := by
     intro ω; unfold stochastic_zsharp_step A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
   -- Step 1: Expand the squared distance using the helper lemma
-  have h_body : (fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖^2) =
-                (fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2) := by
-    funext ω
-    rw [hrw, norm_sub_smul_sq A (B ω) η]
-  rw [h_body]
-  -- Step 2: Verify integrability of the expansion terms to apply linearity of expectation
-  have h_int_B2 : Integrable (fun ω => ‖B ω‖^2) := h_align.2.1
-  have h_int : Integrable (fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2) := by
-    apply Integrable.add
-    · apply Integrable.sub (integrable_const _)
-      exact Integrable.const_mul (h_align.1.inner_const A) (2 * η)
-    · exact Integrable.const_mul h_int_B2 (η^2)
-  -- Step 3: Use linearity of expectation and the stochastic alignment condition
-  have h_int_A2 : Integrable (fun _ : Ω => ‖A‖^2) := integrable_const (‖A‖^2)
-  have h_int_2ηB : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
-    Integrable.const_mul (h_align.1.inner_const A) (2 * η)
-  have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖^2) :=
-    Integrable.const_mul h_int_B2 (η^2)
-  calc 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖^2]
-      _ = 𝔼[fun ω => ‖A‖^2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖^2] :=
-          integral_add (h_int_A2.sub h_int_2ηB) h_int_η2B2
-      _ = 𝔼[fun _ => ‖A‖^2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖^2] := by
-          congr 1; exact integral_sub h_int_A2 h_int_2ηB
-      _ = ‖A‖^2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η^2 * 𝔼[fun ω => ‖B ω‖^2] := by
-          rw [integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
-      _ = ‖A‖^2 - 2 * η * inner ℝ 𝔼[B] A + η^2 * 𝔼[fun ω => ‖B ω‖^2] := by
-          rw [integral_inner_const h_align.1 A]
+  have h_expansion := stochastic_dist_expansion A B η h_align.1 h_align.2.1
+  simp_rw [hrw]
+  rw [h_expansion]
+  -- Step 2: Apply the stochastic alignment condition
+  calc ‖A‖^2 - 2 * η * inner ℝ 𝔼[B] A + η^2 * 𝔼[fun ω => ‖B ω‖^2]
       _ = ‖A‖^2 - (2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2]) := by ring
       _ ≤ ‖A‖^2 - (η * μ * ‖A‖^2) := by
           apply sub_le_sub_left
