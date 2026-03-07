@@ -8,6 +8,7 @@ import LeanSharp.Core.Filters
 import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
@@ -48,46 +49,60 @@ noncomputable def stochastic_zsharp_step (w : W d) (η z : ℝ) (g_adv : Ω → 
   let g_f := filtered_gradient (g_adv ω) z
   w - η • g_f
 
-/-- **L2 Bias-Variance Decomposition**: The standard identity
-$𝔼[‖g‖^2] = 𝔼[‖g - 𝔼[g]‖^2] + ‖𝔼[g]‖^2$ for any random vector $g$. -/
-theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
+/-- **L2 Bias-Variance Integrability**: Helper lemma containing the integrability checks
+for the decomposition. -/
+lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
     (g : Ω → W d) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_int_g : Integrable g) :
-    𝔼[fun ω => ‖g ω‖ ^ 2] = 𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
+    let c := 𝔼[g]
+    Integrable (fun _ : Ω => c) ∧
+    Integrable (fun _ : Ω => ‖c‖ ^ 2) ∧
+    Integrable (fun ω => g ω - c) ∧
+    Integrable (fun ω => 2 * inner ℝ (g ω - c) c) ∧
+    Integrable (fun ω => ‖g ω - c‖ ^ 2) := by
   let c := 𝔼[g]
-  -- Verify integrability for all expansion terms
   have h_int_c : Integrable (fun _ : Ω => c) := integrable_const c
   have h_int_c2 : Integrable (fun _ : Ω => ‖c‖ ^ 2) := integrable_const _
   have h_int_mc : Integrable (fun ω => g ω - c) := h_int_g.sub h_int_c
   have h_int_inner : Integrable (fun ω => 2 * inner ℝ (g ω - c) c) :=
     Integrable.const_mul (h_int_mc.inner_const c) 2
   have h_int_diff2 : Integrable (fun ω => ‖g ω - c‖ ^ 2) := by
-    -- ‖g-c‖² = ‖g‖² + ‖c‖² - 2⟨g, c⟩
     have h1 : (fun ω => ‖g ω - c‖ ^ 2) =
               (fun ω => ‖g ω‖ ^ 2 + ‖c‖ ^ 2 - 2 * inner ℝ (g ω) c) := by
       ext ω; rw [norm_sub_sq_real]; ring
     rw [h1]; apply Integrable.sub (h_int.add h_int_c2)
     exact Integrable.const_mul (h_int_g.inner_const c) 2
+  refine ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩
+
+set_option linter.unusedSectionVars false in
+/-- **L2 Bias-Variance Algebra**: Helper lemma for the algebraic expansion of the norm square. -/
+lemma l2_bias_variance_algebra (g : Ω → W d) (c : W d) :
+    (fun ω => ‖g ω‖ ^ 2) = (fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c) := by
+  ext ω; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
+
+/-- **L2 Bias-Variance Decomposition**: The standard identity
+$𝔼[‖g‖ ^ 2] = 𝔼[‖g - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2$ for any random vector $g$. -/
+theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (g : Ω → W d) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
+    (h_int_g : Integrable g) :
+    𝔼[fun ω => ‖g ω‖ ^ 2] = 𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
+  let c := 𝔼[g]
+  obtain ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩ :=
+    l2_bias_variance_integrability g h_int h_int_g
   calc 𝔼[fun ω => ‖g ω‖ ^ 2]
-      -- Expand ‖g‖² = ‖(g - c) + c‖²
       = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c] := by
-        apply integral_congr_ae; apply ae_of_all; intro ω
-        dsimp; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
-      _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2] +
-          𝔼[fun ω => 2 * inner ℝ (g ω - c) c] := by
-          apply integral_add (h_int_diff2.add h_int_c2) h_int_inner
-      _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + 𝔼[fun _ => ‖c‖ ^ 2] +
-          𝔼[fun ω => 2 * inner ℝ (g ω - c) c] := by
-          rw [integral_add h_int_diff2 h_int_c2]
-      -- E[⟨g - E[g], c⟩] = ⟨E[g] - E[g], c⟩ = 0
-      _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 + 0 := by
-          congr
-          · simp [integral_const]
-          · rw [integral_const_mul]
-            rw [integral_congr_ae (ae_of_all _ (fun ω => by rw [real_inner_comm]))]
-            rw [integral_inner h_int_mc c, integral_sub h_int_g h_int_c]
-            simp [c, integral_const]
-      _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by rw [add_zero]
+        rw [l2_bias_variance_algebra g c]
+    _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by
+        have h_int_inner' : Integrable (fun ω => inner ℝ (g ω - c) c) :=
+          h_int_mc.inner_const c
+        have h_zero : 𝔼[fun ω => inner ℝ (g ω - c) c] = 0 := by
+          simp_rw [real_inner_comm]
+          erw [integral_inner h_int_mc c, integral_sub h_int_g h_int_c]
+          simp only [integral_const, probReal_univ, one_smul, sub_self, inner_zero_right, c]
+        dsimp [c] at *
+        simp [integral_add, h_int_diff2, h_int_c2, h_int_inner, integral_const,
+              probReal_univ, integral_const_mul, h_zero]
 
 end LeanSharp
