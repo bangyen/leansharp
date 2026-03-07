@@ -8,6 +8,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Probability.Notation
 
 /-!
 # The Mathematical Landscape
@@ -39,6 +40,8 @@ This allows analyzing modern ML functions which may lack global $C^2$ smoothness
 -/
 
 namespace LeanSharp
+
+open ProbabilityTheory MeasureTheory
 
 variable {d : ℕ} [Fact (0 < d)]
 
@@ -76,6 +79,15 @@ lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
     inner ℝ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
   rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
   simp [LinearIsometryEquiv.apply_symm_apply]
+
+/-- **Integral Inner Product Identity**: The integral of an inner product with a
+constant vector is the inner product of the integral. -/
+lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
+    {f : Ω → W d} (hf : MeasureTheory.Integrable f) (c : W d) :
+    (∫ ω, inner ℝ (f ω) c ∂MeasureTheory.volume) = inner ℝ (∫ ω, f ω ∂MeasureTheory.volume) c := by
+  have : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) :=
+    by funext ω; rw [real_inner_comm]
+  rw [this, integral_inner hf c, real_inner_comm]
 
 /-- **Hessian Riesz Composition Definition**: Relates the Hessian operator
 to the second Fréchet derivative via the Riesz isometry. -/
@@ -127,6 +139,30 @@ lemma norm_descent_step_sq (w w_star g : W d) (η : ℝ) :
     ‖(w - η • g) - w_star‖^2 = ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
   have : (w - η • g) - w_star = (w - w_star) - η • g := by abel
   rw [this, norm_sub_smul_sq]
+
+/-- **Stochastic Distance Expansion**: The identity for the expected squared distance
+after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
+$η ^ 2 𝔼[‖B‖ ^ 2]$.
+-/
+lemma stochastic_dist_expansion {Ω : Type*} [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (A : W d) (B : Ω → W d) (η : ℝ)
+    (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
+    (∫ ω, ‖A - η • B ω‖ ^ 2 ∂volume) =
+      ‖A‖ ^ 2 - 2 * η * inner ℝ (∫ ω, B ω ∂volume) A + η^2 * (∫ ω, ‖B ω‖ ^ 2 ∂volume) := by
+  have h_int_1 : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
+    (integrable_const _).sub (h_int_B.inner_const A |>.const_mul (2 * η))
+  have h_int_2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) := h_int_B2.const_mul (η^2)
+  calc (∫ ω, ‖A - η • B ω‖ ^ 2 ∂volume)
+    _ = ∫ ω, ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2 ∂volume := by
+        simp_rw [norm_sub_smul_sq]
+    _ = (∫ ω, ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A ∂volume) + (∫ ω, η^2 * ‖B ω‖ ^ 2 ∂volume) :=
+        integral_add h_int_1 h_int_2
+    _ = ‖A‖ ^ 2 - 2 * η * (∫ ω, inner ℝ (B ω) A ∂volume) + η ^ 2 * (∫ ω, ‖B ω‖ ^ 2 ∂volume) := by
+        rw [integral_sub (integrable_const _) (h_int_B.inner_const A |>.const_mul (2 * η)),
+            integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
+    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (∫ ω, B ω ∂volume) A + η ^ 2 * (∫ ω, ‖B ω‖ ^ 2 ∂volume) := by
+        rw [integral_inner_const h_int_B A]
 
 end NoDimFact
 

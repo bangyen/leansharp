@@ -47,25 +47,6 @@ noncomputable def weight_sequence (w0 : W d) (η : ℕ → ℝ) (z : ℝ)
 section NoDimFact
 omit [Fact (0 < d)]
 
-/-- **Strongly Convex Contraction Algebra**: The algebraic simplification
-$1 - \frac{1}{\mu(t+1)} \cdot \mu = \frac{t}{t+1}$ used in convergence rates. -/
-lemma strongly_convex_contraction_algebra (t : ℕ) (μ : ℝ) (hμ : μ ≠ 0) :
-    1 - (1 / (μ * (t + 1))) * μ = (t : ℝ) / (t + 1) := by field_simp; ring
-
-/-- **Strongly Convex Initial Step**: The $T=1$ base case for the $O(1/T)$ rate induction. -/
-lemma strongly_convex_initial_step (w0 w_star : W d) (η0 μ : ℝ) (z : ℝ) (g0 : Ω → W d)
-    (h_align : stochastic_alignment_condition w_star w0 η0 z μ g0)
-    (h_eta0 : η0 = 1 / μ) (hμ : μ > 0) :
-    𝔼[fun ω => ‖stochastic_zsharp_step w0 η0 z g0 ω - w_star‖ ^ 2] ≤
-      ‖w0 - w_star‖ ^ 2 + 1 := by
-  have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 η0 z g0 ω - w_star‖ ^ 2] ≤
-      (1 - η0 * μ) * ‖w0 - w_star‖ ^ 2 :=
-    stochastic_zsharp_convergence w_star w0 η0 z μ h_align
-  have h_zero : 1 - η0 * μ = 0 := by
-    rw [h_eta0]; field_simp [hμ.ne']; ring
-  rw [h_zero, zero_mul] at h_bound
-  exact h_bound.trans (by linarith [pow_two_nonneg ‖w0 - w_star‖])
-
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
 lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
     (w_star w0 : W d) (g_adv : ℕ → Ω → W d) (ℱ : ℕ → MeasurableSpace Ω)
@@ -121,8 +102,13 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) w0
     by_cases ht : t = 0
     · -- Base case T = 1
       rw [ht, Nat.cast_one, div_one]
-      refine strongly_convex_initial_step w0 w_star (η 0) μ z (g_adv 0)
-        (h_align 0 (Classical.arbitrary Ω)) (by rw [h_step 0]; field_simp; ring) h_convex.1
+      have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 (η 0) z (g_adv 0) ω - w_star‖ ^ 2] ≤
+          (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
+        stochastic_zsharp_convergence w_star w0 (η 0) z μ (h_align 0 (Classical.arbitrary Ω))
+      have h_zero : 1 - (η 0) * μ = 0 := by
+        rw [h_step 0]; field_simp [h_convex.1.ne']; ring
+      rw [h_zero, zero_mul] at h_bound
+      exact h_bound.trans (by linarith [pow_two_nonneg ‖w0 - w_star‖])
     · -- Inductive step T = t + 1
       have hval : C / ↑(t + 1) = C / (↑t + 1) := by norm_cast
       rw [hval]
@@ -159,19 +145,6 @@ lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σs
     _ = (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by simp [weight_sequence]
 
-/-- **Non-convex Rate Rearrangement**: Final algebraic step for the gradient bound. -/
-lemma nonconvex_avg_grad_rearrange (avg S L0 Linf L_smooth σsq η0 : ℝ) (T : ℕ)
-    (h_avg : avg = (1 / (T : ℝ)) * S)
-    (h_S : (η0 / 2) * S ≤ L0 - Linf + (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq)
-    (h_η0 : η0 = 1 / Real.sqrt T) (hT : 0 < T) :
-    avg ≤ (2 * (L0 - Linf) + L_smooth * σsq) / Real.sqrt T := by
-  have hT_pos : (T : ℝ) > 0 := by norm_cast
-  calc avg = (2 / (T * η0)) * ((η0 / 2) * S) := by rw [h_avg]; field_simp [h_η0, hT_pos.ne']
-    _ ≤ (2 / (T * η0)) * (L0 - Linf + T * (η0^2 * L_smooth / 2) * σsq) :=
-        mul_le_mul_of_nonneg_left h_S (by rw [h_η0]; positivity)
-    _ = (2 * (L0 - Linf) + L_smooth * σsq) / Real.sqrt T := by
-        rw [h_η0]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
-
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
 norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
@@ -206,11 +179,19 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
     apply integral_mono (integrable_const _) (h_int_L T)
     intro ω; apply csInf_le h_bdd; apply Set.mem_range_self
   have h_rearrange_input : η 0 = 1 / Real.sqrt (T : ℝ) := h_step 0
-  have h_S_bdd : (η 0 / 2) * S ≤ L w0 - sInf (Set.range L) +
-      (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-    linarith [h_telescope, h_inf]
-  apply nonconvex_avg_grad_rearrange ((1 / (T : ℝ)) * S) S (L w0) (sInf (Set.range L))
-    L_smooth σsq (η 0) T rfl h_S_bdd h_rearrange_input hT
+  have h_S_bdd :
+    (η 0 / 2) * S ≤ L w0 - sInf (Set.range L) + (T : ℝ)
+      * (η 0 ^ 2 * L_smooth / 2) * σsq := by linarith
+  have h_rearrange :
+    (1 / (T : ℝ)) * S ≤ (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+    have hT_pos : (T : ℝ) > 0 := by norm_cast
+    calc (1 / (T : ℝ)) * S = (2 / (T * η 0)) * ((η 0 / 2) * S)
+      := by field_simp [h_rearrange_input, hT_pos.ne']
+      _ ≤ (2 / (T * η 0)) * (L w0 - sInf (Set.range L) + T * (η 0^2 * L_smooth / 2) * σsq) :=
+          mul_le_mul_of_nonneg_left h_S_bdd (by rw [h_rearrange_input]; positivity)
+      _ = (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+          rw [h_rearrange_input]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
+  exact h_rearrange
 
 end NoDimFact
 
