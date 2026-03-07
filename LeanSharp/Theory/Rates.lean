@@ -131,11 +131,8 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) w0
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) h_convex.1 (Nat.pos_of_ne_zero ht)
 
-/-- **Non-convex Telescoping Descent**: Sums the per-step descent inequalities
-to bound the total gradient norm sum over iterations. -/
 lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σsq η0 : ℝ)
     (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W d) (T : ℕ)
-    (_h_int_L : ∀ t, Integrable (fun ω => L (weight_sequence w0 η z g_adv t ω)))
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
         (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] +
@@ -207,7 +204,7 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
   have h_eta : ∀ t, η t = η 0 := fun t => by
     rw [h_step t, h_step 0]
   have h_telescope := nonconvex_telescoping_descent L w0 z L_smooth σsq (η 0) η
-      h_eta g_adv T h_int_L h_L_descent
+      h_eta g_adv T h_L_descent
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
     have h_const : ∫ _ : Ω, sInf (Set.range L) ∂volume = sInf (Set.range L) := by
       rw [integral_const]
