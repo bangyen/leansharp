@@ -89,6 +89,13 @@ lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
         η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_inner_const h_int_B A]
 
+/-- **Alignment Algebra Reduction**: Auxiliary lemma for the stochastic convergence.
+Concludes (1 - ημ) · ‖A‖² from the alignment bound. -/
+lemma alignment_algebra_reduction (A : W d) (η μ : ℝ) (bound : ℝ)
+    (h_align : bound ≥ η * μ * ‖A‖ ^ 2) :
+    ‖A‖ ^ 2 - bound ≤ (1 - η * μ) * ‖A‖ ^ 2 := by
+  linarith [pow_two_nonneg ‖A‖]
+
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
@@ -107,12 +114,14 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
   simp_rw [hrw]
   rw [h_expansion]
   -- Step 2: Apply the stochastic alignment condition
+  have h_bound : 2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2] ≥ η * μ * ‖A‖^2 :=
+    h_align.2.2
+  -- Step 3: Use the algebra reduction helper
   calc ‖A‖^2 - 2 * η * inner ℝ 𝔼[B] A + η^2 * 𝔼[fun ω => ‖B ω‖^2]
       _ = ‖A‖ ^ 2 - (2 * η * inner ℝ 𝔼[B] A -
           η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2]) := by ring
-      _ ≤ ‖A‖^2 - (η * μ * ‖A‖^2) := by
-          apply sub_le_sub_left
-          exact h_align.2.2
-      _ = (1 - η * μ) * ‖w - w_star‖^2 := by unfold A; ring
+      _ ≤ (1 - η * μ) * ‖w - w_star‖^2 := by
+          apply alignment_algebra_reduction A η μ
+          exact h_bound
 
 end LeanSharp

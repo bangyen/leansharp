@@ -150,6 +150,18 @@ theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
     have h_terms := sam_taylor_terms_bound M ρ hρ (gradient L w) ε hε_norm
     linarith [hdescent, h_terms]
 
+/-- **One-Step Descent Radius Check**: Verifies that the learning rate $\eta$
+multiplied by the Lipschitz constant $M$ is bounded by 1. -/
+lemma one_step_descent_radius_check (M : ℝ≥0) (η : ℝ)
+    (h_eta_bound : η ≤ 1 / (M : ℝ)) : (M : ℝ) * η ≤ 1 := by
+  if hM : (M : ℝ) = 0 then
+    simp [hM]
+  else
+    have hM_pos : 0 < (M : ℝ) := (NNReal.coe_nonneg M).lt_of_ne (Ne.symm hM)
+    calc (M : ℝ) * η
+      _ ≤ (M : ℝ) * (1 / (M : ℝ)) := mul_le_mul_of_nonneg_left h_eta_bound hM_pos.le
+      _ = 1 := mul_one_div_cancel hM_pos.ne.symm
+
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
 $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
@@ -162,14 +174,8 @@ theorem smooth_one_step_descent (L : W d → ℝ) (w : W d) (M : ℝ≥0) (η : 
   set g := gradient L w
   have h_descent := smooth_descent L w (-(η • g)) M h_diff h_smooth
   have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
-  have h_bound : (M : ℝ) * η ≤ 1 := by
-    if hM : (M : ℝ) = 0 then
-      rw [hM] at h_eta_bound; simp [div_zero] at h_eta_bound; linarith
-    else
-      have hM_pos : 0 < (M : ℝ) := (NNReal.coe_nonneg M).lt_of_ne (Ne.symm hM)
-      calc (M : ℝ) * η
-        _ ≤ (M : ℝ) * (1 / (M : ℝ)) := mul_le_mul_of_nonneg_left h_eta_bound hM_pos.le
-        _ = 1 := mul_one_div_cancel hM_pos.ne.symm
+  -- Step 1: Verify the descent radius bound
+  have h_bound := one_step_descent_radius_check M η h_eta_bound
   have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
     simp [inner_neg_right, inner_smul_right]
   have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by

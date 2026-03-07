@@ -159,11 +159,53 @@ lemma sum_sq_deviation_lt_d_var {σ : ℝ}
         Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_lt i)
     _ = d * σ^2 := by simp
 
+/-- **Squared Deviation Bound**: If a component's Z-score is less than or equal to $z \le 1$,
+its squared deviation is strictly less than the variance (provided variance is non-zero). -/
+lemma sq_deviation_lt_std_sq_of_z_le_one (g : W d) (i : Fin d) (z : ℝ)
+    (hz_le : z ≤ 1) (h_abs : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| <
+      z * vector_std g) :
+    ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 < (vector_std g)^2 := by
+  have h_nonneg : 0 ≤ vector_std g := Real.sqrt_nonneg _
+  have hsz : z * vector_std g ≤ vector_std g := mul_le_of_le_one_left h_nonneg hz_le
+  have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < vector_std g :=
+    h_abs.trans_le hsz
+  rw [sq_lt_sq, abs_of_nonneg h_nonneg]
+  exact h_lt
+
+/-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
+If all components were filtered out, the empirical variance would be less than itself. -/
+lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le : z ≤ 1)
+    (h_filtered : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0) :
+    False := by
+  haveI : Nonempty (Fin d) := ⟨⟨0, Fact.out⟩⟩
+  -- If no component is kept, then |g_i - μ| < zσ for all i.
+  have h_abs : ∀ i : Fin d, |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| <
+      z * vector_std g := by
+    intro i
+    have hi := h_filtered i
+    unfold z_score_mask at hi
+    simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi
+    split_ifs at hi with h_cond
+    · norm_num at hi
+    · exact not_le.mp h_cond
+  -- Since z ≤ 1, this implies (g_i - μ)² < σ² for all i.
+  have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 <
+      (vector_std g)^2 :=
+    fun i => sq_deviation_lt_std_sq_of_z_le_one g i z hz_le (h_abs i)
+  -- Summing the inequalities: Σ (g_i - μ)² < d * σ².
+  have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) <
+      (d : ℝ) * (vector_std g)^2 :=
+    sum_sq_deviation_lt_d_var h_sq
+  -- But by definition, Σ (g_i - μ)² = d * σ².
+  have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) =
+      d * (vector_std g)^2 :=
+    sum_sq_deviation_eq_d_var g
+  linarith
+
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
 theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
-  let μ := vector_mean g
   let σ := vector_std g
   haveI : 0 < d := Fact.out
   -- Step 1: Handle the vanishing variance case (all components are equal)
@@ -172,35 +214,18 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     use ⟨0, ‹0 < d›⟩
     simp [z_score_mask, σ, hσ]
   -- Step 2: Handle the non-vanishing variance case via contradiction
+  -- Step 2: Handle the non-vanishing variance case via contradiction
   · by_contra h
     push_neg at h
-    -- If no component is kept, then |g_i - μ| < zσ for all i.
-    have h_abs : ∀ i : Fin d, |(WithLp.equiv 2 (Fin d → ℝ) g) i - μ| < z * σ := by
+    -- Convert ≠ 1 to = 0 for the contradiction lemma
+    have h_zero : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0 := by
       intro i
       have hi := h i
-      unfold z_score_mask at hi
-      simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi
-      split_ifs at hi with h_cond
+      unfold z_score_mask at hi ⊢
+      simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi ⊢
+      split_ifs at hi ⊢ with h_cond
       · contradiction
-      · push_neg at h_cond; exact h_cond
-    -- Since z ≤ 1, this implies |g_i - μ| < σ for all i.
-    have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2 < σ^2 := by
-      intro i
-      have hlt := h_abs i
-      have h_nonneg : 0 ≤ σ := Real.sqrt_nonneg _
-      have hsz : z * σ ≤ σ := mul_le_of_le_one_left h_nonneg hz_le
-      have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - μ| < σ := hlt.trans_le hsz
-      rw [sq_lt_sq, abs_of_nonneg h_nonneg]
-      exact h_lt
-    -- Summing the inequalities across all components: Σ (g_i - μ)² < d * σ².
-    haveI : Nonempty (Fin d) := ⟨⟨0, ‹0 < d›⟩⟩
-    have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 :=
-      sum_sq_deviation_lt_d_var h_sq
-    -- Step 3: Deriving the contradiction from the definition of variance
-    -- By definition of σ², Σ (g_i - μ)² MUST equal d * σ².
-    have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) = d * σ^2 :=
-      sum_sq_deviation_eq_d_var g
-    -- The inequality Σ (g_i - μ)² < d * σ² contradicts Σ (g_i - μ)² = d * σ².
-    linarith
+      · rfl
+    exact z_score_nonempty_contradiction g z hz_le h_zero
 
 end LeanSharp
