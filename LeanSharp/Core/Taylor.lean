@@ -61,6 +61,21 @@ lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
     simpa using (hasDerivAt_id t).pow 2 |>.mul_const m
   convert h1.sub h2 |>.sub h3 using 1
 
+/-- **MVT Comparison Step**: Auxiliary lemma for the smooth descent bound. Concludes
+$\phi(1) \le \phi(0)$ given that the derivative of $\phi$ is non-positive. -/
+lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ_cont : ContinuousOn φ (Icc 0 1))
+    (hφ' : ∀ t ∈ Ico 0 1, HasDerivWithinAt φ (f' t) (Ici t) t)
+    (hf'_nonpos : ∀ t ∈ Ico 0 1, f' t ≤ 0) :
+    φ 1 ≤ φ 0 := by
+  let B := fun (_ : ℝ) => φ 0
+  let B' := fun (_ : ℝ) => (0 : ℝ)
+  have ha : φ 0 ≤ B 0 := le_refl _
+  have hB : ContinuousOn B (Icc 0 1) := continuousOn_const
+  have hB' : ∀ (x : ℝ), x ∈ Ico 0 1 → HasDerivWithinAt B (B' x) (Ici x) x :=
+    fun x _ => hasDerivAt_const x (φ 0) |>.hasDerivWithinAt
+  exact image_le_of_deriv_right_le_deriv_boundary hφ_cont hφ' ha hB hB' hf'_nonpos
+      (right_mem_Icc.mpr zero_le_one)
+
 /-- **The L-Smooth Descent Lemma**: `L(w + ε) ≤ L(w) + ⟪∇L(w), ε⟫ + M/2 · ‖ε‖²`. -/
 theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
     (h_diff : Differentiable ℝ L)
@@ -97,22 +112,24 @@ theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
   -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
   have hφ_cont : ContinuousOn φ (Icc 0 1) :=
     (smooth_descent_aux_continuous L w ε c m h_diff).continuousOn
-  have hφ_le : φ 1 ≤ φ 0 := by
-    let B := fun (_ : ℝ) => φ 0
-    let B' := fun (_ : ℝ) => (0 : ℝ)
-    have ha : φ 0 ≤ B 0 := le_refl _
-    have hB : ContinuousOn B (Icc 0 1) := continuousOn_const
-    have hB' : ∀ (x : ℝ), x ∈ Ico 0 1 → HasDerivWithinAt B (B' x) (Ici x) x :=
-      fun x _ => hasDerivAt_const x (φ 0) |>.hasDerivWithinAt
-    have h_deriv_le : ∀ (x : ℝ), x ∈ Ico 0 1 →
-        (inner ℝ (gradient L (w + x • ε) - gradient L w) ε - 2 * x * m) ≤ B' x :=
-      fun x hx => hφ'_nonpos x hx.1 (le_of_lt hx.2)
-    -- This tactic applies the Mean Value Theorem variant for derivatives
-    exact image_le_of_deriv_right_le_deriv_boundary hφ_cont
-      (fun t ht => (hφ' t).hasDerivWithinAt) ha hB hB' h_deriv_le (right_mem_Icc.mpr zero_le_one)
+  have hφ_le : φ 1 ≤ φ 0 :=
+    smooth_descent_mvt_step hφ_cont (fun t ht => (hφ' t).hasDerivWithinAt)
+      (fun x hx => hφ'_nonpos x hx.1 (le_of_lt hx.2))
   -- Step 4: Recover the descent bound from φ(1) ≤ φ(0)
   have hφ0 : φ 0 = L w := by simp [φ]
   simp [φ, hφ0, m, c] at hφ_le
+  linarith
+
+/-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
+lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W d) (h_norm : ‖ε‖ ≤ ρ) :
+    inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
+  have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
+    calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
+      _ ≤ ‖g‖ * ρ := mul_le_mul_of_nonneg_left h_norm (norm_nonneg _)
+  have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
+    apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
+      simp [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
+    positivity
   linarith
 
 /-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
@@ -129,20 +146,9 @@ theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
     rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
     -- Step 1: Apply the smooth descent lemma to the perturbation ε
     have hdescent := smooth_descent L w ε M h_diff h_smooth
-    -- Step 2: Bound the first-order term using Cauchy-Schwarz
-    have hcs : inner ℝ (gradient L w) ε ≤ ‖gradient L w‖ * ρ := by
-      calc inner ℝ (gradient L w) ε
-          ≤ ‖gradient L w‖ * ‖ε‖ := real_inner_le_norm _ _
-        _ ≤ ‖gradient L w‖ * ρ := by apply mul_le_mul_of_nonneg_left hε_norm (norm_nonneg _)
-    -- Step 3: Bound the second-order term using ‖ε‖ ≤ ρ
-    have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
-      have : ‖ε‖ ^ 2 ≤ ρ ^ 2 := by
-        apply sq_le_sq.mpr
-        rw [abs_of_nonneg (norm_nonneg ε), abs_of_nonneg hρ]
-        exact hε_norm
-      apply mul_le_mul_of_nonneg_left this
-      positivity
-    linarith [hdescent, hcs, hsq]
+    -- Step 2: Use the SAM Taylor Terms Bound helper lemma
+    have h_terms := sam_taylor_terms_bound M ρ hρ (gradient L w) ε hε_norm
+    linarith [hdescent, h_terms]
 
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:

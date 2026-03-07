@@ -106,6 +106,17 @@ lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
     linarith
   · linarith [mul_pos hη hμ]
 
+/-- **ZSharp Convergence Step Bound**: Proves that a single step of ZSharp
+is a contraction towards the optimum under alignment and step-size conditions. -/
+lemma zsharp_convergence_step_bound (w w_star g_f : W d) (η μ L_smooth : ℝ)
+    (hη : 0 ≤ η) (h_inner : μ * ‖w - w_star‖ ^ 2 ≤ inner ℝ g_f (w - w_star))
+    (h_gf_sq : ‖g_f‖ ^ 2 ≤ (L_smooth * ‖w - w_star‖) ^ 2)
+    (h_step_size : η * L_smooth ^ 2 ≤ μ) :
+    ‖(w - η • g_f) - w_star‖ ^ 2 ≤ (1 - η * μ) * ‖w - w_star‖ ^ 2 := by
+  rw [norm_descent_step_sq w w_star g_f η]
+  have hkey : η ^ 2 * L_smooth ^ 2 ≤ η * μ := by nlinarith [sq_nonneg η, h_step_size]
+  nlinarith [sq_nonneg ‖w - w_star‖, h_inner, h_gf_sq, hkey, mul_pow L_smooth ‖w - w_star‖ 2]
+
 /-- **Main Theorem**: ZSharp converges geometrically to `w_star` under smoothness,
 strong convexity, and the alignment condition. -/
 theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ : ℝ)
@@ -132,11 +143,8 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
         abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
     exact h_gf_bound
   -- Step 3: Rearrange the quadratic expansion of the update step using the helper lemma
-  rw [norm_descent_step_sq w w_star g_f η]
-  -- Step 4: Final substitution and linarith to confirm the geometric bound
-  have hkey : η^2 * L_smooth^2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
-  nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey,
-             mul_nonneg (le_of_lt hη) (mul_nonneg (le_of_lt h_convex.1) (sq_nonneg ‖w - w_star‖))]
+  apply zsharp_convergence_step_bound w w_star g_f η μ L_smooth
+    (le_of_lt hη) h_inner_bound h_gf_sq hη_tight
 
 end NoDimFact
 
