@@ -174,29 +174,16 @@ lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le :
     (h_filtered : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0) :
     False := by
   haveI : Nonempty (Fin d) := ⟨⟨0, Fact.out⟩⟩
-  -- If no component is kept, then |g_i - μ| < zσ for all i.
-  have h_abs : ∀ i : Fin d, |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| <
-      z * vector_std g := by
+  have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 <
+      (vector_std g)^2 := by
     intro i
     have hi := h_filtered i
     unfold z_score_mask at hi
     simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi
     split_ifs at hi with h_cond
     · norm_num at hi
-    · exact not_le.mp h_cond
-  -- Since z ≤ 1, this implies (g_i - μ)² < σ² for all i.
-  have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 <
-      (vector_std g)^2 :=
-    fun i => sq_deviation_lt_std_sq_of_z_le_one g i z hz_le (h_abs i)
-  -- Summing the inequalities: Σ (g_i - μ)² < d * σ².
-  have h_sum : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) <
-      (d : ℝ) * (vector_std g)^2 :=
-    sum_sq_deviation_lt_d_var h_sq
-  -- But by definition, Σ (g_i - μ)² = d * σ².
-  have h_def : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) =
-      d * (vector_std g)^2 :=
-    sum_sq_deviation_eq_d_var g
-  linarith
+    · exact sq_deviation_lt_std_sq_of_z_le_one g i z hz_le (not_le.mp h_cond)
+  linarith [sum_sq_deviation_lt_d_var h_sq, sum_sq_deviation_eq_d_var g]
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
@@ -204,22 +191,14 @@ theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
   let σ := vector_std g
   haveI : 0 < d := Fact.out
-  -- Step 1: Handle the vanishing variance case (all components are equal)
   by_cases hσ : σ = 0
-  · -- Case σ = 0: The filter naturally keeps all components.
-    use ⟨0, ‹0 < d›⟩
-    simp [z_score_mask, σ, hσ]
-  -- Step 2: Handle the non-vanishing variance case via contradiction
+  · use ⟨0, ‹0 < d›⟩; simp [z_score_mask, σ, hσ]
   · by_contra h
     push_neg at h
-    -- Convert ≠ 1 to = 0 for the contradiction lemma
-    have h_zero : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0 := by
-      intro i
-      have hi := h i
-      unfold z_score_mask at hi ⊢
-      simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi ⊢
-      split_ifs with h_cond <;> simp [*] at hi
-      · rfl
-    exact z_score_nonempty_contradiction g z hz_le h_zero
+    refine z_score_nonempty_contradiction g z hz_le (fun i => ?_)
+    have hi := h i
+    unfold z_score_mask at hi ⊢
+    simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi ⊢
+    split_ifs with h_cond <;> simp [*] at hi ⊢
 
 end LeanSharp
