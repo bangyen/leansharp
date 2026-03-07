@@ -64,29 +64,18 @@ lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
     (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
     𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
       ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η^2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
-  have h_int_A2 : Integrable (fun _ : Ω => ‖A‖ ^ 2) := integrable_const (‖A‖ ^ 2)
-  have h_int_inner : Integrable (fun ω => inner ℝ (B ω) A) := h_int_B.inner_const A
-  have h_int_2ηB : Integrable (fun ω => 2 * η * inner ℝ (B ω) A) :=
-    Integrable.const_mul h_int_inner (2 * η)
-  have h_int_η2B2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) :=
-    Integrable.const_mul h_int_B2 (η^2)
-  have h_int_sub : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
-    h_int_A2.sub h_int_2ηB
+  have h_int_1 : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
+    (integrable_const _).sub (h_int_B.inner_const A |>.const_mul (2 * η))
+  have h_int_2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) := h_int_B2.const_mul (η^2)
   calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
     _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
         simp_rw [norm_sub_smul_sq]
-    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] +
-        𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
-        integral_add h_int_sub h_int_η2B2
-    _ = 𝔼[fun _ => ‖A‖ ^ 2] - 𝔼[fun ω => 2 * η * inner ℝ (B ω) A] +
-        𝔼[fun ω => η ^ 2 * ‖B ω‖ ^ 2] := by
-        rw [integral_sub h_int_A2 h_int_2ηB]
-    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] +
-        η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
-        rw [integral_const, probReal_univ, one_smul,
-          integral_const_mul, integral_const_mul]
-    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A +
-        η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
+        integral_add h_int_1 h_int_2
+    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+        rw [integral_sub (integrable_const _) (h_int_B.inner_const A |>.const_mul (2 * η)),
+            integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
+    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_inner_const h_int_B A]
 
 /-- **Alignment Algebra Reduction**: Auxiliary lemma for the stochastic convergence.

@@ -41,13 +41,9 @@ private lemma path_hasDerivAt (L : W d → ℝ) (p ε : W d) (t : ℝ)
 /-- Auxiliary: the function `t ↦ L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²` is continuous. -/
 lemma smooth_descent_aux_continuous (L : W d → ℝ) (w ε : W d)
     (c m : ℝ) (h_diff : Differentiable ℝ L) :
-    Continuous (fun t => L (w + t • ε) - t * c - t ^ 2 * m) := by
-  have hLp : Continuous (fun (t : ℝ) => L (w + t • ε)) := by
-    apply h_diff.continuous.comp
-    exact continuous_const.add (continuous_id.smul continuous_const)
-  have h2 : Continuous (fun (t : ℝ) => t * c) := continuous_id.mul continuous_const
-  have h3 : Continuous (fun (t : ℝ) => t ^ 2 * m) := (continuous_id.pow 2).mul continuous_const
-  exact hLp.sub h2 |>.sub h3
+    Continuous (fun t => L (w + t • ε) - t * c - t ^ 2 * m) :=
+  (h_diff.continuous.comp (continuous_const.add (continuous_id.smul continuous_const))).sub
+    (continuous_id.mul continuous_const) |>.sub ((continuous_id.pow 2).mul continuous_const)
 
 /-- Auxiliary: the derivative of the smooth descent auxiliary function. -/
 lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
@@ -55,11 +51,9 @@ lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
     HasDerivAt (fun t => L (w + t • ε) - t * c - t ^ 2 * m)
       (inner ℝ (gradient L (w + t • ε)) ε - c - 2 * t * m) t := by
   have h1 := path_hasDerivAt L w ε t h_diff
-  have h2 : HasDerivAt (fun (s : ℝ) => s * c) c t := by
-    simpa using (hasDerivAt_id t).mul_const c
-  have h3 : HasDerivAt (fun (s : ℝ) => s ^ 2 * m) (2 * t * m) t := by
-    simpa using (hasDerivAt_id t).pow 2 |>.mul_const m
-  convert h1.sub h2 |>.sub h3 using 1
+  have h2 := (hasDerivAt_id t).mul_const c
+  have h3 := (hasDerivAt_id t).pow 2 |>.mul_const m
+  simpa using h1.sub h2 |>.sub h3
 
 /-- **MVT Comparison Step**: Auxiliary lemma for the smooth descent bound. Concludes
 $\phi(1) \le \phi(0)$ given that the derivative of $\phi$ is non-positive. -/
