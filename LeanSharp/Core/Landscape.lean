@@ -78,7 +78,7 @@ lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
 
 /-- **Hessian Riesz Composition Definition**: Relates the Hessian operator
 to the second Fréchet derivative via the Riesz isometry. -/
-lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
+private lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
     (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
     hessian L w = (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L
         fderiv ℝ (fderiv ℝ L) w :=
@@ -86,7 +86,7 @@ lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
 
 /-- **Hessian Symmetry Reduction**: Reduces the self-adjointness of the Hessian
 to the symmetry of the second Fréchet derivative. -/
-lemma hessian_symmetry_reduction (L : W d → ℝ) (w : W d)
+private lemma hessian_symmetry_reduction (L : W d → ℝ) (w : W d)
     (H : W d →L[ℝ] W d →L[ℝ] ℝ)
     (h_hess : hessian L w = (InnerProductSpace.toDual ℝ (W d)).symm.toContinuousLinearMap ∘L H)
     (h_sym : ∀ x y, (H x) y = (H y) x) :

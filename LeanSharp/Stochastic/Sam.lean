@@ -51,7 +51,7 @@ noncomputable def stochastic_zsharp_step (w : W d) (η z : ℝ) (g_adv : Ω → 
 
 /-- **L2 Bias-Variance Integrability**: Helper lemma containing the integrability checks
 for the decomposition. -/
-lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
+private lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
     (g : Ω → W d) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_int_g : Integrable g) :
@@ -77,7 +77,7 @@ lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
 
 omit [MeasureSpace Ω] in
 /-- **L2 Bias-Variance Algebra**: Helper lemma for the algebraic expansion of the norm square. -/
-lemma l2_bias_variance_algebra (g : Ω → W d) (c : W d) :
+private lemma l2_bias_variance_algebra (g : Ω → W d) (c : W d) :
     (fun ω => ‖g ω‖ ^ 2) = (fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c) := by
   ext ω; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
 
