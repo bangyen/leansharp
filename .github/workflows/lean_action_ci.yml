@@ -31,12 +31,8 @@ jobs:
 
       - name: Guard against new axiom declarations
         run: |
-          if grep -rn "^axiom " LeanSharp/; then
-            echo "ERROR: Unverified 'axiom' declarations found in LeanSharp source."
-            echo "All theorems must be formally proved. Replace axioms with theorems."
-            exit 1
-          fi
-          echo "✓ No axiom declarations found. All theorems formally proved."
+          chmod +x scripts/check_axioms.sh
+          ./scripts/check_axioms.sh
 
       - name: Guard against 'sorry' markers
         run: |
