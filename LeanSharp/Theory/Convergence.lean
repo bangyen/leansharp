@@ -75,18 +75,6 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
   ‖g_f‖ ≤ L_smooth * ‖w - w_star‖
 
-/-- **Stochastic Descent Condition**: A condition for smooth non-convex functions
-requiring that the filtered stochastic gradient provide sufficient descent
-relative to the expected gradient norm and variance. -/
-private def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
-    (L : W d → ℝ) (η z L_smooth σsq : ℝ) (g_adv : Ω → W d) (w : W d) : Prop :=
-  let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
-  let gradL := gradient L w
-  Integrable g_f ∧
-  Integrable (fun ω => ‖g_f ω‖^2) ∧
-  𝔼[fun ω => inner ℝ (g_f ω) (gradient L w)] - (η * L_smooth / 2) * 𝔼[fun ω => ‖g_f ω‖^2] ≥
-    (1 / 2) * ‖gradient L w‖^2 - (η * L_smooth / 2) * σsq
-
 /-- **Contraction Factor Validation**: Under standard step-size and smoothness bounds,
 the contraction factor $1 - ημ$ is strictly between 0 and 1. -/
 private lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
