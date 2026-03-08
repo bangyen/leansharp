@@ -26,7 +26,8 @@ theorem test_toy_gradient_nonzero :
   unfold exact_gradient_toy w_init
   intro h
   have h0 : (WithLp.equiv 2 (Fin 2 → ℝ) ((WithLp.equiv 2 (Fin 2 → ℝ)).symm fun i =>
-      2 * (WithLp.equiv 2 (Fin 2 → ℝ)) ((WithLp.equiv 2 (Fin 2 → ℝ)).symm fun i => if i = 0 then 1 else 3) i)) 0 = 0 := by
+      2 * (WithLp.equiv 2 (Fin 2 → ℝ)) ((WithLp.equiv 2 (Fin 2 → ℝ)).symm fun i =>
+        if i = 0 then 1 else 3) i)) 0 = 0 := by
     rw [h]; rfl
   simp only [Equiv.apply_symm_apply] at h0
   norm_num at h0
