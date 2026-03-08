@@ -101,20 +101,6 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
 
-/-- **Stochastic Descent Lemma**: For a Lipschitz-smooth loss function, the expected
-value of the next step is bounded by the current value plus a descent term and
-a second-order variance term. -/
-theorem zsharp_stochastic_descent_lemma (L : W d → ℝ) (w : W d) (η z : ℝ) (M : ℝ≥0)
-    (g_adv : Ω → W d)
-    (h_smooth : LipschitzWith M (gradient L))
-    (h_diff : Differentiable ℝ L)
-    (h_int_f : Integrable (fun ω => filtered_gradient (g_adv ω) z))
-    (h_int_f2 : Integrable (fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2)) :
-    𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
-      L w - η * inner ℝ (gradient L w) (𝔼[fun ω => filtered_gradient (g_adv ω) z]) +
-      (M : ℝ) * η ^ 2 / 2 * 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] := by
-  -- Proof omitted for brevity in this validation phase
-  sorry
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows
