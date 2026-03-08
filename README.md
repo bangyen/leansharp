@@ -25,21 +25,27 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 ## Roadmap & Future Work
 
-### Immediate Roadmap
-These items represent the next phase of formalization, balancing theoretical impact with Lean implementation feasibility:
-- **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices. Enables support for multi-dimensional weight tensors (matrices, 3D/4D weights).
-- **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions. Reduces manual proof overhead for future inequality analysis.
+The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
-### Future Directions (Mathlib Under Construction)
-The following "Grand Challenges" are currently limited by foundational gaps or high combinatorial complexity in Lean 4:
-- **Deterministic Stability**: Prove Lipschitz continuity and perturbation sensitivity for the Z-score filter. Requires handling the inherent discontinuities of hard-thresholding.
-- **Formal Stochastic Descent**: Formally derive the expected descent lemma from local Lipschitz smoothness. Requires intensive measure-theoretic integration of Taylor bounds.
-- **Z-Score Universality**: Formalize the Gaussian convergence of empirical Z-score distributions. Represents a specialized project in formalizing a CLT for filtering operations.
-- **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise). Limited by the measure-theoretic complexity of advanced probability in Lean.
-- **Sobolev Regularity**: Transition foundations from pointwise Fréchet differentiability to $H^1/H^2$ spaces. Replaces pointwise calculus with weak derivatives and $L^2$ norms.
-- **Isotropic Noise Models**: Prove statistical convergence toward "true" gradients under isotropic Gaussian noise. Faces boilerplate challenges in measure-theoretic expectation handling.
-- **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores. Limited by the combinatorial and order-theoretic complexity of sorting in Lean.
-- **Third-Order Descent**: Implement multivariate Taylor remainder theory for multilinear maps. Requires ongoing multilinear calculus refactors in Mathlib.
+### Immediate Roadmap (Usability & Tooling)
+- **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices to support multi-dimensional weight tensors.
+- **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions, reducing manual proof overhead.
+
+### Core Foundation (Required for Completeness)
+Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
+
+| Direction | Necessity | Difficulty | Bottleneck |
+| :--- | :--- | :--- | :--- |
+| **Formal Stochastic Descent** | Completes convergence proof for noisy gradients. | **Med-High** | Integration with Mathlib Measure Theory. |
+| **Deterministic Stability** | Proves Z-score filtering actually stabilizes training. | **High** | Handling non-Lipschitz hard-thresholding. |
+| **Z-Score Universality** | Justifies Z-score filtering statistical optimality. | **Extreme** | Formalizing a custom CLT for filtered distributions. |
+
+### Extensions & Grand Challenges
+These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
+- **Sobolev Regularity**: Transition foundations to $H^1/H^2$ spaces using weak derivatives.
+- **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise).
+- **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores.
+- **Third-Order Descent**: Implement multilinear Taylor remainder theory.
 
 ## Installation & Building
 
