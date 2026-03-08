@@ -14,16 +14,20 @@ This module defines a custom tactic for automating algebraic proofs involving
 Z-score gradient filtering. It leverages `aesop` with a specialized rule set.
 -/
 
+namespace LeanSharp
+
 /-- Standard unfolding rules for Z-score definitions. -/
 syntax "zsharp_solve" : tactic
 
 macro_rules
   | `(tactic| zsharp_solve) => `(tactic| (
-    simp (config := {zeta := false}) only [LeanSharp.filtered_gradient,
-      LeanSharp.z_score_mask, LeanSharp.hadamard] at *
+    simp (config := {zeta := false}) only [filtered_gradient,
+      z_score_mask, hadamard] at *
     simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at *
     try split_ifs <;> try (simp at *; linarith)
     try positivity
     try linarith
     try aesop
   ))
+
+end LeanSharp

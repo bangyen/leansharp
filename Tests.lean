@@ -6,8 +6,12 @@ Authors: Bangyen Pham
 import Tests.TacticTests
 import Tests.ExampleModels
 
+namespace LeanSharp.Tests
+
 /-!
 # Project Test Suite
 
 Aggregate entry point for all LeanSharp unit tests and model santity checks.
 -/
+
+end LeanSharp.Tests
