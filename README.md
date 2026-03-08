@@ -29,6 +29,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 These items represent the next phase of formalization, balancing theoretical impact with Lean implementation feasibility:
 - **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices. Enables support for multi-dimensional weight tensors (matrices, 3D/4D weights).
 - **Deterministic Stability**: Prove Lipschitz continuity and perturbation sensitivity for the Z-score filter. Bounds result variations relative to input gradient perturbations.
+- **Formal Stochastic Descent**: Formally derive the expected descent lemma from local Lipschitz smoothness. Requires integrating the second-order Taylor bound over the probability measure.
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions. Reduces manual proof overhead for future inequality analysis.
 
 ### Future Directions (Mathlib Under Construction)
