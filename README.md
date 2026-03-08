@@ -18,27 +18,27 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
 
-- ✅ **Optimizers & Curvature** (`Core/`): Hessian symmetry, L-smoothness, Z-score Hadamard filtering, and Taylor descent lemma.
-- ✅ **Stability & Robustness** (`Theory/`): Geometric convergence, explicit $O(1/T)$ rates, and **Outlier Signal Preservation** (formal proof that Z-scores extract sparse signals).
-- ✅ **Stochastic Convergence** (`Stochastic/`): Expected squared distance bounds and variance contraction under filtered stochastic gradients.
-- ✅ **Tactic Support** (`Tactic/`): Custom `zsharp_solve` tactic for automated Z-score algebraic proofs.
+- ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs.
+- ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients.
+- ✅ **Stochastic Convergence** (`Stochastic/`): Derived expected squared distance bounds and variance contraction. Validates algorithm progress under noisy, non-convex stochastic gradients.
+- ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
 
 ### Immediate Roadmap
 These items represent the next phase of formalization, balancing theoretical impact with Lean implementation feasibility:
-- **Tensor Generalization**: Transitioning from `Fin d` vectors to generic `Fintype` indices, enabling out-of-the-box support for multi-dimensional parameter tensors (matrices, 3D/4D weights).
-- **Deterministic Stability**: Proving Lipschitz properties and perturbation sensitivity of the Z-score filter (e.g., bounding the change in filtered output relative to input perturbations).
-- **Tactic Hardening**: Expanding `zsharp_solve` to automatically normalize `abs` and `ge_iff_le` expressions, reducing manual proof overhead for future analysis.
+- **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices. Enables support for multi-dimensional weight tensors (matrices, 3D/4D weights).
+- **Deterministic Stability**: Prove Lipschitz continuity and perturbation sensitivity for the Z-score filter. Bounds result variations relative to input gradient perturbations.
+- **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions. Reduces manual proof overhead for future inequality analysis.
 
 ### Future Directions (Mathlib Under Construction)
 The following "Grand Challenges" are currently limited by foundational gaps or high combinatorial complexity in Lean 4:
-- **ZSharp Universality**: Proving high-dimensional Gaussian convergence for Z-scores (requires Berry-Esseen / Stein's method foundations).
-- **Heavy-Tailed Noise**: Formalizing non-Gaussian probability oracles (e.g., Cauchy) is currently limited by the complexity of advanced measure theory in Lean.
-- **Sobolev Foundations**: Transitioning to Lebesgue spaces with AE-equivalence classes.
-- **Stochastic Noise Models**: Proving statistical convergence to "true" gradients under isotropic Gaussian noise (limited by the boilerplate of measure-theoretic expectations).
-- **Median-Based Robustness**: Formalizing median-based filtering as an alternative to Z-scores (limited by the combinatorial and order-theoretic complexity of sorting in Lean).
-- **Third-Order Descent**: Multivariate Taylor remainder theory for multilinear maps (requires ongoing MUC calculus refactor).
+- **Z-Score Universality**: Formalize the Gaussian convergence of empirical Z-score distributions. Represents a specialized project in formalizing a CLT for filtering operations.
+- **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise). Limited by the measure-theoretic complexity of advanced probability in Lean.
+- **Sobolev Regularity**: Transition foundations from pointwise Fréchet differentiability to $H^1/H^2$ spaces. Replaces pointwise calculus with weak derivatives and $L^2$ norms.
+- **Isotropic Noise Models**: Prove statistical convergence toward "true" gradients under isotropic Gaussian noise. Faces boilerplate challenges in measure-theoretic expectation handling.
+- **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores. Limited by the combinatorial and order-theoretic complexity of sorting in Lean.
+- **Third-Order Descent**: Implement multivariate Taylor remainder theory for multilinear maps. Requires ongoing multilinear calculus refactors in Mathlib.
 
 ## Installation & Building
 
