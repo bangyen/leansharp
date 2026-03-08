@@ -115,7 +115,7 @@ theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
   linarith
 
 /-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
-lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W d) (h_norm : ‖ε‖ ≤ ρ) :
+private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W d) (h_norm : ‖ε‖ ≤ ρ) :
     inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
   have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
     calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
@@ -146,7 +146,7 @@ theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
 
 /-- **One-Step Descent Radius Check**: Verifies that the learning rate $\eta$
 multiplied by the Lipschitz constant $M$ is bounded by 1. -/
-lemma one_step_descent_radius_check (M : ℝ≥0) (η : ℝ)
+private lemma one_step_descent_radius_check (M : ℝ≥0) (η : ℝ)
     (h_eta_bound : η ≤ 1 / (M : ℝ)) : (M : ℝ) * η ≤ 1 := by
   if hM : 0 < (M : ℝ) then
     linarith [((le_div_iff₀ hM).mp h_eta_bound : η * M ≤ 1)]

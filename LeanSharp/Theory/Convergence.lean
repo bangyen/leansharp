@@ -89,7 +89,7 @@ def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
 
 /-- **Contraction Factor Validation**: Under standard step-size and smoothness bounds,
 the contraction factor $1 - ημ$ is strictly between 0 and 1. -/
-lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
+private lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
     (hη : 0 < η) (hμ : 0 < μ) (hL : 0 < L_smooth)
     (hη_bound : η ≤ 1 / L_smooth) (hμL : μ < L_smooth) :
     0 < 1 - η * μ ∧ 1 - η * μ < 1 := by
@@ -103,7 +103,7 @@ lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
 
 /-- **ZSharp Convergence Step Bound**: Proves that a single step of ZSharp
 is a contraction towards the optimum under alignment and step-size conditions. -/
-lemma zsharp_convergence_step_bound (w w_star g_f : W d) (η μ L_smooth : ℝ)
+private lemma zsharp_convergence_step_bound (w w_star g_f : W d) (η μ L_smooth : ℝ)
     (hη : 0 ≤ η) (h_inner : μ * ‖w - w_star‖ ^ 2 ≤ inner ℝ g_f (w - w_star))
     (h_gf_sq : ‖g_f‖ ^ 2 ≤ (L_smooth * ‖w - w_star‖) ^ 2)
     (h_step_size : η * L_smooth ^ 2 ≤ μ) :

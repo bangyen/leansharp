@@ -30,7 +30,7 @@ theorem filtered_gradient_coord_preservation (g : W d) (z : ℝ) (i : Fin d)
 
 /-- **Zero Outlier Amplification**: If the mean is zero, the filtered gradient
 preserves all components exceeding $z \cdot \sigma$. -/
-lemma outlier_preservation_zero_mean (g : W d) (z : ℝ) (i : Fin d)
+private lemma outlier_preservation_zero_mean (g : W d) (z : ℝ) (i : Fin d)
     (h_μ : vector_mean g = 0)
     (h_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i| ≥ z * vector_std g) :
     (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =

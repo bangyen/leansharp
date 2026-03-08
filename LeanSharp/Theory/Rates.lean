@@ -45,7 +45,7 @@ noncomputable def weight_sequence (w0 : W d) (η : ℕ → ℝ) (z : ℝ)
 | t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) (η t) z (g_adv t) ω
 
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
-lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
+private lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
     (w_star w0 : W d) (g_adv : ℕ → Ω → W d) (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_cond_bound : ∀ t, ∀ᵐ ω ∂volume,
@@ -112,7 +112,7 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) w0
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) h_convex.1 (Nat.pos_of_ne_zero ht)
 
-lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σsq η0 : ℝ)
+private lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σsq η0 : ℝ)
     (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W d) (T : ℕ)
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
