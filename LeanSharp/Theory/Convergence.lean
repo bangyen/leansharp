@@ -78,7 +78,7 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
 /-- **Stochastic Descent Condition**: A condition for smooth non-convex functions
 requiring that the filtered stochastic gradient provide sufficient descent
 relative to the expected gradient norm and variance. -/
-def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
+private def stochastic_descent_condition {Ω : Type*} [MeasureSpace Ω]
     (L : W d → ℝ) (η z L_smooth σsq : ℝ) (g_adv : Ω → W d) (w : W d) : Prop :=
   let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
   let gradL := gradient L w

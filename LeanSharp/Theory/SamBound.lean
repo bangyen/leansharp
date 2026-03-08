@@ -32,7 +32,7 @@ variable {d : ℕ}
 
 /-- The maximal empirical risk in the $\rho$-neighborhood.
 This uses the exact `sam_objective` we formalized previously. -/
-noncomputable def sam_empirical_max (L_S : W d → ℝ) (w : W d) (ρ : ℝ) : ℝ :=
+private noncomputable def sam_empirical_max (L_S : W d → ℝ) (w : W d) (ρ : ℝ) : ℝ :=
   sam_objective L_S w ρ
 
 /-- The SAM Generalization Bound Theorem condition.
