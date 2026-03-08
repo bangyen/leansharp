@@ -26,7 +26,6 @@ It also defines conditions for stochastic non-convex convergence.
 * `is_strongly_convex`: Predicate for $\mu$-strong convexity of a function.
 * `zsharp_step`: The single-step update rule for the Z-score filtered SAM.
 * `alignment_condition`: An assumption about the alignment of the filtered gradient.
-* `stochastic_descent_condition`: A condition for non-convex convergence.
 
 ## Main theorems
 

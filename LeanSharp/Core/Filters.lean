@@ -51,6 +51,7 @@ noncomputable def vector_variance (g : W d) : ℝ :=
 noncomputable def vector_std (g : W d) : ℝ :=
   Real.sqrt (vector_variance g)
 
+/-- The mean of a scalar-multiple vector is the scalar multiple of the original mean. -/
 @[simp]
 lemma vector_mean_smul (k : ℝ) (g : W d) :
     vector_mean (k • g) = k * vector_mean g := by
@@ -71,6 +72,7 @@ private lemma vector_variance_smul (k : ℝ) (g : W d) :
     rw [this, ← mul_sub, mul_pow]
   simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
 
+/-- The standard deviation scales linearly with a non-negative scalar. -/
 @[simp]
 lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W d) :
     vector_std (k • g) = k * vector_std g := by

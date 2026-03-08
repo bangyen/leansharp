@@ -31,11 +31,11 @@ Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (Fin 
 The gradient is computed as the Riesz representation `InnerProductSpace.toDual.symm`
 of the Fréchet derivative.
 
-### Functional Analysis (Sobolev Spaces)
+### Research Note: Functional Analysis (Sobolev Spaces)
 
-We are transitioning the project foundations to rely on Sobolev spaces
+Future transitions of the project foundations may rely on Sobolev spaces
 (specifically $H^1$ and $H^2$) for regularity, rather than just $C^k$.
-This allows analyzing modern ML functions which may lack global $C^2$ smoothness.
+This would allow analyzing modern ML functions which may lack global $C^2$ smoothness.
 -/
 
 namespace LeanSharp
