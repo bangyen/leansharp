@@ -73,16 +73,14 @@ theorem toy_filtered_gradient_check :
     filtered_gradient (exact_gradient_toy w_init) 1 = exact_gradient_toy w_init := by
   have h_mean : vector_mean (exact_gradient_toy w_init) = 4 := by
     unfold vector_mean exact_gradient_toy w_init
-    simp (config := {decide := true}) only [Equiv.apply_symm_apply,
-               Finset.sum_insert, Finset.sum_singleton]
+    simp (config := {decide := true}) only [Equiv.apply_symm_apply]
     norm_num
   have h_std : vector_std (exact_gradient_toy w_init) = 2 := by
     have h_var : vector_variance (exact_gradient_toy w_init) = 4 := by
       unfold vector_variance
       rw [h_mean]
       unfold exact_gradient_toy w_init
-      simp (config := {decide := true}) only [Equiv.apply_symm_apply,
-                 Finset.sum_insert, Finset.sum_singleton]
+      simp (config := {decide := true}) only [Equiv.apply_symm_apply]
       norm_num
     unfold vector_std
     rw [h_var]
