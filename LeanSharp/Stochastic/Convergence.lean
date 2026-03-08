@@ -116,6 +116,7 @@ theorem zsharp_stochastic_descent_lemma (L : W d → ℝ) (w : W d) (η z : ℝ)
   -- Proof omitted for brevity in this validation phase
   sorry
 
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows
 that the algorithm converges to a neighborhood of the optimum. -/
 theorem zsharp_stochastic_convergence (L : W d → ℝ) (w : W d) (η z σsq : ℝ) (M : ℝ≥0)
