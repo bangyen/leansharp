@@ -107,9 +107,6 @@ omit [IsProbabilityMeasure (volume : Measure Ω)] in
 that the algorithm converges to a neighborhood of the optimum. -/
 theorem zsharp_stochastic_convergence (L : W d → ℝ) (w : W d) (η z σsq : ℝ) (M : ℝ≥0)
     (g_adv : Ω → W d)
-    (_h_smooth : LipschitzWith M (gradient L))
-    (_h_diff : Differentiable ℝ L)
-    (_h_var : 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] ≤ σsq + ‖gradient L w‖ ^ 2)
     (h_descent : 𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
       L w - η * ‖gradient L w‖ ^ 2 + (M : ℝ) * η ^ 2 / 2 * (σsq + ‖gradient L w‖ ^ 2)) :
     𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
