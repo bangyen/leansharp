@@ -2,7 +2,7 @@ name = "leansharp"
 version = "1.0.0"
 description = "Formal Verification of Sharpness-Aware Minimization with Z-Score Gradient Filtering"
 keywords = ["math", "machine-learning", "optimization", "formal-verification"]
-defaultTargets = ["LeanSharp"]
+defaultTargets = ["LeanSharp", "Tests"]
 lintDriver = "batteries/runLinter"
 
 [leanOptions]
@@ -19,3 +19,6 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "LeanSharp"
+
+[[lean_lib]]
+name = "Tests"
