@@ -126,9 +126,6 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
   rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
   exact h_sqrt
 
-/-- **Mask Contraction**: The L2 norm squared variant of the bound. -/
-theorem filtered_norm_bound_sq (g : W d) (z : ℝ) :
-    ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := filtered_gradient_norm_sq_le g z
 
 /-- **Variance Sum Equality**: The sum of squared deviations from the mean is equal to
 the dimension times the variance (square of standard deviation). -/

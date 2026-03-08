@@ -39,14 +39,14 @@ private lemma path_hasDerivAt (L : W d → ℝ) (p ε : W d) (t : ℝ)
   simpa [gradient, InnerProductSpace.toDual_symm_apply] using hcomp
 
 /-- Auxiliary: the function `t ↦ L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²` is continuous. -/
-lemma smooth_descent_aux_continuous (L : W d → ℝ) (w ε : W d)
+private lemma smooth_descent_aux_continuous (L : W d → ℝ) (w ε : W d)
     (c m : ℝ) (h_diff : Differentiable ℝ L) :
     Continuous (fun t => L (w + t • ε) - t * c - t ^ 2 * m) :=
   (h_diff.continuous.comp (continuous_const.add (continuous_id.smul continuous_const))).sub
     (continuous_id.mul continuous_const) |>.sub ((continuous_id.pow 2).mul continuous_const)
 
 /-- Auxiliary: the derivative of the smooth descent auxiliary function. -/
-lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
+private lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
     (c m t : ℝ) (h_diff : Differentiable ℝ L) :
     HasDerivAt (fun t => L (w + t • ε) - t * c - t ^ 2 * m)
       (inner ℝ (gradient L (w + t • ε)) ε - c - 2 * t * m) t := by
@@ -57,7 +57,7 @@ lemma smooth_descent_aux_hasDerivAt (L : W d → ℝ) (w ε : W d)
 
 /-- **MVT Comparison Step**: Auxiliary lemma for the smooth descent bound. Concludes
 $\phi(1) \le \phi(0)$ given that the derivative of $\phi$ is non-positive. -/
-lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ_cont : ContinuousOn φ (Icc 0 1))
+private lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ_cont : ContinuousOn φ (Icc 0 1))
     (hφ' : ∀ t ∈ Ico 0 1, HasDerivWithinAt φ (f' t) (Ici t) t)
     (hf'_nonpos : ∀ t ∈ Ico 0 1, f' t ≤ 0) :
     φ 1 ≤ φ 0 := by

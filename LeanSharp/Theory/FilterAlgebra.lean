@@ -10,8 +10,9 @@ import Mathlib.Algebra.Order.Field.Basic
 
 /-!
 # Z-Score Filter Algebra
-15: These are "Green Zone" foundational proofs that do not require external axioms.
-16: -/
+
+These are "Green Zone" foundational proofs that do not require external axioms.
+-/
 
 namespace LeanSharp
 
@@ -60,10 +61,6 @@ theorem single_outlier_extraction (g : W d) (z : ℝ) (i : Fin d)
       rw [h_μ, sub_zero]; exact h_not
     exact filtered_gradient_zero_of_not_outlier g z j h_μ_j
 
-/-- **Norm Reduction**: The L2 norm of the filtered gradient is always
-less than or equal to the norm of the original gradient. -/
-theorem filtered_norm_le (g : W d) (z : ℝ) :
-    ‖filtered_gradient g z‖ ≤ ‖g‖ := filtered_norm_bound g z
 
 /-- **Sparse Signal Recovery**: In a regime where one component is much larger
 than the rest (an outlier), the Z-score filter preserves it. -/
