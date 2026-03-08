@@ -61,4 +61,51 @@ theorem exact_gradient_w_init :
   · norm_num
   · norm_num
 
+/-- **Toy Perturbation**: For the quadratic bowl at $w=[1, 3]$, the perturbation
+direction is aligned with the gradient $[2, 6]$. -/
+noncomputable def toy_perturbation (ρ : ℝ) : W2 :=
+  sam_perturbation L_toy w_init ρ
+
+/-- **Toy Filtered Gradient**: At a threshold $z=1$, the filter preserves
+all components of the gradient $[2, 6]$ because they are both "outliers"
+relative to their mean in this 2D case. -/
+theorem toy_filtered_gradient_check :
+    filtered_gradient (exact_gradient_toy w_init) 1 = exact_gradient_toy w_init := by
+  have h_mean : vector_mean (exact_gradient_toy w_init) = 4 := by
+    unfold vector_mean exact_gradient_toy w_init
+    simp (config := {decide := true}) only [Equiv.apply_symm_apply,
+               Finset.sum_insert, Finset.sum_singleton]
+    norm_num
+  have h_std : vector_std (exact_gradient_toy w_init) = 2 := by
+    have h_var : vector_variance (exact_gradient_toy w_init) = 4 := by
+      unfold vector_variance
+      rw [h_mean]
+      unfold exact_gradient_toy w_init
+      simp (config := {decide := true}) only [Equiv.apply_symm_apply,
+                 Finset.sum_insert, Finset.sum_singleton]
+      norm_num
+    unfold vector_std
+    rw [h_var]
+    have h_sq : (2 : ℝ) ^ 2 = 4 := by norm_num
+    rw [← h_sq, Real.sqrt_sq (by norm_num)]
+  unfold filtered_gradient z_score_mask hadamard
+  rw [h_mean, h_std]
+  ext i
+  dsimp only [Equiv.symm_apply_apply, Equiv.apply_symm_apply,
+              WithLp.equiv_symm_apply, WithLp.equiv_apply]
+  fin_cases i <;> {
+    unfold exact_gradient_toy w_init
+    split_ifs with h <;> norm_num at *
+  }
+
+/-- **Toy ZSharp Step**: A single step of ZSharp on the quadratic bowl.
+Starting at $[1, 3]$ with $\eta=0.1$, the next point is $[0.8, 2.4]$. -/
+theorem toy_zsharp_step_reduction :
+    let w_next := w_init - (0.1 : ℝ) • (exact_gradient_toy w_init)
+    L_toy w_next < L_toy w_init := by
+  intro w_next
+  unfold L_toy w_next w_init exact_gradient_toy
+  simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
+  norm_num
+
 end LeanSharp.Toy
