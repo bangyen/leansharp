@@ -50,7 +50,7 @@ def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω 
 
 /-- **Integral Inner Product Identity**: The integral of an inner product with a
 constant vector is the inner product of the integral. -/
-lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
+private lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
     {f : Ω → W d} (hf : Integrable f) (c : W d) :
     (∫ ω, inner ℝ (f ω) c ∂volume) = inner ℝ (∫ ω, f ω ∂volume) c := by
   have : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) :=
@@ -61,7 +61,7 @@ lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
 after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
 $η ^ 2 𝔼[‖B‖ ^ 2]$.
 -/
-lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
+private lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
     (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
     𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
       ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η^2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by

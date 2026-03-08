@@ -37,7 +37,7 @@ noncomputable def hessian_quadratic_form (L : W d → ℝ) (w v : W d) : ℝ :=
 
 /-- **Curvature Scaling Lemma**: Proves that the curvature of a vector scaled by
 the squared norm's contraction factor is correctly bounded. -/
-lemma curvature_norm_scale_le (L : W d → ℝ) (w v g : W d)
+private lemma curvature_norm_scale_le (L : W d → ℝ) (w v g : W d)
     (hT : (hessian L w).toLinearMap.IsSymmetric)
     (h_spectral : ∀ u : W d, hessian_quadratic_form L w u ≤ sharpness L w hT * ‖u‖ ^ 2)
     (h_sharpness_nonneg : 0 ≤ sharpness L w hT)

@@ -30,6 +30,8 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Usability & Tooling)
 - **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices to support multi-dimensional weight tensors.
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions, reducing manual proof overhead.
+- **Non-Convex Convergence**: Prove convergence to stationary points ($\min 𝔼[‖∇L‖^2] \to 0$) for general non-convex functions.
+- **Advanced Schedulers**: Formalize convergence under adaptive or decaying learning rate schedules (e.g., Cosine Decay).
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.

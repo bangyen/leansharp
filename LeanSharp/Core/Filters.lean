@@ -99,7 +99,7 @@ noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
 
 /-- **Binary Mask Norm Bound**: Multiplying a scalar by 0 or 1 does not increase its
 norm squared. -/
-lemma norm_sq_mul_binary_le (x : ℝ) (P : Prop) [Decidable P] :
+private lemma norm_sq_mul_binary_le (x : ℝ) (P : Prop) [Decidable P] :
     ‖x * (if P then (1 : ℝ) else 0)‖^2 ≤ ‖x‖^2 := by
   split_ifs
   · simp
@@ -129,7 +129,7 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
 
 /-- **Variance Sum Equality**: The sum of squared deviations from the mean is equal to
 the dimension times the variance (square of standard deviation). -/
-lemma sum_sq_deviation_eq_d_var (g : W d) :
+private lemma sum_sq_deviation_eq_d_var (g : W d) :
     (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) = d * (vector_std g)^2 := by
   have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
   rw [vector_std, Real.sq_sqrt h_var_pos, vector_variance]
@@ -139,7 +139,7 @@ lemma sum_sq_deviation_eq_d_var (g : W d) :
 
 /-- **Sum of Squares Bound**: If every squared deviation is strictly less than σ²,
 the total sum is strictly less than d * σ². -/
-lemma sum_sq_deviation_lt_d_var {σ : ℝ}
+private lemma sum_sq_deviation_lt_d_var {σ : ℝ}
     (h_lt : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2 < σ^2)
     [Nonempty (Fin d)] :
     (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 := by
@@ -150,7 +150,7 @@ lemma sum_sq_deviation_lt_d_var {σ : ℝ}
 
 /-- **Squared Deviation Bound**: If a component's Z-score is less than or equal to $z \le 1$,
 its squared deviation is strictly less than the variance (provided variance is non-zero). -/
-lemma sq_deviation_lt_std_sq_of_z_le_one (g : W d) (i : Fin d) (z : ℝ)
+private lemma sq_deviation_lt_std_sq_of_z_le_one (g : W d) (i : Fin d) (z : ℝ)
     (hz_le : z ≤ 1) (h_abs : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| <
       z * vector_std g) :
     ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 < (vector_std g)^2 := by
@@ -163,7 +163,7 @@ lemma sq_deviation_lt_std_sq_of_z_le_one (g : W d) (i : Fin d) (z : ℝ)
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out, the empirical variance would be less than itself. -/
-lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le : z ≤ 1)
+private lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le : z ≤ 1)
     (h_filtered : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0) :
     False := by
   haveI : Nonempty (Fin d) := ⟨⟨0, Fact.out⟩⟩

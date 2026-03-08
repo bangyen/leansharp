@@ -41,7 +41,7 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **Filtered Variance Contraction**: The L2 norm contraction of the filter ensures
 that the filtered gradient expectation is bounded by the original. -/
-lemma filtered_variance_contraction (g : Ω → W d) (z : ℝ)
+private lemma filtered_variance_contraction (g : Ω → W d) (z : ℝ)
     (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2))
     (h_int_g : Integrable (fun ω => ‖g ω‖ ^ 2)) :
     𝔼[fun ω => ‖filtered_gradient (g ω) z‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
