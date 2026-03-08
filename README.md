@@ -28,12 +28,12 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 ### Immediate Roadmap
 These items represent the next phase of formalization, balancing theoretical impact with Lean implementation feasibility:
 - **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices. Enables support for multi-dimensional weight tensors (matrices, 3D/4D weights).
-- **Deterministic Stability**: Prove Lipschitz continuity and perturbation sensitivity for the Z-score filter. Bounds result variations relative to input gradient perturbations.
-- **Formal Stochastic Descent**: Formally derive the expected descent lemma from local Lipschitz smoothness. Requires integrating the second-order Taylor bound over the probability measure.
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions. Reduces manual proof overhead for future inequality analysis.
 
 ### Future Directions (Mathlib Under Construction)
 The following "Grand Challenges" are currently limited by foundational gaps or high combinatorial complexity in Lean 4:
+- **Deterministic Stability**: Prove Lipschitz continuity and perturbation sensitivity for the Z-score filter. Requires handling the inherent discontinuities of hard-thresholding.
+- **Formal Stochastic Descent**: Formally derive the expected descent lemma from local Lipschitz smoothness. Requires intensive measure-theoretic integration of Taylor bounds.
 - **Z-Score Universality**: Formalize the Gaussian convergence of empirical Z-score distributions. Represents a specialized project in formalizing a CLT for filtering operations.
 - **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise). Limited by the measure-theoretic complexity of advanced probability in Lean.
 - **Sobolev Regularity**: Transition foundations from pointwise Fréchet differentiability to $H^1/H^2$ spaces. Replaces pointwise calculus with weak derivatives and $L^2$ norms.
