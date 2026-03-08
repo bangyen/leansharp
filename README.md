@@ -14,13 +14,16 @@ Machine Learning optimization algorithms are notoriously difficult to analyze th
 
 By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel. **Critically, every theorem is formally proved with zero `axiom` declarations in the source; all mathematical claims are derived directly from Mathlib.**
 
-## Verification Status
+### Verification Status
 
-All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**.
+All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**. This status is automatically enforced by strict CI quality guards:
+*   `check_axioms.sh`: Fails if any `axiom` declaration is found.
+*   `check_sorry.sh`: Fails if any `sorry` proof marker is found.
+*   `audit_usage.sh`: Automatically audits for unused public declarations.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs.
 - ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients.
-- ✅ **Stochastic Convergence** (`Stochastic/`): Derived expected squared distance bounds and variance contraction. Validates algorithm progress under noisy, non-convex stochastic gradients.
+- ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients.
 - ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
@@ -30,7 +33,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Usability & Tooling)
 - **Tensor Generalization**: Transition from `Fin d` vectors to generic `Fintype` indices to support multi-dimensional weight tensors.
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions, reducing manual proof overhead.
-- **Non-Convex Convergence**: Prove convergence to stationary points ($\min 𝔼[‖∇L‖^2] \to 0$) for general non-convex functions.
+- **Stochastic Convergence Rates**: Complete the summation and induction to prove $O(1/T)$ or $O(1/\sqrt{T})$ convergence to stationary points for stochastic non-convex functions.
 - **Advanced Schedulers**: Formalize convergence under adaptive or decaying learning rate schedules (e.g., Cosine Decay).
 
 ### Core Foundation (Required for Completeness)
