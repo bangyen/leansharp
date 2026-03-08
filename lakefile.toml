@@ -4,6 +4,7 @@ description = "Formal Verification of Sharpness-Aware Minimization with Z-Score 
 keywords = ["math", "machine-learning", "optimization", "formal-verification"]
 defaultTargets = ["LeanSharp", "Tests"]
 lintDriver = "batteries/runLinter"
+testDriver = "Tests"
 
 [leanOptions]
 pp.unicode.fun = true                 # pretty-prints `fun a ↦ b`
