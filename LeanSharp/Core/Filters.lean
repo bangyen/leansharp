@@ -61,7 +61,7 @@ lemma vector_mean_smul (k : ℝ) (g : W d) :
   rw [mul_div_assoc]
 
 @[simp]
-lemma vector_variance_smul (k : ℝ) (g : W d) :
+private lemma vector_variance_smul (k : ℝ) (g : W d) :
     vector_variance (k • g) = k^2 * vector_variance g := by
   unfold vector_variance
   simp only [vector_mean_smul]

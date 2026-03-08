@@ -71,7 +71,7 @@ def is_sobolev_regular (L : W d → ℝ) : Prop :=
 
 /-- **Riesz Inner Product Identity**: The inner product with the Riesz representation
 of a linear form `φ` is simply the evaluation of `φ`. -/
-lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
+private lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
     inner ℝ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
   rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
   simp [LinearIsometryEquiv.apply_symm_apply]
