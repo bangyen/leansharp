@@ -109,6 +109,18 @@ theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
   simp [φ, hφ0, m, c] at hφ_le
   linarith
 
+/-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
+private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W d) (h_norm : ‖ε‖ ≤ ρ) :
+    inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
+  have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
+    calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
+      _ ≤ ‖g‖ * ρ := mul_le_mul_of_nonneg_left h_norm (norm_nonneg _)
+  have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
+    apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
+      simp [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
+    positivity
+  linarith
+
 /-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
 theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
     (M : ℝ≥0)
@@ -123,17 +135,8 @@ theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
     rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
     -- Step 1: Apply the smooth descent lemma to the perturbation ε
     have hdescent := smooth_descent L w ε M h_diff h_smooth
-    -- Step 2: Use the SAM Taylor Terms Bound (inlined)
-    have h_terms : inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤
-        ‖gradient L w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
-      have hcs : inner ℝ (gradient L w) ε ≤ ‖gradient L w‖ * ρ := by
-        calc inner ℝ (gradient L w) ε ≤ ‖gradient L w‖ * ‖ε‖ := real_inner_le_norm _ _
-          _ ≤ ‖gradient L w‖ * ρ := mul_le_mul_of_nonneg_left hε_norm (norm_nonneg _)
-      have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
-        apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
-          simp [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, hε_norm]))
-        positivity
-      linarith
+    -- Step 2: Use the SAM Taylor Terms Bound helper lemma
+    have h_terms := sam_taylor_terms_bound M ρ hρ (gradient L w) ε hε_norm
     linarith [hdescent, h_terms]
 
 /-- **One-Step Descent Radius Check**: Verifies that the learning rate $\eta$
