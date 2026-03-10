@@ -70,6 +70,25 @@ private lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ
   exact image_le_of_deriv_right_le_deriv_boundary hφ_cont hφ' ha hB hB' hf'_nonpos
       (right_mem_Icc.mpr zero_le_one)
 
+/-- Auxiliary: the derivative of the φ function is non-positive. -/
+private lemma smooth_descent_phi_deriv_nonpos (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
+    (h_smooth : LipschitzWith M (gradient L)) (t : ℝ) (h0t : 0 ≤ t) (m : ℝ)
+    (h_2tm : 2 * t * m = (M : ℝ) * t * ‖ε‖ ^ 2) :
+    inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m ≤ 0 := by
+  have hcs : inner ℝ (gradient L (w + t • ε) - gradient L w) ε ≤
+      ‖gradient L (w + t • ε) - gradient L w‖ * ‖ε‖ :=
+    real_inner_le_norm _ _
+  have hlip : ‖gradient L (w + t • ε) - gradient L w‖ ≤ (M : ℝ) * t * ‖ε‖ := by
+    have := h_smooth.dist_le_mul (w + t • ε) w
+    simpa [dist_eq_norm, norm_smul, abs_of_nonneg h0t, mul_assoc] using this
+  have h_bound : inner ℝ (gradient L (w + t • ε) - gradient L w) ε ≤
+      (M : ℝ) * t * ‖ε‖ ^ 2 := by
+    calc inner ℝ (gradient L (w + t • ε) - gradient L w) ε
+        ≤ ‖gradient L (w + t • ε) - gradient L w‖ * ‖ε‖ := hcs
+      _ ≤ ((M : ℝ) * t * ‖ε‖) * ‖ε‖ := mul_le_mul_of_nonneg_right hlip (norm_nonneg ε)
+      _ = (M : ℝ) * t * ‖ε‖ ^ 2 := by ring
+  linarith [h_bound, h_2tm]
+
 /-- **The L-Smooth Descent Lemma**: `L(w + ε) ≤ L(w) + ⟪∇L(w), ε⟫ + M/2 · ‖ε‖²`. -/
 theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
     (h_diff : Differentiable ℝ L)
@@ -89,20 +108,8 @@ theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
   have hφ'_nonpos : ∀ (t : ℝ), 0 ≤ t → t ≤ 1 →
       inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m ≤ 0 := by
     intro t h0t ht1
-    have hcs : inner ℝ (gradient L (w + t • ε) - gradient L w) ε ≤
-        ‖gradient L (w + t • ε) - gradient L w‖ * ‖ε‖ :=
-      real_inner_le_norm _ _
-    have hlip : ‖gradient L (w + t • ε) - gradient L w‖ ≤ (M : ℝ) * t * ‖ε‖ := by
-      have := h_smooth.dist_le_mul (w + t • ε) w
-      simpa [dist_eq_norm, norm_smul, abs_of_nonneg h0t, mul_assoc] using this
-    have h_bound : inner ℝ (gradient L (w + t • ε) - gradient L w) ε ≤
-        (M : ℝ) * t * ‖ε‖ ^ 2 := by
-      calc inner ℝ (gradient L (w + t • ε) - gradient L w) ε
-          ≤ ‖gradient L (w + t • ε) - gradient L w‖ * ‖ε‖ := hcs
-        _ ≤ ((M : ℝ) * t * ‖ε‖) * ‖ε‖ := mul_le_mul_of_nonneg_right hlip (norm_nonneg ε)
-        _ = (M : ℝ) * t * ‖ε‖ ^ 2 := by ring
-    have h_2tm : 2 * t * m = (M : ℝ) * t * ‖ε‖ ^ 2 := by simp [m]; ring
-    linarith [h_bound, h_2tm]
+    apply smooth_descent_phi_deriv_nonpos L w ε M h_smooth t h0t m
+    simp [m]; ring
   -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
   have hφ_cont : ContinuousOn φ (Icc 0 1) :=
     (smooth_descent_aux_continuous L w ε c m h_diff).continuousOn

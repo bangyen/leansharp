@@ -142,6 +142,19 @@ private lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_sm
     _ = (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by simp [weight_sequence]
 
+/-- Auxiliary: the final algebraic rearrangement for the non-convex rate. -/
+private lemma nonconvex_rate_rearrangement (T : ℕ) (hT : T > 0) (η0 S L_smooth σsq diff : ℝ)
+    (h_eta : η0 = 1 / Real.sqrt (T : ℝ))
+    (h_S_bdd : (η0 / 2) * S ≤ diff + (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq) :
+    (1 / (T : ℝ)) * S ≤ (2 * diff + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+  have hT_pos : (T : ℝ) > 0 := by norm_cast
+  calc (1 / (T : ℝ)) * S = (2 / (T * η0)) * ((η0 / 2) * S)
+    := by field_simp [h_eta, hT_pos.ne']
+    _ ≤ (2 / (T * η0)) * (diff + T * (η0^2 * L_smooth / 2) * σsq) :=
+        mul_le_mul_of_nonneg_left h_S_bdd (by rw [h_eta]; positivity)
+    _ = (2 * diff + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
+        rw [h_eta]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
+
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
 norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
@@ -180,14 +193,9 @@ theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : �
     (η 0 / 2) * S ≤ L w0 - sInf (Set.range L) + (T : ℝ)
       * (η 0 ^ 2 * L_smooth / 2) * σsq := by linarith
   have h_rearrange :
-    (1 / (T : ℝ)) * S ≤ (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
-    have hT_pos : (T : ℝ) > 0 := by norm_cast
-    calc (1 / (T : ℝ)) * S = (2 / (T * η 0)) * ((η 0 / 2) * S)
-      := by field_simp [h_rearrange_input, hT_pos.ne']
-      _ ≤ (2 / (T * η 0)) * (L w0 - sInf (Set.range L) + T * (η 0^2 * L_smooth / 2) * σsq) :=
-          mul_le_mul_of_nonneg_left h_S_bdd (by rw [h_rearrange_input]; positivity)
-      _ = (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
-          rw [h_rearrange_input]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
+    (1 / (T : ℝ)) * S ≤ (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) :=
+    nonconvex_rate_rearrangement T hT η0 S L_smooth σsq (L w0 - sInf (Set.range L))
+      h_rearrange_input h_S_bdd
   exact h_rearrange
 
 end LeanSharp
