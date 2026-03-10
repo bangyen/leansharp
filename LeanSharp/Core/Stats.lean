@@ -38,23 +38,19 @@ lemma vector_mean_smul (k : ℝ) (g : W d) :
   simp only [h_smul, ← Finset.mul_sum]
   rw [mul_div_assoc]
 
-@[simp]
-private lemma vector_variance_smul (k : ℝ) (g : W d) :
-    vector_variance (k • g) = k^2 * vector_variance g := by
-  unfold vector_variance
-  simp only [vector_mean_smul]
-  have h_inner (i : Fin d) : ((WithLp.equiv 2 (Fin d → ℝ) (k • g)) i - k * vector_mean g)^2 =
-    k^2 * ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 := by
-    have : (WithLp.equiv 2 (Fin d → ℝ) (k • g)) i = k * (WithLp.equiv 2 (Fin d → ℝ) g) i := rfl
-    rw [this, ← mul_sub, mul_pow]
-  simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
-
 /-- The standard deviation scales linearly with a non-negative scalar. -/
 @[simp]
 lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W d) :
     vector_std (k • g) = k * vector_std g := by
   unfold vector_std
-  rw [vector_variance_smul]
+  have h_var_smul : vector_variance (k • g) = k^2 * vector_variance g := by
+    unfold vector_variance; simp only [vector_mean_smul]
+    have h_inner (i : Fin d) : ((WithLp.equiv 2 (Fin d → ℝ) (k • g)) i - k * vector_mean g)^2 =
+      k^2 * ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 := by
+      have : (WithLp.equiv 2 (Fin d → ℝ) (k • g)) i = k * (WithLp.equiv 2 (Fin d → ℝ) g) i := rfl
+      rw [this, ← mul_sub, mul_pow]
+    simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
+  rw [h_var_smul]
   have h_nonneg : 0 ≤ vector_variance g := by
     unfold vector_variance
     positivity

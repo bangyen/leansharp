@@ -35,16 +35,6 @@ noncomputable def hessian_quadratic_form (L : W d → ℝ) (w v : W d) : ℝ :=
   @inner ℝ (W d) _ v ((hessian L w) v)
 
 
-/-- **Curvature Scaling Lemma**: Proves that the curvature of a vector scaled by
-the squared norm's contraction factor is correctly bounded. -/
-private lemma curvature_norm_scale_le (L : W d → ℝ) (w v g : W d)
-    (hT : (hessian L w).toLinearMap.IsSymmetric)
-    (h_spectral : ∀ u : W d, hessian_quadratic_form L w u ≤ sharpness L w hT * ‖u‖ ^ 2)
-    (h_sharpness_nonneg : 0 ≤ sharpness L w hT)
-    (h_norm_le : ‖v‖ ^ 2 ≤ ‖g‖ ^ 2) :
-    hessian_quadratic_form L w v ≤ sharpness L w hT * ‖g‖ ^ 2 :=
-  (h_spectral v).trans (mul_le_mul_of_nonneg_left h_norm_le h_sharpness_nonneg)
-
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.
 
@@ -54,8 +44,8 @@ theorem zsharp_curvature_bound (L : W d → ℝ) (w : W d) (g : W d) (z : ℝ)
     (hT : (hessian L w).toLinearMap.IsSymmetric)
     (h_spectral : ∀ v : W d, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
     (h_sharpness_nonneg : 0 ≤ sharpness L w hT) :
-    hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 :=
-  curvature_norm_scale_le L w (filtered_gradient g z) g hT h_spectral h_sharpness_nonneg
-    (filtered_gradient_norm_sq_le g z)
+    hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 := by
+  apply (h_spectral _).trans
+  apply mul_le_mul_of_nonneg_left (filtered_gradient_norm_sq_le g z) h_sharpness_nonneg
 
 end LeanSharp

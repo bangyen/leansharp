@@ -38,15 +38,6 @@ open ProbabilityTheory MeasureTheory
 variable {d : ℕ}
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- **Filtered Variance Contraction**: The L2 norm contraction of the filter ensures
-that the filtered gradient expectation is bounded by the original. -/
-private lemma filtered_variance_contraction (g : Ω → W d) (z : ℝ)
-    (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2))
-    (h_int_g : Integrable (fun ω => ‖g ω‖ ^ 2)) :
-    𝔼[fun ω => ‖filtered_gradient (g ω) z‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-  integral_mono h_int_fg h_int_g fun ω => filtered_gradient_norm_sq_le (g ω) z
-
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
 variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/
 theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (z σsq : ℝ)
@@ -57,7 +48,7 @@ theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (
     𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2] ≤ σsq + ‖gradient L w‖ ^ 2 := by
   calc 𝔼[fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2]
       ≤ 𝔼[fun ω => ‖g_adv ω‖ ^ 2] :=
-        filtered_variance_contraction g_adv z h_int_fg h_int_g
+        integral_mono h_int_fg h_int_g (fun ω => filtered_gradient_norm_sq_le (g_adv ω) z)
     _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
         rw [l2_bias_variance_decomposition g_adv h_int_g h_unbiased.1, h_unbiased.2]
     _ ≤ σsq + ‖gradient L w‖ ^ 2 := by
