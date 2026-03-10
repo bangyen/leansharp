@@ -48,37 +48,6 @@ def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω 
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
   η^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ η * μ * ‖w - w_star‖ ^ 2
 
-/-- **Integral Inner Product Identity**: The integral of an inner product with a
-constant vector is the inner product of the integral. -/
-private lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
-    {f : Ω → W d} (hf : Integrable f) (c : W d) :
-    (∫ ω, inner ℝ (f ω) c ∂volume) = inner ℝ (∫ ω, f ω ∂volume) c := by
-  have : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) :=
-    by funext ω; rw [real_inner_comm]
-  rw [this, integral_inner hf c, real_inner_comm]
-
-/-- **Stochastic Distance Expansion**: The identity for the expected squared distance
-after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
-$η ^ 2 𝔼[‖B‖ ^ 2]$.
--/
-private lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
-    (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
-    𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
-      ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η^2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
-  have h_int_1 : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
-    (integrable_const _).sub (h_int_B.inner_const A |>.const_mul (2 * η))
-  have h_int_2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) := h_int_B2.const_mul (η^2)
-  calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
-    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
-        simp_rw [norm_sub_smul_sq]
-    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
-        integral_add h_int_1 h_int_2
-    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
-        rw [integral_sub (integrable_const _) (h_int_B.inner_const A |>.const_mul (2 * η)),
-            integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
-    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
-        rw [integral_inner_const h_int_B A]
-
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
@@ -92,10 +61,25 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
   have hrw : ∀ ω, stochastic_zsharp_step w η z g_adv ω - w_star = A - η • B ω := by
     intro ω; unfold stochastic_zsharp_step A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
-  -- Step 1: Expand the squared distance using the helper lemma
-  have h_expansion := stochastic_dist_expansion A B η h_align.1 h_align.2.1
+  -- Step 1: Expand the squared distance (inlined)
   simp_rw [hrw]
-  rw [h_expansion]
+  have h_int_1 : Integrable (fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A) :=
+    (integrable_const _).sub (h_align.1.inner_const A |>.const_mul (2 * η))
+  have h_int_2 : Integrable (fun ω => η^2 * ‖B ω‖ ^ 2) := h_align.2.1.const_mul (η^2)
+  calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
+        simp_rw [norm_sub_smul_sq]
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
+        integral_add h_int_1 h_int_2
+    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+        rw [integral_sub (integrable_const _) (h_align.1.inner_const A |>.const_mul (2 * η)),
+            integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
+    _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+        have this : (∫ ω, inner ℝ (B ω) A ∂volume) = inner ℝ (∫ ω, B ω ∂volume) A := by
+          have h1 : (fun ω => inner ℝ (B ω) A) = (fun ω => inner ℝ A (B ω)) :=
+            by funext ω; rw [real_inner_comm]
+          rw [h1, integral_inner h_align.1 A, real_inner_comm]
+        rw [this]
   -- Step 2: Apply the stochastic alignment condition and algebra reduction
   have h_bound : 2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2] ≥ η * μ * ‖A‖^2 :=
     h_align.2.2

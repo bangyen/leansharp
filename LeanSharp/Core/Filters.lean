@@ -76,40 +76,6 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
   exact h_sqrt
 
 
-/-- **Variance Sum Equality**: The sum of squared deviations from the mean is equal to
-the dimension times the variance (square of standard deviation). -/
-private lemma sum_sq_deviation_eq_d_var (g : W d) :
-    (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) = d * (vector_std g)^2 := by
-  have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
-  rw [vector_std, Real.sq_sqrt h_var_pos, vector_variance]
-  rcases Nat.eq_zero_or_pos d with rfl | hd
-  · simp
-  · field_simp [hd.ne']
-
-/-- **Sum of Squares Bound**: If every squared deviation is strictly less than σ²,
-the total sum is strictly less than d * σ². -/
-private lemma sum_sq_deviation_lt_d_var {σ : ℝ}
-    (h_lt : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2 < σ^2)
-    [Nonempty (Fin d)] :
-    (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2) < d * σ^2 := by
-  calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - μ)^2)
-      < (∑ i : Fin d, σ^2) :=
-        Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_lt i)
-    _ = d * σ^2 := by simp
-
-/-- **Squared Deviation Bound**: If a component's Z-score is less than or equal to $z \le 1$,
-its squared deviation is strictly less than the variance (provided variance is non-zero). -/
-private lemma sq_deviation_lt_std_sq_of_z_le_one (g : W d) (i : Fin d) (z : ℝ)
-    (hz_le : z ≤ 1) (h_abs : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| <
-      z * vector_std g) :
-    ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 < (vector_std g)^2 := by
-  have h_nonneg : 0 ≤ vector_std g := Real.sqrt_nonneg _
-  have hsz : z * vector_std g ≤ vector_std g := mul_le_of_le_one_left h_nonneg hz_le
-  have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < vector_std g :=
-    h_abs.trans_le hsz
-  rw [sq_lt_sq, abs_of_nonneg h_nonneg]
-  exact h_lt
-
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out, the empirical variance would be less than itself. -/
 private lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le : z ≤ 1)
@@ -124,8 +90,29 @@ private lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) 
     simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi
     split_ifs at hi with h_cond
     · norm_num at hi
-    · exact sq_deviation_lt_std_sq_of_z_le_one g i z hz_le (not_le.mp h_cond)
-  linarith [sum_sq_deviation_lt_d_var h_sq, sum_sq_deviation_eq_d_var g]
+    · have h_abs := not_le.mp h_cond
+      have h_nonneg : 0 ≤ vector_std g := Real.sqrt_nonneg _
+      have hsz : z * vector_std g ≤ vector_std g := mul_le_of_le_one_left h_nonneg hz_le
+      have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < vector_std g :=
+        h_abs.trans_le hsz
+      rw [sq_lt_sq, abs_of_nonneg h_nonneg]
+      exact h_lt
+  -- Step 2: Use the Variance Sum Equality and Sum of Squares Bound (inlined)
+  have h_sum_lt : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) <
+      d * (vector_std g)^2 := by
+    calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2)
+        < (∑ i : Fin d, (vector_std g)^2) :=
+          Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
+      _ = d * (vector_std g)^2 := by simp
+  have h_sum_eq : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) =
+      d * (vector_std g)^2 := by
+    have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
+    rw [vector_std, Real.sq_sqrt h_var_pos, vector_variance]
+    have hd : (d : ℝ) ≠ 0 := by
+      have : 0 < d := Fact.out
+      positivity
+    field_simp [hd]
+  linarith
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/

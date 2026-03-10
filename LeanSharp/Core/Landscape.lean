@@ -57,13 +57,6 @@ It is a continuous linear map from the parameter space to itself: $W \toL[ℝ] W
 noncomputable def hessian (L : W d → ℝ) (w : W d) : W d →L[ℝ] W d :=
   fderiv ℝ (gradient L) w
 
-/-- **Riesz Inner Product Identity**: The inner product with the Riesz representation
-of a linear form `φ` is simply the evaluation of `φ`. -/
-private lemma inner_riesz_symm_apply (φ : W d →L[ℝ] ℝ) (z : W d) :
-    inner ℝ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
-  rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
-  simp [LinearIsometryEquiv.apply_symm_apply]
-
 /-- **Hessian Riesz Composition Definition**: Relates the Hessian operator
 to the second Fréchet derivative via the Riesz isometry. -/
 private lemma hessian_def_riesz_comp (L : W d → ℝ) (w : W d)
@@ -84,7 +77,12 @@ private lemma hessian_symmetry_reduction (L : W d → ℝ) (w : W d)
   simp only [ContinuousLinearMap.coe_comp, LinearMap.coe_toContinuousLinearMap,
              LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
              LinearIsometryEquiv.coe_toLinearEquiv]
-  rw [inner_riesz_symm_apply, real_inner_comm, inner_riesz_symm_apply]
+  -- Inlined: the inner product with the Riesz representation is the evaluation.
+  have h_riesz (φ : W d →L[ℝ] ℝ) (z : W d) :
+      inner ℝ ((InnerProductSpace.toDual ℝ (W d)).symm φ) z = φ z := by
+    rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
+    simp [LinearIsometryEquiv.apply_symm_apply]
+  rw [h_riesz, real_inner_comm, h_riesz]
   exact h_sym x y
 
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
