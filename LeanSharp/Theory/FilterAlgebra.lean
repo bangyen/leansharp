@@ -28,15 +28,6 @@ theorem filtered_gradient_coord_preservation (g : W d) (z : ℝ) (i : Fin d)
     (WithLp.equiv 2 (Fin d → ℝ) g) i := by
   zsharp_solve
 
-/-- **Zero Outlier Amplification**: If the mean is zero, the filtered gradient
-preserves all components exceeding $z \cdot \sigma$. -/
-private lemma outlier_preservation_zero_mean (g : W d) (z : ℝ) (i : Fin d)
-    (h_μ : vector_mean g = 0)
-    (h_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i| ≥ z * vector_std g) :
-    (WithLp.equiv 2 (Fin d → ℝ) (filtered_gradient g z)) i =
-    (WithLp.equiv 2 (Fin d → ℝ) g) i := by
-  zsharp_solve
-
 /-- **Non-Outlier Extraction**: If a component is NOT an outlier, it is zeroed out by the filter. -/
 theorem filtered_gradient_zero_of_not_outlier (g : W d) (z : ℝ) (i : Fin d)
     (h_not_outlier : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < z * vector_std g) :
@@ -55,7 +46,7 @@ theorem single_outlier_extraction (g : W d) (z : ℝ) (i : Fin d)
   ext j
   simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
   split_ifs with hj
-  · rw [hj]; exact outlier_preservation_zero_mean g z i h_μ h_outlier
+  · rw [hj]; zsharp_solve
   · have h_not := h_others j hj
     have h_μ_j : |(WithLp.equiv 2 (Fin d → ℝ) g) j - vector_mean g| < z * vector_std g := by
       rw [h_μ, sub_zero]; exact h_not

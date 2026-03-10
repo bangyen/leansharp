@@ -75,12 +75,6 @@ private lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
     exact Integrable.const_mul (h_int_g.inner_const c) 2
   refine ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩
 
-omit [MeasureSpace Ω] in
-/-- **L2 Bias-Variance Algebra**: Helper lemma for the algebraic expansion of the norm square. -/
-private lemma l2_bias_variance_algebra (g : Ω → W d) (c : W d) :
-    (fun ω => ‖g ω‖ ^ 2) = (fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c) := by
-  ext ω; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
-
 /-- **L2 Bias-Variance Decomposition**: The standard identity
 $𝔼[‖g‖ ^ 2] = 𝔼[‖g - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2$ for any random vector $g$. -/
 theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
@@ -93,7 +87,7 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     l2_bias_variance_integrability g h_int h_int_g
   calc 𝔼[fun ω => ‖g ω‖ ^ 2]
       = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c] := by
-        rw [l2_bias_variance_algebra g c]
+        congr; ext ω; dsimp; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
     _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by
         have h_int_inner' : Integrable (fun ω => inner ℝ (g ω - c) c) :=
           h_int_mc.inner_const c
