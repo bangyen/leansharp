@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 import Lean
 import Aesop
 import LeanSharp.Core.Filters
+import LeanSharp.Core.Stats
 
 /-!
 # The `zsharp_solve` Tactic

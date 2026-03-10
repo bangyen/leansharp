@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
+import LeanSharp.Core.Stats
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
 import LeanSharp.Core.Sam
@@ -13,6 +14,7 @@ import LeanSharp.Examples.ToyApplication
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization
+import LeanSharp.Stochastic.Rates
 import LeanSharp.Stochastic.Sam
 
 import LeanSharp.Tactic.ZSolve
@@ -21,8 +23,7 @@ import LeanSharp.Theory.Convergence
 import LeanSharp.Theory.FilterAlgebra
 import LeanSharp.Theory.Generalization
 import LeanSharp.Theory.HessianContraction
-import LeanSharp.Theory.ModelTheorems
-import LeanSharp.Theory.Rates
+import LeanSharp.Theory.ChainStability
 import LeanSharp.Theory.SamBound
 
 /-!
