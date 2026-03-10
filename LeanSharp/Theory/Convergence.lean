@@ -74,31 +74,6 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
   ‖g_f‖ ≤ L_smooth * ‖w - w_star‖
 
-/-- **Contraction Factor Validation**: Under standard step-size and smoothness bounds,
-the contraction factor $1 - ημ$ is strictly between 0 and 1. -/
-private lemma zsharp_contraction_factor_valid (η μ L_smooth : ℝ)
-    (hη : 0 < η) (hμ : 0 < μ) (hL : 0 < L_smooth)
-    (hη_bound : η ≤ 1 / L_smooth) (hμL : μ < L_smooth) :
-    0 < 1 - η * μ ∧ 1 - η * μ < 1 := by
-  constructor
-  · have : η * μ < 1 := calc
-      η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
-      _     ≤ (1 / L_smooth) * L_smooth := mul_le_mul_of_nonneg_right hη_bound hL.le
-      _     = 1 := div_mul_cancel₀ 1 hL.ne'
-    linarith
-  · linarith [mul_pos hη hμ]
-
-/-- **ZSharp Convergence Step Bound**: Proves that a single step of ZSharp
-is a contraction towards the optimum under alignment and step-size conditions. -/
-private lemma zsharp_convergence_step_bound (w w_star g_f : W d) (η μ L_smooth : ℝ)
-    (hη : 0 ≤ η) (h_inner : μ * ‖w - w_star‖ ^ 2 ≤ inner ℝ g_f (w - w_star))
-    (h_gf_sq : ‖g_f‖ ^ 2 ≤ (L_smooth * ‖w - w_star‖) ^ 2)
-    (h_step_size : η * L_smooth ^ 2 ≤ μ) :
-    ‖(w - η • g_f) - w_star‖ ^ 2 ≤ (1 - η * μ) * ‖w - w_star‖ ^ 2 := by
-  rw [norm_descent_step_sq w w_star g_f η]
-  have hkey : η ^ 2 * L_smooth ^ 2 ≤ η * μ := by nlinarith [sq_nonneg η, h_step_size]
-  nlinarith [sq_nonneg ‖w - w_star‖, h_inner, h_gf_sq, hkey, mul_pow L_smooth ‖w - w_star‖ 2]
-
 /-- **Main Theorem**: ZSharp converges geometrically to `w_star` under smoothness,
 strong convexity, and the alignment condition. -/
 theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ : ℝ)
@@ -111,8 +86,15 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
   intro h_smooth h_convex ⟨hη, hρ⟩
   -- Step 1: Define the contraction factor and verify its properties
   set c := 1 - η * μ with hc_def
-  obtain ⟨h_c_pos, h_c_lt_1⟩ :=
-    zsharp_contraction_factor_valid η μ L_smooth hη h_convex.1 h_smooth.1 hη_bound hμL
+  have h_c_valid : 0 < c ∧ c < 1 := by
+    constructor
+    · have : η * μ < 1 := calc
+        η * μ < η * L_smooth := mul_lt_mul_of_pos_left hμL hη
+        _     ≤ (1 / L_smooth) * L_smooth := mul_le_mul_of_nonneg_right hη_bound h_smooth.1.le
+        _     = 1 := div_mul_cancel₀ 1 h_smooth.1.ne'
+      linarith
+    · linarith [mul_pos hη h_convex.1]
+  obtain ⟨h_c_pos, h_c_lt_1⟩ := h_c_valid
   refine ⟨c, h_c_pos, h_c_lt_1, fun w => ?_⟩
   simp only [zsharp_step]
   let ε := sam_perturbation L w ρ
@@ -124,8 +106,9 @@ theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ
     rw [abs_of_nonneg (norm_nonneg _),
         abs_of_nonneg (mul_nonneg (le_of_lt h_smooth.1) (norm_nonneg _))]
     exact h_gf_bound
-  -- Step 3: Rearrange the quadratic expansion of the update step using the helper lemma
-  apply zsharp_convergence_step_bound w w_star g_f η μ L_smooth
-    (le_of_lt hη) h_inner_bound h_gf_sq hη_tight
+  -- Step 3: Rearrange the quadratic expansion of the update step (inlined)
+  rw [norm_descent_step_sq w w_star g_f η]
+  have hkey : η ^ 2 * L_smooth ^ 2 ≤ η * μ := by nlinarith [sq_nonneg η, hη_tight]
+  nlinarith [sq_nonneg ‖w - w_star‖, h_inner_bound, h_gf_sq, hkey, mul_pow L_smooth ‖w - w_star‖ 2]
 
 end LeanSharp
