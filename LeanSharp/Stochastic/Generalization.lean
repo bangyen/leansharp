@@ -35,12 +35,12 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **ZSharp Variance Bound**: If the base stochastic gradient has bounded
 variance $\sigma^2$, the filtered gradient also has strictly bounded variance. -/
-theorem zsharp_variance_bound (L : W d → ℝ) (g_adv : Ω → W d) (w : W d) (z σsq : ℝ)
+theorem zsharp_variance_bound (L : W ι → ℝ) (g_adv : Ω → W ι) (w : W ι) (z σsq : ℝ)
     (h_unbiased : is_stochastic_gradient L g_adv w)
     (h_base_var : has_bounded_variance L g_adv w σsq)
     (h_int_fg : Integrable (fun ω => ‖filtered_gradient (g_adv ω) z‖ ^ 2))

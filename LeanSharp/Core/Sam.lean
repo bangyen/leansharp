@@ -29,21 +29,21 @@ of the gradient.
 
 namespace LeanSharp
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- The SAM perturbation neighborhood. We consider all vectors `ε` such that
 the L2 norm metric distance `dist 0 ε ≤ ρ`. -/
-def perturbation_neighborhood (ρ : ℝ) : Set (W d) :=
+def perturbation_neighborhood (ρ : ℝ) : Set (W ι) :=
   Metric.closedBall 0 ρ
 
 /-- In SAM, the optimal perturbation `ε*(w)` is the one that maximizes `L(w + ε)`.
 To formalize this generically without computing the exact `sup`, we can define
 the SAM objective as the supremum over the closed ball. -/
-noncomputable def sam_objective (L : W d → ℝ) (w : W d) (ρ : ℝ) : ℝ :=
+noncomputable def sam_objective (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : ℝ :=
   sSup (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))
 
 /-- The exact first-order approximation perturbation `ε*(w)`. -/
-noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d :=
+noncomputable def sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : W ι :=
   let g := gradient L w
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
@@ -51,7 +51,7 @@ noncomputable def sam_perturbation (L : W d → ℝ) (w : W d) (ρ : ℝ) : W d 
 /-- **SAM Objective Supremum Property**: The SAM objective at point `w` is always
 greater than or equal to the base loss `L w`, provided the neighborhood is
 bounded above. -/
-theorem sam_objective_ge_self (L : W d → ℝ) (w : W d) {ρ : ℝ} (hρ : 0 ≤ ρ)
+theorem sam_objective_ge_self (L : W ι → ℝ) (w : W ι) {ρ : ℝ} (hρ : 0 ≤ ρ)
     (h_bdd : BddAbove (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))) :
     L w ≤ sam_objective L w ρ := by
   unfold sam_objective perturbation_neighborhood

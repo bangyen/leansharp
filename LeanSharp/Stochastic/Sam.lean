@@ -30,22 +30,22 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω]
 
-/-- A stochastic gradient is a random vector `W d`.
+/-- A stochastic gradient is a random vector `W ι`.
 We typically assume it is based on a true gradient plus some noise `ξ`. -/
-def is_stochastic_gradient (L : W d → ℝ) (g : Ω → W d) (w : W d) : Prop :=
+def is_stochastic_gradient (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) : Prop :=
   Integrable g ∧ 𝔼[g] = gradient L w
 
 /-- Bounded variance assumption for the stochastic gradient. -/
-def has_bounded_variance (L : W d → ℝ) (g : Ω → W d) (w : W d) (σsq : ℝ) : Prop :=
+def has_bounded_variance (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) : Prop :=
   𝔼[fun ω => ‖g ω - gradient L w‖^2] ≤ σsq
 
 /-- The Stochastic ZSharp update rule.
 `w_{t+1} = w_t - η * filtered_gradient(g_adv, z)`
 where `g_adv` is a stochastic adversarial gradient. -/
-noncomputable def stochastic_zsharp_step (w : W d) (η z : ℝ) (g_adv : Ω → W d) (ω : Ω) : W d :=
+noncomputable def stochastic_zsharp_step (w : W ι) (η z : ℝ) (g_adv : Ω → W ι) (ω : Ω) : W ι :=
   let g_f := filtered_gradient (g_adv ω) z
   w - η • g_f
 
@@ -53,7 +53,7 @@ noncomputable def stochastic_zsharp_step (w : W d) (η z : ℝ) (g_adv : Ω → 
 for the decomposition. -/
 private lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
-    (g : Ω → W d) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
+    (g : Ω → W ι) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_int_g : Integrable g) :
     let c := 𝔼[g]
     Integrable (fun _ : Ω => c) ∧
@@ -79,7 +79,7 @@ private lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
 $𝔼[‖g‖ ^ 2] = 𝔼[‖g - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2$ for any random vector $g$. -/
 theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
-    (g : Ω → W d) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
+    (g : Ω → W ι) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_int_g : Integrable g) :
     𝔼[fun ω => ‖g ω‖ ^ 2] = 𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
   let c := 𝔼[g]

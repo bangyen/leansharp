@@ -35,13 +35,13 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory NNReal
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **Stochastic Alignment Condition**: A generalization of the alignment condition
 to the stochastic setting. It requires that the filtered stochastic gradient
 provide sufficient descent in expectation. -/
-def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω → W d) : Prop :=
+def stochastic_alignment_condition (w_star w : W ι) (η z μ : ℝ) (g_adv : Ω → W ι) : Prop :=
   let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
   Integrable g_f ∧
   Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
@@ -51,7 +51,7 @@ def stochastic_alignment_condition (w_star w : W d) (η z μ : ℝ) (g_adv : Ω 
 /-- **Integral Inner Product Identity**: The integral of an inner product with a
 constant vector is the inner product of the integral. -/
 private lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
-    {f : Ω → W d} (hf : Integrable f) (c : W d) :
+    {f : Ω → W ι} (hf : Integrable f) (c : W ι) :
     (∫ ω, inner ℝ (f ω) c ∂volume) = inner ℝ (∫ ω, f ω ∂volume) c := by
   have : (fun ω => inner ℝ (f ω) c) = (fun ω => inner ℝ c (f ω)) :=
     by funext ω; rw [real_inner_comm]
@@ -61,7 +61,7 @@ private lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
 after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
 $η ^ 2 𝔼[‖B‖ ^ 2]$.
 -/
-private lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
+private lemma stochastic_dist_expansion (A : W ι) (B : Ω → W ι) (η : ℝ)
     (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
     𝔼[fun ω => ‖A - η • B ω‖ ^ 2] =
       ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η^2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
@@ -82,13 +82,13 @@ private lemma stochastic_dist_expansion (A : W d) (B : Ω → W d) (η : ℝ)
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation. -/
-theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W d)
+theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w : W ι)
     (η z μ : ℝ)
     (h_align : stochastic_alignment_condition w_star w η z μ g_adv) :
     𝔼[fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖ ^ 2] ≤
       (1 - η * μ) * ‖w - w_star‖ ^ 2 := by
-  let A : W d := w - w_star
-  let B (ω : Ω) : W d := filtered_gradient (g_adv ω) z
+  let A : W ι := w - w_star
+  let B (ω : Ω) : W ι := filtered_gradient (g_adv ω) z
   have hrw : ∀ ω, stochastic_zsharp_step w η z g_adv ω - w_star = A - η • B ω := by
     intro ω; unfold stochastic_zsharp_step A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
@@ -105,8 +105,8 @@ theorem stochastic_zsharp_convergence (w_star : W d) {g_adv : Ω → W d} (w : W
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows
 that the algorithm converges to a neighborhood of the optimum. -/
-theorem zsharp_stochastic_convergence (L : W d → ℝ) (w : W d) (η z σsq : ℝ) (M : ℝ≥0)
-    (g_adv : Ω → W d)
+theorem zsharp_stochastic_convergence (L : W ι → ℝ) (w : W ι) (η z σsq : ℝ) (M : ℝ≥0)
+    (g_adv : Ω → W ι)
     (h_descent : 𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
       L w - η * ‖gradient L w‖ ^ 2 + (M : ℝ) * η ^ 2 / 2 * (σsq + ‖gradient L w‖ ^ 2)) :
     𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤

@@ -38,7 +38,7 @@ namespace LeanSharp
 
 open Real NNReal
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- A dataset is formally represented as a collection of $n$ data points. -/
 def Dataset (DataPoint : Type*) (n : ℕ) := Fin n → DataPoint
@@ -53,19 +53,19 @@ noncomputable def max_eigenvalue {E : Type*} [NormedAddCommGroup E] [InnerProduc
   sSup (spectrum ℝ (hT.toSelfAdjoint : E →L[ℝ] E))
 
 /-- The Sharpness of the loss function at point `w`. -/
-noncomputable def sharpness (L : W d → ℝ) (w : W d)
+noncomputable def sharpness (L : W ι → ℝ) (w : W ι)
     (hT : (hessian L w).toLinearMap.IsSymmetric) : ℝ :=
   max_eigenvalue (hessian L w).toLinearMap hT
 
 /-- A simplified PAC-Bayes Generalization Bound incorporating Sharpness. -/
-def pac_bayes_sharpness_bound (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (C : ℝ) : Prop :=
+def pac_bayes_sharpness_bound (L_D L_S : W ι → ℝ) (w : W ι) (ρ : ℝ) (C : ℝ) : Prop :=
   L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + C
 
 /-- **SAM Generalization Theorem**: Links the population risk to the empirical risk
 via the Taylor bound proved in `Taylor.lean`.
 
 This uses the exact `sam_objective` we formalized previously. -/
-theorem sam_concrete_generalization (L_D L_S : W d → ℝ) (w : W d) (ρ : ℝ) (M : ℝ≥0) (C : ℝ)
+theorem sam_concrete_generalization (L_D L_S : W ι → ℝ) (w : W ι) (ρ : ℝ) (M : ℝ≥0) (C : ℝ)
     (h_smooth : LipschitzWith M (gradient L_S))
     (h_diff : Differentiable ℝ L_S)
     (hρ : 0 ≤ ρ)
@@ -83,15 +83,15 @@ Uniform stability $\beta$ measures the sensitivity of the algorithm to the data.
 -/
 
 /-- The uniform stability of a learning algorithm `A` on a dataset. -/
-def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W d) (β : ℝ) : Prop :=
+def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W ι) (β : ℝ) : Prop :=
   ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
 
 /-- **Stability Theorem**: The Z-score filtered gradient update exhibits lower
 uniform stability. -/
 theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
-    (A_sam : Dataset DataPoint n → W d)
-    (A_zsharp : Dataset DataPoint n → W d)
+    (A_sam : Dataset DataPoint n → W ι)
+    (A_zsharp : Dataset DataPoint n → W ι)
     (h_sam_stable : uniform_stability A_sam β_sam)
     (h_filter_bound : ∀ S S' : Dataset DataPoint n,
       ‖A_zsharp S - A_zsharp S'‖ ≤ ‖A_sam S - A_sam S'‖) :

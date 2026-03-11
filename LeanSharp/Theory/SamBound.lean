@@ -28,12 +28,12 @@ within a $\rho$-neighborhood plus a complexity pacing function $h$.
 
 namespace LeanSharp
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- The SAM Generalization Bound Theorem condition.
 States that with high probability, the population risk is bounded by the SAM objective. -/
-def sam_generalization_bound_holds (L_D L_S : W d → ℝ) (h : ℝ → ℝ) (ρ : ℝ) : Prop :=
-  ∀ w : W d, ρ > 0 →
+def sam_generalization_bound_holds (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) (ρ : ℝ) : Prop :=
+  ∀ w : W ι, ρ > 0 →
     L_D w ≤ sam_objective L_S w ρ + h (‖w‖^2 / ρ^2)
 
 /-- **SAM Bound from Gap**: The SAM generalization bound holds given a standard
@@ -41,10 +41,10 @@ generalization gap assumption.
 
 We prove that `sam_empirical_max ≥ L_S(w)`, so the SAM bound dominates the
 ordinary Rademacher / PAC-Bayes generalization bound. -/
-theorem sam_bound_from_gap (L_D L_S : W d → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
-    (h_gap : ∀ (w : W d) (r : ℝ), r > 0 →
+theorem sam_bound_from_gap (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
+    (h_gap : ∀ (w : W ι) (r : ℝ), r > 0 →
         L_D w ≤ L_S w + h (‖w‖ ^ 2 / r ^ 2))
-    (h_bdd : ∀ (w : W d) (r : ℝ), BddAbove
+    (h_bdd : ∀ (w : W ι) (r : ℝ), BddAbove
         (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
     sam_generalization_bound_holds L_D L_S h ρ := by
   intro w hρ

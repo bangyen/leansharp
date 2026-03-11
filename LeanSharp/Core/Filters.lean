@@ -34,27 +34,27 @@ namespace LeanSharp
 
 open BigOperators
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- The Z-score Mask operator. Returns a new vector in `W`. -/
-noncomputable def z_score_mask (g : W d) (z : ℝ) : W d :=
+noncomputable def z_score_mask (g : W ι) (z : ℝ) : W ι :=
   let μ := vector_mean g
   let σ := vector_std g
-  WithLp.equiv 2 (Fin d → ℝ) |>.symm fun i =>
-    if |(WithLp.equiv 2 (Fin d → ℝ) g) i - μ| ≥ z * σ then 1 else 0
+  WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
+    if |(WithLp.equiv 2 (ι → ℝ) g) i - μ| ≥ z * σ then 1 else 0
 
 /-- Element-wise multiplication (Hadamard product) of vectors in $W$. -/
-noncomputable def hadamard (a b : W d) : W d :=
-  WithLp.equiv 2 (Fin d → ℝ) |>.symm fun i =>
-    (WithLp.equiv 2 (Fin d → ℝ) a) i * (WithLp.equiv 2 (Fin d → ℝ) b) i
+noncomputable def hadamard (a b : W ι) : W ι :=
+  WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
+    (WithLp.equiv 2 (ι → ℝ) a) i * (WithLp.equiv 2 (ι → ℝ) b) i
 
 /-- The fully filtered gradient used in the parameter update. -/
-noncomputable def filtered_gradient (g : W d) (z : ℝ) : W d :=
+noncomputable def filtered_gradient (g : W ι) (z : ℝ) : W ι :=
   hadamard g (z_score_mask g z)
 
 /-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
 by the original. -/
-theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
+theorem filtered_gradient_norm_sq_le (g : W ι) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
   simp_rw [EuclideanSpace.norm_sq_eq]
   apply Finset.sum_le_sum
@@ -68,7 +68,7 @@ theorem filtered_gradient_norm_sq_le (g : W d) (z : ℝ) :
     positivity
 
 /-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
-theorem filtered_norm_bound (g : W d) (z : ℝ) :
+theorem filtered_norm_bound (g : W ι) (z : ℝ) :
     ‖filtered_gradient g z‖ ≤ ‖g‖ := by
   have h_sq := filtered_gradient_norm_sq_le g z
   have h_sqrt := Real.sqrt_le_sqrt h_sq
@@ -78,11 +78,11 @@ theorem filtered_norm_bound (g : W d) (z : ℝ) :
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out, the empirical variance would be less than itself. -/
-private lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) (hz_le : z ≤ 1)
-    (h_filtered : ∀ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 0) :
+private lemma z_score_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) (hz_le : z ≤ 1)
+    (h_filtered : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i = 0) :
     False := by
-  haveI : Nonempty (Fin d) := ⟨⟨0, Fact.out⟩⟩
-  have h_sq : ∀ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2 <
+  haveI : Nonempty ι := inferInstance
+  have h_sq : ∀ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2 <
       (vector_std g)^2 := by
     intro i
     have hi := h_filtered i
@@ -93,35 +93,35 @@ private lemma z_score_nonempty_contradiction [Fact (0 < d)] (g : W d) (z : ℝ) 
     · have h_abs := not_le.mp h_cond
       have h_nonneg : 0 ≤ vector_std g := Real.sqrt_nonneg _
       have hsz : z * vector_std g ≤ vector_std g := mul_le_of_le_one_left h_nonneg hz_le
-      have h_lt : |(WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g| < vector_std g :=
+      have h_lt : |(WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g| < vector_std g :=
         h_abs.trans_le hsz
       rw [sq_lt_sq, abs_of_nonneg h_nonneg]
       exact h_lt
   -- Step 2: Use the Variance Sum Equality and Sum of Squares Bound (inlined)
-  have h_sum_lt : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) <
-      d * (vector_std g)^2 := by
-    calc (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2)
-        < (∑ i : Fin d, (vector_std g)^2) :=
+  have h_sum_lt : (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2) <
+      (Fintype.card ι : ℝ) * (vector_std g)^2 := by
+    calc (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2)
+        < (∑ i : ι, (vector_std g)^2) :=
           Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
-      _ = d * (vector_std g)^2 := by simp
-  have h_sum_eq : (∑ i : Fin d, ((WithLp.equiv 2 (Fin d → ℝ) g) i - vector_mean g)^2) =
-      d * (vector_std g)^2 := by
+      _ = (Fintype.card ι : ℝ) * (vector_std g)^2 := by simp
+  have h_sum_eq : (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2) =
+      (Fintype.card ι : ℝ) * (vector_std g)^2 := by
     have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
     rw [vector_std, Real.sq_sqrt h_var_pos, vector_variance]
-    have hd : (d : ℝ) ≠ 0 := by
-      have : 0 < d := Fact.out
+    have hd : (Fintype.card ι : ℝ) ≠ 0 := by
+      have h_pos : 0 < Fintype.card ι := Fintype.card_pos
       positivity
     field_simp [hd]
   linarith
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
-theorem z_score_nonempty [Fact (0 < d)] (g : W d) {z : ℝ} (hz_le : z ≤ 1) :
-    ∃ i : Fin d, (WithLp.equiv 2 (Fin d → ℝ) (z_score_mask g z)) i = 1 := by
+theorem z_score_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
+    ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i = 1 := by
   let σ := vector_std g
-  haveI : 0 < d := Fact.out
+  haveI : 0 < Fintype.card ι := Fintype.card_pos
   by_cases hσ : σ = 0
-  · use ⟨0, ‹0 < d›⟩; simp [z_score_mask, σ, hσ]
+  · use Classical.arbitrary ι; simp [z_score_mask, σ, hσ]
   · by_contra h
     push_neg at h
     refine z_score_nonempty_contradiction g z hz_le (fun i => ?_)

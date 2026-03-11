@@ -14,7 +14,7 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 
 This module provides a concrete demonstration of the ZSharp algorithm on a
 simple 2D quadratic landscape. It verifies that the abstract definitions
-in `W d` can be explicitly evaluated on Euclidean vectors.
+in `W ι` can be explicitly evaluated on Euclidean vectors.
 
 ## Main definitions
 
@@ -32,7 +32,7 @@ namespace LeanSharp.Toy
 open BigOperators
 
 -- We work in 2D space
-local notation "W2" => W 2
+local notation "W2" => W (Fin 2)
 
 /-- A simple 2D quadratic loss function $L(w_0, w_1) = w_0^2 + w_1^2$. -/
 noncomputable def L_toy (w : W2) : ℝ :=

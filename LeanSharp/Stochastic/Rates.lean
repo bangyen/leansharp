@@ -35,18 +35,18 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- Recursively define the weight iterates for ZSharp. -/
-noncomputable def weight_sequence (w0 : W d) (η : ℕ → ℝ) (z : ℝ)
-    (g_adv : ℕ → Ω → W d) : ℕ → Ω → W d
+noncomputable def weight_sequence (w0 : W ι) (η : ℕ → ℝ) (z : ℝ)
+    (g_adv : ℕ → Ω → W ι) : ℕ → Ω → W ι
 | 0, _ => w0
 | t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) (η t) z (g_adv t) ω
 
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
 private lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
-    (w_star w0 : W d) (g_adv : ℕ → Ω → W d) (ℱ : ℕ → MeasurableSpace Ω)
+    (w_star w0 : W ι) (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_cond_bound : ∀ t, ∀ᵐ ω ∂volume,
       volume[fun ω' =>
@@ -75,8 +75,8 @@ private lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ �
 /-- **Strongly Convex Rate ($O(1/T)$)**:
 Under strong convexity and appropriate step size decay $\eta_t = 1 / (\mu t)$,
 the expected squared distance to the optimum decreases at a rate of $1/T$. -/
-theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) w0
-    (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W d) [Nonempty Ω]
+theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
+    (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W ι) [Nonempty Ω]
     (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_cond_bound : ∀ t, ∀ᵐ ω ∂volume,
@@ -112,8 +112,8 @@ theorem zsharp_strongly_convex_rate (L : W d → ℝ) (w_star : W d) w0
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) h_convex.1 (Nat.pos_of_ne_zero ht)
 
-private lemma nonconvex_telescoping_descent (L : W d → ℝ) (w0 : W d) (z L_smooth σsq η0 : ℝ)
-    (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W d) (T : ℕ)
+private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq η0 : ℝ)
+    (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W ι) (T : ℕ)
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
         (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] +
@@ -158,8 +158,8 @@ private lemma nonconvex_rate_rearrangement (T : ℕ) (hT : T > 0) (η0 S L_smoot
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
 norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
-theorem zsharp_nonconvex_rate (L : W d → ℝ) (w0 : W d) (z L_smooth σsq : ℝ)
-    (η : ℕ → ℝ) (g_adv : ℕ → Ω → W d) (T : ℕ) (hT : T > 0)
+theorem zsharp_nonconvex_rate (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : ℝ)
+    (η : ℕ → ℝ) (g_adv : ℕ → Ω → W ι) (T : ℕ) (hT : T > 0)
     (h_step : ∀ t, η t = 1 / Real.sqrt T)
     -- Objective function properties
     (h_bdd : BddBelow (Set.range L))

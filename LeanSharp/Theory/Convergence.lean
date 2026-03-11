@@ -37,38 +37,38 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- A function $L$ is $L_{smooth}$-smooth if its gradient is Lipschitz continuous
 with constant $L_{smooth}$. -/
-def is_L_smooth (L : W d → ℝ) (L_smooth : ℝ) : Prop :=
-  L_smooth > 0 ∧ ∀ w v : W d,
+def is_L_smooth (L : W ι → ℝ) (L_smooth : ℝ) : Prop :=
+  L_smooth > 0 ∧ ∀ w v : W ι,
     ‖gradient L w - gradient L v‖ ≤ L_smooth * ‖w - v‖
 
 /-- A function $L$ is $\mu$-strongly convex if it is bounded below by a quadratic. -/
-def is_strongly_convex (L : W d → ℝ) (μ : ℝ) : Prop :=
-  μ > 0 ∧ ∀ w v : W d,
-    L v ≥ L w + @inner ℝ (W d) _ (gradient L w) (v - w) + (μ / 2) * ‖v - w‖^2
+def is_strongly_convex (L : W ι → ℝ) (μ : ℝ) : Prop :=
+  μ > 0 ∧ ∀ w v : W ι,
+    L v ≥ L w + @inner ℝ (W ι) _ (gradient L w) (v - w) + (μ / 2) * ‖v - w‖^2
 
 /-- The parameter update for a single step of ZSharp.
 `w_{t+1} = w_t - η * filtered_gradient(∇L(w_t + ε), z)` -/
-noncomputable def zsharp_step (L : W d → ℝ) (w : W d) (η ρ z : ℝ) : W d :=
+noncomputable def zsharp_step (L : W ι → ℝ) (w : W ι) (η ρ z : ℝ) : W ι :=
   let ε := sam_perturbation L w ρ
   let g_adv := gradient L (w + ε)
   let g_filtered := filtered_gradient g_adv z
   w - η • g_filtered
 
 /-- The property that ZSharp converges geometrically to a target point `w_star`. -/
-def zsharp_convergence_holds (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ : ℝ) : Prop :=
+def zsharp_convergence_holds (L : W ι → ℝ) (w_star : W ι) (η ρ z L_smooth μ : ℝ) : Prop :=
   is_L_smooth L L_smooth →
   is_strongly_convex L μ →
   η > 0 ∧ ρ > 0 →
   ∃ c : ℝ, 0 < c ∧ c < 1 ∧
-    ∀ w : W d, ‖zsharp_step L w η ρ z - w_star‖^2 ≤ c * ‖w - w_star‖^2
+    ∀ w : W ι, ‖zsharp_step L w η ρ z - w_star‖^2 ≤ c * ‖w - w_star‖^2
 
 /-- **Alignment Condition**: A statistical assumption that the filtered gradient
 maintains sufficient alignment with the true descent direction. -/
-def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_smooth : ℝ) : Prop :=
+def alignment_condition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι) (z μ L_smooth : ℝ) : Prop :=
   let g_adv := gradient L (w + ε)
   let g_f := filtered_gradient g_adv z
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
@@ -76,11 +76,11 @@ def alignment_condition (L : W d → ℝ) (w w_star : W d) (ε : W d) (z μ L_sm
 
 /-- **Main Theorem**: ZSharp converges geometrically to `w_star` under smoothness,
 strong convexity, and the alignment condition. -/
-theorem zsharp_convergence (L : W d → ℝ) (w_star : W d) (η ρ z L_smooth μ : ℝ)
+theorem zsharp_convergence (L : W ι → ℝ) (w_star : W ι) (η ρ z L_smooth μ : ℝ)
     (hη_tight : η * L_smooth ^ 2 ≤ μ)
     (hη_bound : η ≤ 1 / L_smooth)
     (hμL : μ < L_smooth)
-    (h_align : ∀ w : W d, let ε := sam_perturbation L w ρ
+    (h_align : ∀ w : W ι, let ε := sam_perturbation L w ρ
                           alignment_condition L w w_star ε z μ L_smooth) :
     zsharp_convergence_holds L w_star η ρ z L_smooth μ := by
   intro h_smooth h_convex ⟨hη, hρ⟩

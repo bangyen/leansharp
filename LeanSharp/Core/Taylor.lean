@@ -27,10 +27,10 @@ namespace LeanSharp
 
 open Set InnerProductSpace Real NNReal
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- Auxiliary: the derivative of `t ↦ L(p + t•ε)` is `inner ℝ (∇L) ε`. -/
-private lemma path_hasDerivAt (L : W d → ℝ) (p ε : W d) (t : ℝ)
+private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
     (h_diff : Differentiable ℝ L) :
     HasDerivAt (fun (t : ℝ) => L (p + t • ε)) (inner ℝ (gradient L (p + t • ε)) ε) t := by
   have hf : HasDerivAt (fun (s : ℝ) => p + s • ε) ε t := by
@@ -54,7 +54,7 @@ private lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ
       (right_mem_Icc.mpr zero_le_one)
 
 /-- Auxiliary: the derivative of the φ function is non-positive. -/
-private lemma smooth_descent_phi_deriv_nonpos (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
+private lemma smooth_descent_phi_deriv_nonpos (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     (h_smooth : LipschitzWith M (gradient L)) (t : ℝ) (h0t : 0 ≤ t) (m : ℝ)
     (h_2tm : 2 * t * m = (M : ℝ) * t * ‖ε‖ ^ 2) :
     inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m ≤ 0 := by
@@ -73,7 +73,7 @@ private lemma smooth_descent_phi_deriv_nonpos (L : W d → ℝ) (w ε : W d) (M 
   linarith [h_bound, h_2tm]
 
 /-- **The L-Smooth Descent Lemma**: `L(w + ε) ≤ L(w) + ⟪∇L(w), ε⟫ + M/2 · ‖ε‖²`. -/
-theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
+theorem smooth_descent (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L)) :
     L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
@@ -110,7 +110,7 @@ theorem smooth_descent (L : W d → ℝ) (w ε : W d) (M : ℝ≥0)
   linarith
 
 /-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
-private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W d) (h_norm : ‖ε‖ ≤ ρ) :
+private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W ι) (h_norm : ‖ε‖ ≤ ρ) :
     inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
   have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
     calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
@@ -122,7 +122,7 @@ private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (
   linarith
 
 /-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
-theorem sam_taylor_bound (L : W d → ℝ) (w : W d) (ρ : ℝ)
+theorem sam_taylor_bound (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
     (M : ℝ≥0)
     (h_smooth : LipschitzWith M (gradient L))
     (h_diff : Differentiable ℝ L)
@@ -152,7 +152,7 @@ private lemma one_step_descent_radius_check (M : ℝ≥0) (η : ℝ)
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
 $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
-theorem smooth_one_step_descent (L : W d → ℝ) (w : W d) (M : ℝ≥0) (η : ℝ)
+theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η : ℝ)
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L))
     (h_eta : 0 < η)

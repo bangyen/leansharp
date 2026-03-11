@@ -28,11 +28,11 @@ namespace LeanSharp
 
 open Real ContinuousLinearMap
 
-variable {d : ℕ}
+variable {ι : Type*} [Fintype ι]
 
 /-- The quadratic form $v^T H v$ for some vector $v$ and Hessian $H$. -/
-noncomputable def hessian_quadratic_form (L : W d → ℝ) (w v : W d) : ℝ :=
-  @inner ℝ (W d) _ v ((hessian L w) v)
+noncomputable def hessian_quadratic_form (L : W ι → ℝ) (w v : W ι) : ℝ :=
+  @inner ℝ (W ι) _ v ((hessian L w) v)
 
 
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
@@ -40,9 +40,9 @@ Z-score filtered gradient's direction is strictly bounded.
 
 The bound is $\lambda_{max} \|g\|^2$, connecting the geometric sharpness to
 the statistical filter. -/
-theorem zsharp_curvature_bound (L : W d → ℝ) (w : W d) (g : W d) (z : ℝ)
+theorem zsharp_curvature_bound (L : W ι → ℝ) (w : W ι) (g : W ι) (z : ℝ)
     (hT : (hessian L w).toLinearMap.IsSymmetric)
-    (h_spectral : ∀ v : W d, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
+    (h_spectral : ∀ v : W ι, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
     (h_sharpness_nonneg : 0 ≤ sharpness L w hT) :
     hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 := by
   apply (h_spectral _).trans
