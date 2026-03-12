@@ -23,23 +23,75 @@ open BigOperators
 
 local notation "W2" => W (Fin 2)
 
-/-- An ill-conditioned 2D quadratic loss function $L(w_0, w_1) = 10w_0^2 + w_1^2$.
+/-! An ill-conditioned 2D quadratic loss function $L(w_0, w_1) = 10w_0^2 + w_1^2$.
 The condition number is 10. -/
 noncomputable def L_advanced (w : W2) : ℝ :=
-  let w0 := (WithLp.equiv 2 (Fin 2 → ℝ) w) 0
-  let w1 := (WithLp.equiv 2 (Fin 2 → ℝ) w) 1
-  10 * w0^2 + w1^2
+  10 * (w 0) ^ 2 + (w 1) ^ 2
 
 /-- The analytical gradient is $\nabla L(w) = [20w_0, 2w_1]$. -/
 noncomputable def exact_gradient_advanced (w : W2) : W2 :=
   WithLp.equiv 2 (Fin 2 → ℝ) |>.symm fun i =>
-    if i = 0 then 20 * (WithLp.equiv 2 (Fin 2 → ℝ) w) 0
-    else 2 * (WithLp.equiv 2 (Fin 2 → ℝ) w) 1
+    if i = 0 then 20 * w 0
+    else 2 * w 1
+
+/-- Helper lemma: Expand the value of L_advanced. -/
+lemma L_advanced_val (w : W2) : L_advanced w = 10 * w 0 ^ 2 + w 1 ^ 2 := rfl
+
+/-- Helper lemma: Expand the coordinates of the exact gradient. -/
+lemma exact_gradient_advanced_val (w : W2) (i : Fin 2) :
+    (exact_gradient_advanced w) i = if i = 0 then 20 * w 0 else 2 * w 1 := rfl
+
+set_option linter.unusedSimpArgs false
+set_option linter.unusedTactic false
 
 /-- **Gradient Identity**: The analytical gradient matches the Fréchet gradient. -/
 theorem gradient_advanced_eq (w : W2) :
     gradient L_advanced w = exact_gradient_advanced w := by
-  sorry
+  let f0 : W2 → ℝ := fun w => w 0
+  let f1 : W2 → ℝ := fun w => w 1
+  let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 0
+  let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 1
+  have hf0 : HasFDerivAt f0 p0 w := p0.hasFDerivAt
+  have hf1 : HasFDerivAt f1 p1 w := p1.hasFDerivAt
+  have hL : HasFDerivAt L_advanced ((20 * f0 w) • p0 + (2 * f1 w) • p1) w := by
+    rw [show L_advanced = fun w => 10 * (f0 w) ^ 2 + (f1 w) ^ 2 by ext x; rfl]
+    apply HasFDerivAt.add
+    · convert HasFDerivAt.const_smul (hf0.pow 2) (10 : ℝ) using 1
+      apply ContinuousLinearMap.ext; intro x
+      simp only [ContinuousLinearMap.coe_smul, Pi.smul_apply, ContinuousLinearMap.smul_apply, 
+        smul_eq_mul, pow_one]
+      ring
+    · convert hf1.pow 2 using 1
+      apply ContinuousLinearMap.ext; intro x
+      simp only [ContinuousLinearMap.coe_smul, Pi.smul_apply, ContinuousLinearMap.smul_apply, 
+        smul_eq_mul, pow_one]
+      ring
+  unfold gradient
+  rw [hL.fderiv]
+  ext i
+  rw [exact_gradient_advanced_val]
+  let g_analytical := (20 * f0 w) • p0 + (2 * f1 w) • p1
+  have h_lies : ((InnerProductSpace.toDual ℝ W2).symm g_analytical) i =
+    g_analytical (EuclideanSpace.single i (1 : ℝ)) := by
+    let v := (InnerProductSpace.toDual ℝ W2).symm g_analytical
+    have hv : @inner ℝ W2 _ v (EuclideanSpace.single i (1 : ℝ)) = v i := by
+      simp only [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial]
+      rw [one_mul]
+    rw [← hv, InnerProductSpace.toDual_symm_apply]
+  rw [h_lies]
+  fin_cases i
+  · simp (config := {zeta := true}) only [g_analytical, f0, f1, p0, p1, 
+      ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, PiLp.proj_apply, 
+      Pi.single_apply, mul_one, mul_zero, add_zero, smul_eq_mul, ite_true, ite_false, Fin.zero_eta]
+    unfold EuclideanSpace.single; simp only [WithLp.equiv_symm_apply, Pi.single_apply]
+    norm_num
+  · simp (config := {zeta := true}) only [g_analytical, f0, f1, p0, p1, 
+      ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, PiLp.proj_apply, 
+      Pi.single_apply, mul_one, mul_zero, zero_add, smul_eq_mul, ite_false, ite_true, Fin.mk_one]
+    unfold EuclideanSpace.single; simp only [WithLp.equiv_symm_apply, Pi.single_apply]
+    norm_num
+
+set_option linter.style.longLine false
 
 /-- **L-Smoothness**: The gradient is Lipschitz with $L_{smooth} = 20$. -/
 theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
@@ -47,16 +99,28 @@ theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
   · norm_num
   · intro w v
     simp_rw [gradient_advanced_eq]
-    unfold exact_gradient_advanced
-    sorry
+    have h1 : 0 ≤ ‖exact_gradient_advanced w - exact_gradient_advanced v‖ := norm_nonneg _
+    have h2 : 0 ≤ 20 * ‖w - v‖ := mul_nonneg (by norm_num) (norm_nonneg _)
+    rw [← abs_of_nonneg h1, ← abs_of_nonneg h2, ← sq_le_sq]
+    rw [mul_pow, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two, 
+        Fin.sum_univ_two]
+    simp (config := {zeta := true}) [Pi.sub_apply, exact_gradient_advanced_val, 
+      ite_true, ite_false, Real.norm_eq_abs, RCLike.norm_sq_eq_def, zero_pow, 
+      add_zero, sq_abs]
+    ring_nf
+    nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
 /-- **Strong Convexity**: The function is $\mu$-strongly convex with $\mu = 2$. -/
 theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
   constructor
   · norm_num
   · intro w v
-    simp_rw [gradient_advanced_eq]
-    unfold L_advanced exact_gradient_advanced
-    sorry
+    simp (config := {zeta := true}) [gradient_advanced_eq, L_advanced_val, 
+      exact_gradient_advanced_val, inner, PiLp.inner_apply, EuclideanSpace.norm_sq_eq, 
+      Fin.sum_univ_two, Pi.sub_apply, starRingEnd_apply, id_eq, ite_true, ite_false, 
+      Real.norm_eq_abs, zero_pow, add_zero, star_trivial, RCLike.norm_sq_eq_def, sq_abs, 
+      mul_one, smul_eq_mul, RCLike.inner_apply]
+    ring_nf
+    nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
 end LeanSharp.AdvancedToy

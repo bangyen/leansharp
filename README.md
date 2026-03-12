@@ -25,6 +25,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems to support time-varying learning rate schedules ($\eta_t$).
 - ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
 - ✅ **Advanced Schedulers** (`Theory/`): Formalized learning rate schedules, starting with Cosine Decay. Proved boundary conditions and monotonicity. Verified that scheduled optimization maintains geometric convergence on toy models.
+- ✅ **Advanced Toy Application** (`Examples/`): Formalized an ill-conditioned quadratic landscape ($L_{smooth}=20, \mu=2$). Verified the gradient identity, L-smoothness, and strong convexity with zero `sorry` markers.
 - ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
