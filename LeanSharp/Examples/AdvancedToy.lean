@@ -23,8 +23,7 @@ open BigOperators
 
 local notation "W2" => W (Fin 2)
 
-/-! An ill-conditioned 2D quadratic loss function $L(w_0, w_1) = 10w_0^2 + w_1^2$.
-The condition number is 10. -/
+/-- An ill-conditioned 2D quadratic loss function $L(w_0, w_1) = 10w_0^2 + w_1^2$. -/
 noncomputable def L_advanced (w : W2) : ℝ :=
   10 * (w 0) ^ 2 + (w 1) ^ 2
 
@@ -34,10 +33,10 @@ noncomputable def exact_gradient_advanced (w : W2) : W2 :=
     if i = 0 then 20 * w 0
     else 2 * w 1
 
-
 /-- The analytical Fréchet derivative of $L_{advanced}$. -/
 lemma hasFDerivAt_L_advanced (w : W2) :
-    HasFDerivAt L_advanced (((20 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) + ((2 : ℝ) * w 1) • (EuclideanSpace.proj 1 : W2 →L[ℝ] ℝ)) w := by
+    HasFDerivAt L_advanced (((20 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) +
+      ((2 : ℝ) * w 1) • (EuclideanSpace.proj 1 : W2 →L[ℝ] ℝ)) w := by
   let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 0
   let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 1
   have h0 : HasFDerivAt (fun x : W2 => x 0) p0 w := p0.hasFDerivAt
@@ -64,12 +63,10 @@ lemma coordinate_dual_apply (g : W2 →L[ℝ] ℝ) (i : Fin 2) :
     simp only [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial, one_mul]
   rw [← hv, InnerProductSpace.toDual_symm_apply]
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-
 theorem gradient_advanced_eq (w : W2) :
     gradient L_advanced w = exact_gradient_advanced w := by
-  let g_analytical : W2 →L[ℝ] ℝ := ((20 : ℝ) * w 0) • EuclideanSpace.proj 0 + ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
+  let g_analytical : W2 →L[ℝ] ℝ := ((20 : ℝ) * w 0) • EuclideanSpace.proj 0 +
+    ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
   have hL : HasFDerivAt L_advanced g_analytical w := hasFDerivAt_L_advanced w
   unfold gradient
   rw [hL.fderiv]
@@ -78,17 +75,13 @@ theorem gradient_advanced_eq (w : W2) :
   rw [coordinate_dual_apply g_analytical i]
   fin_cases i
   · simp (config := {zeta := true}) only [g_analytical, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply, PiLp.proj_apply, Pi.single_apply, mul_one, mul_zero,
-      add_zero, smul_eq_mul, ite_true, ite_false, Fin.zero_eta]
+      ContinuousLinearMap.smul_apply, PiLp.proj_apply, smul_eq_mul, Fin.zero_eta]
     unfold EuclideanSpace.single; simp only [WithLp.equiv_symm_apply, Pi.single_apply]
     norm_num
   · simp (config := {zeta := true}) only [g_analytical, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply, PiLp.proj_apply, Pi.single_apply, mul_one, mul_zero,
-      zero_add, smul_eq_mul, ite_false, ite_true, Fin.mk_one]
+      ContinuousLinearMap.smul_apply, PiLp.proj_apply, smul_eq_mul, Fin.mk_one]
     unfold EuclideanSpace.single; simp only [WithLp.equiv_symm_apply, Pi.single_apply]
     norm_num
-
-set_option linter.style.longLine false
 
 /-- **L-Smoothness**: The gradient is Lipschitz with $L_{smooth} = 20$. -/
 theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
@@ -99,11 +92,10 @@ theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
     have h1 : 0 ≤ ‖exact_gradient_advanced w - exact_gradient_advanced v‖ := norm_nonneg _
     have h2 : 0 ≤ 20 * ‖w - v‖ := mul_nonneg (by norm_num) (norm_nonneg _)
     rw [← abs_of_nonneg h1, ← abs_of_nonneg h2, ← sq_le_sq]
-    rw [mul_pow, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two, 
+    rw [mul_pow, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two,
         Fin.sum_univ_two]
-    simp (config := {zeta := true}) [Pi.sub_apply, exact_gradient_advanced, 
-      ite_true, ite_false, Real.norm_eq_abs, RCLike.norm_sq_eq_def, zero_pow, 
-      add_zero, sq_abs]
+    simp (config := {zeta := true}) [exact_gradient_advanced,
+      Real.norm_eq_abs, sq_abs]
     ring_nf
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
@@ -112,11 +104,9 @@ theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
   constructor
   · norm_num
   · intro w v
-    simp (config := {zeta := true}) [gradient_advanced_eq, L_advanced, 
-      exact_gradient_advanced, inner, PiLp.inner_apply, EuclideanSpace.norm_sq_eq, 
-      Fin.sum_univ_two, Pi.sub_apply, starRingEnd_apply, id_eq, ite_true, ite_false, 
-      Real.norm_eq_abs, zero_pow, add_zero, star_trivial, RCLike.norm_sq_eq_def, sq_abs, 
-      mul_one, smul_eq_mul, RCLike.inner_apply]
+    simp (config := {zeta := true}) [gradient_advanced_eq, L_advanced,
+      exact_gradient_advanced, inner, EuclideanSpace.norm_sq_eq,
+      Fin.sum_univ_two, sq_abs, RCLike.inner_apply]
     ring_nf
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
