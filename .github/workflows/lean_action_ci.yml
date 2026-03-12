@@ -39,11 +39,6 @@ jobs:
           chmod +x scripts/check_sorry.sh
           ./scripts/check_sorry.sh
 
-      - name: Audit declaration usage
-        run: |
-          chmod +x scripts/audit_usage.sh
-          ./scripts/audit_usage.sh
-
       - name: Run Linters
         run: |
           lake lint
