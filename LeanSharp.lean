@@ -11,6 +11,7 @@ import LeanSharp.Core.Sam
 import LeanSharp.Core.Taylor
 
 import LeanSharp.Examples.ToyApplication
+import LeanSharp.Examples.AdvancedToy
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization

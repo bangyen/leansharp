@@ -6,6 +6,8 @@ Authors: Bangyen Pham
 import Tests.TacticTests
 import Tests.ExampleModels
 import Tests.SchedulerTests
+import Tests.ScheduleConvergence
+import Tests.AdvancedVerification
 
 namespace LeanSharp.Tests
 

@@ -7,8 +7,6 @@ namespace LeanSharp
 /-- **Schedule Convergence Verification**: A toy example demonstrating that
 the generalized convergence theorem can be applied to `cosine_decay_schedule`. -/
 theorem toy_cosine_convergence (T : ℕ) (hT : T > 0) (η0 ρ z μ L_smooth : ℝ)
-    (_h_smooth : is_L_smooth Toy.L_toy L_smooth)
-    (_h_convex : is_strongly_convex Toy.L_toy μ)
     (h_bounds : 0 ≤ η0 ∧ η0 * L_smooth ^ 2 ≤ μ ∧ η0 ≤ 1 / L_smooth ∧ μ < L_smooth)
     (h_align : ∀ w : W (Fin 2), alignment_condition Toy.L_toy w 0 
                 (sam_perturbation Toy.L_toy w ρ) z μ L_smooth) :
