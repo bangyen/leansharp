@@ -39,14 +39,14 @@ variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **Stochastic Alignment Condition**: A generalization of the alignment condition
-to the stochastic setting. It requires that the filtered stochastic gradient
-provide sufficient descent in expectation. -/
-def stochastic_alignment_condition (w_star w : W ι) (η z μ : ℝ) (g_adv : Ω → W ι) : Prop :=
+to the stochastic setting, supporting learning rate schedules. -/
+def stochastic_alignment_condition (w_star w : W ι) (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
+    (g_adv : Ω → W ι) : Prop :=
   let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
   Integrable g_f ∧
   Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
-  2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
-  η^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ η * μ * ‖w - w_star‖ ^ 2
+  2 * (η t) * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
+  (η t)^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ (η t) * μ * ‖w - w_star‖ ^ 2
 
 /-- **Integral Inner Product Identity**: The integral of an inner product with a
 constant vector is the inner product of the integral. -/
@@ -58,8 +58,8 @@ private lemma integral_inner_const {Ω : Type*} [MeasureSpace Ω]
   rw [this, integral_inner hf c, real_inner_comm]
 
 /-- **Stochastic Distance Expansion**: The identity for the expected squared distance
-after an update step: $𝔼[‖A - η • B‖ ^ 2] = ‖A‖ ^ 2 - 2η⟨𝔼[B], A⟩ +$
-$η ^ 2 𝔼[‖B‖ ^ 2]$.
+after an update step: $𝔼[‖A - η_t • B‖ ^ 2] = ‖A‖ ^ 2 - 2η_t⟨𝔼[B], A⟩ +$
+$η_t ^ 2 𝔼[‖B‖ ^ 2]$.
 -/
 private lemma stochastic_dist_expansion (A : W ι) (B : Ω → W ι) (η : ℝ)
     (h_int_B : Integrable B) (h_int_B2 : Integrable (fun ω => ‖B ω‖ ^ 2)) :
@@ -81,36 +81,40 @@ private lemma stochastic_dist_expansion (A : W ι) (B : Ω → W ι) (η : ℝ)
 
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
-expectation. -/
+expectation under a learning rate schedule. -/
 theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w : W ι)
-    (η z μ : ℝ)
-    (h_align : stochastic_alignment_condition w_star w η z μ g_adv) :
-    𝔼[fun ω => ‖stochastic_zsharp_step w η z g_adv ω - w_star‖ ^ 2] ≤
-      (1 - η * μ) * ‖w - w_star‖ ^ 2 := by
+    (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
+    (h_align : stochastic_alignment_condition w_star w η t z μ g_adv) :
+    𝔼[fun ω => ‖stochastic_zsharp_step w η t z g_adv ω - w_star‖ ^ 2] ≤
+      (1 - (η t) * μ) * ‖w - w_star‖ ^ 2 := by
   let A : W ι := w - w_star
   let B (ω : Ω) : W ι := filtered_gradient (g_adv ω) z
-  have hrw : ∀ ω, stochastic_zsharp_step w η z g_adv ω - w_star = A - η • B ω := by
+  have hrw : ∀ ω, stochastic_zsharp_step w η t z g_adv ω - w_star = A - (η t) • B ω := by
     intro ω; unfold stochastic_zsharp_step A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
   -- Step 1: Expand the squared distance using the helper lemma
-  have h_expansion := stochastic_dist_expansion A B η h_align.1 h_align.2.1
+  have h_expansion := stochastic_dist_expansion A B (η t) h_align.1 h_align.2.1
   simp_rw [hrw]
   rw [h_expansion]
   -- Step 2: Apply the stochastic alignment condition and algebra reduction
-  have h_bound : 2 * η * inner ℝ 𝔼[B] A - η^2 * 𝔼[fun ω => ‖B ω‖^2] ≥ η * μ * ‖A‖^2 :=
+  have h_bound : 2 * (η t) * inner ℝ 𝔼[B] A - (η t)^2 * 𝔼[fun ω => ‖B ω‖^2] ≥
+      (η t) * μ * ‖A‖^2 :=
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
 
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows
-that the algorithm converges to a neighborhood of the optimum. -/
-theorem zsharp_stochastic_convergence (L : W ι → ℝ) (w : W ι) (η z σsq : ℝ) (M : ℝ≥0)
+that the algorithm converges to a neighborhood of the optimum under a schedule. -/
+theorem zsharp_stochastic_convergence (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ)
+    (z σsq : ℝ) (M : ℝ≥0)
     (g_adv : Ω → W ι)
-    (h_descent : 𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
-      L w - η * ‖gradient L w‖ ^ 2 + (M : ℝ) * η ^ 2 / 2 * (σsq + ‖gradient L w‖ ^ 2)) :
-    𝔼[fun ω => L (stochastic_zsharp_step w η z g_adv ω)] ≤
-      L w - η * (1 - (M : ℝ) * η / 2) * ‖gradient L w‖ ^ 2 + (M : ℝ) * η ^ 2 * σsq / 2 := by
+    (h_descent : 𝔼[fun ω => L (stochastic_zsharp_step w η t z g_adv ω)] ≤
+      L w - (η t) * ‖gradient L w‖ ^ 2 +
+        (M : ℝ) * (η t) ^ 2 / 2 * (σsq + ‖gradient L w‖ ^ 2)) :
+    𝔼[fun ω => L (stochastic_zsharp_step w η t z g_adv ω)] ≤
+      L w - (η t) * (1 - (M : ℝ) * (η t) / 2) * ‖gradient L w‖ ^ 2 +
+        (M : ℝ) * (η t) ^ 2 * σsq / 2 := by
   linarith
 
 end LeanSharp

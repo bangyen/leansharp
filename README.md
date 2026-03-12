@@ -22,9 +22,9 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 *   `audit_usage.sh`: Automatically audits for unused public declarations.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
-- ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients.
-- ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients.
-- ✅ **Advanced Schedulers** (`Theory/`): Formalized learning rate schedules, starting with Cosine Decay. Proved boundary conditions and monotonicity for the annealing schedule.
+- ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems to support time-varying learning rate schedules ($\eta_t$).
+- ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
+- ✅ **Advanced Schedulers** (`Theory/`): Formalized learning rate schedules, starting with Cosine Decay. Proved boundary conditions and monotonicity. Verified that scheduled optimization maintains geometric convergence on toy models.
 - ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
@@ -33,7 +33,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Usability & Tooling)
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions more robustly, further reducing manual proof overhead.
-- **Stochastic Convergence Rates**: Complete the summation and induction to prove $O(1/T)$ or $O(1/\sqrt{T})$ convergence to stationary points for stochastic non-convex functions.
+- **Advanced Verification Examples**: Implement more complex loss landscapes (e.g., non-convex non-Lipschitz surfaces) to further stress-test the convergence theory.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.

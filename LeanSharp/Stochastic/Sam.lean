@@ -42,12 +42,13 @@ def is_stochastic_gradient (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) : Pro
 def has_bounded_variance (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) : Prop :=
   𝔼[fun ω => ‖g ω - gradient L w‖^2] ≤ σsq
 
-/-- The Stochastic ZSharp update rule.
-`w_{t+1} = w_t - η * filtered_gradient(g_adv, z)`
+/-- The Stochastic ZSharp update rule with a learning rate schedule.
+`w_{t+1} = w_t - η_t * filtered_gradient(g_adv, z)`
 where `g_adv` is a stochastic adversarial gradient. -/
-noncomputable def stochastic_zsharp_step (w : W ι) (η z : ℝ) (g_adv : Ω → W ι) (ω : Ω) : W ι :=
+noncomputable def stochastic_zsharp_step (w : W ι) (η : ℕ → ℝ) (t : ℕ) (z : ℝ)
+    (g_adv : Ω → W ι) (ω : Ω) : W ι :=
   let g_f := filtered_gradient (g_adv ω) z
-  w - η • g_f
+  w - (η t) • g_f
 
 /-- **L2 Bias-Variance Integrability**: Helper lemma containing the integrability checks
 for the decomposition. -/

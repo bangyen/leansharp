@@ -42,7 +42,7 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 noncomputable def weight_sequence (w0 : W ι) (η : ℕ → ℝ) (z : ℝ)
     (g_adv : ℕ → Ω → W ι) : ℕ → Ω → W ι
 | 0, _ => w0
-| t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) (η t) z (g_adv t) ω
+| t+1, ω => stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) η t z (g_adv t) ω
 
 /-- **Strongly Convex Induction Step**: The $T \to T+1$ recursion for the $O(1/T)$ rate. -/
 private lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ → ℝ)
@@ -86,7 +86,7 @@ theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
     (h_convex : is_strongly_convex L μ)
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
     (h_align : ∀ t ω, stochastic_alignment_condition w_star
-      (weight_sequence w0 η z g_adv t ω) (η t) z μ (g_adv t))
+      (weight_sequence w0 η z g_adv t ω) η t z μ (g_adv t))
     (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
     ∃ C : ℝ, ∀ T : ℕ, T > 0 →
       𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖ ^ 2] ≤ C / T := by
@@ -99,9 +99,9 @@ theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
     by_cases ht : t = 0
     · -- Base case T = 1
       rw [ht, Nat.cast_one, div_one]
-      have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 (η 0) z (g_adv 0) ω - w_star‖ ^ 2] ≤
+      have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
-        stochastic_zsharp_convergence w_star w0 (η 0) z μ (h_align 0 (Classical.arbitrary Ω))
+        stochastic_zsharp_convergence w_star w0 η 0 z μ (h_align 0 (Classical.arbitrary Ω))
       have h_zero : 1 - (η 0) * μ = 0 := by
         rw [h_step 0]; field_simp [h_convex.1.ne']; ring
       rw [h_zero, zero_mul] at h_bound
@@ -140,7 +140,10 @@ private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_
       rw [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
       ring
     _ = (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
-        (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by simp [weight_sequence]
+        (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
+      have h_init : (fun ω => L (weight_sequence w0 η z g_adv 0 ω)) = fun _ => L w0 := by
+        ext ω; simp [weight_sequence]
+      rw [h_init, integral_const, probReal_univ, one_smul]
 
 /-- Auxiliary: the final algebraic rearrangement for the non-convex rate. -/
 private lemma nonconvex_rate_rearrangement (T : ℕ) (hT : T > 0) (η0 S L_smooth σsq diff : ℝ)
