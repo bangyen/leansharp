@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import Tests.TacticTests
 import Tests.ExampleModels
+import Tests.SchedulerTests
 
 namespace LeanSharp.Tests
 

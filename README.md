@@ -24,6 +24,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
 - ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients.
 - ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients.
+- ✅ **Advanced Schedulers** (`Theory/`): Formalized learning rate schedules, starting with Cosine Decay. Proved boundary conditions and monotonicity for the annealing schedule.
 - ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
@@ -32,7 +33,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Usability & Tooling)
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions more robustly, further reducing manual proof overhead.
-- **Advanced Schedulers**: Formalize convergence under adaptive or decaying learning rate schedules (e.g., Cosine Decay) in `Theory/Schedulers.lean`.
 - **Stochastic Convergence Rates**: Complete the summation and induction to prove $O(1/T)$ or $O(1/\sqrt{T})$ convergence to stationary points for stochastic non-convex functions.
 
 ### Core Foundation (Required for Completeness)
