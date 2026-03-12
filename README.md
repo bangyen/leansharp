@@ -34,7 +34,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Usability & Tooling)
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions more robustly, further reducing manual proof overhead.
-- **Advanced Verification Examples**: Implement more complex loss landscapes (e.g., non-convex non-Lipschitz surfaces) to further stress-test the convergence theory.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
