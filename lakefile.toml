@@ -20,6 +20,8 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "LeanSharp"
+globs = ["LeanSharp.+"]
 
 [[lean_lib]]
 name = "Tests"
+globs = ["Tests.+"]
