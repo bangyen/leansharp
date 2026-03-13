@@ -88,4 +88,31 @@ theorem test_mha_zero {S D : ℕ} (x : W (Fin S × Fin D)) :
   ext p
   simp
 
+/-- Test: Linear backward pass returns zero gradients when output gradient is zero. -/
+theorem test_linear_backward_zero {ι_in ι_out : Type} [Fintype ι_out]
+    (w : W (LinearParam ι_in ι_out)) (x : W ι_in) :
+    linear_backward w x 0 = (0, 0) := by
+  unfold linear_backward
+  apply Prod.ext
+  · ext p; cases p <;> simp
+  · ext p; simp
+
+/-- Test: BatchNorm backward pass returns zero gradients when output gradient is zero. -/
+theorem test_batchnorm_backward_zero {N D : ℕ} (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
+    batchnorm_backward w x 0 = (0, 0) := by
+  unfold batchnorm_backward
+  apply Prod.ext
+  · ext p; cases p <;> simp
+  · ext p; simp
+
+/-- Test: Chain composition forward pass for a 2-layer sequence (Linear + ReLU). -/
+theorem test_chain_composition_forward {ι_in ι_out : Type} [Fintype ι_in] [Fintype ι_out]
+    (w_l : W (LinearParam ι_in ι_out)) (x : W ι_in) :
+    let l1 := linear_layer ι_in ι_out
+    let l2 := relu_layer ι_out
+    let p := ChainData.append (ChainData.single l1 w_l) (0 : W l2.ParamDim)
+    forward_chain p x = relu (linear_forward w_l x) := by
+  dsimp [forward_chain, relu_layer, linear_layer]
+  rfl
+
 end LeanSharp.Tests
