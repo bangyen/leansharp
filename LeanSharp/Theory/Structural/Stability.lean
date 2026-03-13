@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
-import LeanSharp.Layers.Residual
-import LeanSharp.Theory.ChainStability
+import LeanSharp.Layers.Basic.Residual
+import LeanSharp.Theory.Structural.ChainStability
 
 namespace LeanSharp
 

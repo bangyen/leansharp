@@ -1,5 +1,5 @@
-import LeanSharp.Theory.Convergence
-import LeanSharp.Theory.Schedulers
+import LeanSharp.Theory.Dynamics.Convergence
+import LeanSharp.Theory.Dynamics.Schedulers
 import LeanSharp.Examples.QuadraticBowl
 
 namespace LeanSharp

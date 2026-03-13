@@ -15,17 +15,17 @@ import LeanSharp.Examples.MLP
 import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Examples.Rosenbrock
 
-import LeanSharp.Layers.Activation
-import LeanSharp.Layers.Attention
-import LeanSharp.Layers.BatchNormalization
-import LeanSharp.Layers.Convolution
-import LeanSharp.Layers.Dropout
-import LeanSharp.Layers.Linear
-import LeanSharp.Layers.Normalization
-import LeanSharp.Layers.Quantization
-import LeanSharp.Layers.Residual
-import LeanSharp.Layers.Transformer
-import LeanSharp.Layers.ViT
+import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Layers.Architectures.Attention
+import LeanSharp.Layers.Normalization.BatchNormalization
+import LeanSharp.Layers.Specialized.Convolution
+import LeanSharp.Layers.Basic.Dropout
+import LeanSharp.Layers.Basic.Linear
+import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Specialized.Quantization
+import LeanSharp.Layers.Basic.Residual
+import LeanSharp.Layers.Architectures.Transformer
+import LeanSharp.Layers.Architectures.ViT
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization
@@ -34,14 +34,14 @@ import LeanSharp.Stochastic.Sam
 
 import LeanSharp.Tactic.ZSolve
 
-import LeanSharp.Theory.ChainStability
-import LeanSharp.Theory.Convergence
-import LeanSharp.Theory.FilterAlgebra
-import LeanSharp.Theory.Generalization
-import LeanSharp.Theory.HessianContraction
-import LeanSharp.Theory.SamBound
-import LeanSharp.Theory.Schedulers
-import LeanSharp.Theory.Stability
+import LeanSharp.Theory.Structural.ChainStability
+import LeanSharp.Theory.Dynamics.Convergence
+import LeanSharp.Theory.Structural.FilterAlgebra
+import LeanSharp.Theory.Dynamics.Generalization
+import LeanSharp.Theory.Structural.HessianContraction
+import LeanSharp.Theory.Dynamics.SamBound
+import LeanSharp.Theory.Dynamics.Schedulers
+import LeanSharp.Theory.Structural.Stability
 
 /-!
 # LeanSharp

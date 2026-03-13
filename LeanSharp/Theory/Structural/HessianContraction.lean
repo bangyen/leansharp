@@ -5,7 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Filters
-import LeanSharp.Theory.Generalization
+import LeanSharp.Theory.Dynamics.Generalization
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 
 /-!

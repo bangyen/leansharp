@@ -5,7 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Filters
-import LeanSharp.Theory.Convergence
+import LeanSharp.Theory.Dynamics.Convergence
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 

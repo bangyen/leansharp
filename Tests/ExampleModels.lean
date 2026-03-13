@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Examples.QuadraticBowl
-import LeanSharp.Theory.Convergence
+import LeanSharp.Theory.Dynamics.Convergence
 
 namespace LeanSharp.Tests
 

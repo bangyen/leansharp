@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Theory.Convergence
+import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Stochastic.Convergence
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2

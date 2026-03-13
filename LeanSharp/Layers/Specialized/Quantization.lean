@@ -53,7 +53,6 @@ theorem pruning_error_bound (ε : ℝ) (w : W ι) (hε : 0 ≤ ε) :
       exact h.le
     · rw [sub_self, abs_zero, zero_pow (by norm_num)]
       exact sq_nonneg ε
-  
   -- Use sum_le_sum with an explicit type to avoid metavariables
   let f := fun i : ι => ‖(w - pruned).ofLp i‖^2
   let g := fun _ : ι => ε^2
@@ -67,7 +66,7 @@ theorem pruning_error_bound (ε : ℝ) (w : W ι) (hε : 0 ≤ ε) :
 theorem pruning_forward_stability {ι_in ι_out : Type} [Fintype ι_out]
     (f : Layer (W ι_in) (W ι_out)) (w : W f.ParamDim) (x : W ι_in) (ε : ℝ) (hε : 0 ≤ ε)
     (h_lip : LipschitzWith K (fun w' => f.forward w' x)) :
-    ‖f.forward w x - f.forward (prune_weights ε w) x‖ ≤ 
+    ‖f.forward w x - f.forward (prune_weights ε w) x‖ ≤
     K * (Real.sqrt (Fintype.card f.ParamDim) * ε) := by
   have h_diff := h_lip.norm_sub_le w (prune_weights ε w)
   apply h_diff.trans

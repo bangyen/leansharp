@@ -6,7 +6,7 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Filters
-import LeanSharp.Theory.SamBound
+import LeanSharp.Theory.Dynamics.SamBound
 import LeanSharp.Core.Taylor
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 import Mathlib.Analysis.InnerProductSpace.PiL2

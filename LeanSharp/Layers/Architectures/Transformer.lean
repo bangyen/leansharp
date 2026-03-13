@@ -4,11 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
-import LeanSharp.Layers.Attention
-import LeanSharp.Layers.Linear
-import LeanSharp.Layers.Normalization
-import LeanSharp.Layers.Activation
-import LeanSharp.Layers.Residual
+import LeanSharp.Layers.Architectures.Attention
+import LeanSharp.Layers.Basic.Linear
+import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Layers.Basic.Residual
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace LeanSharp
@@ -44,7 +44,7 @@ noncomputable def pos_encoding (S D : ℕ) : W (Fin S × Fin D) :=
       Real.cos (pos / (10000 ^ ((dim - 1) / model_dim)))
 
 /-- Feature-wise Layer Normalization. -/
-noncomputable def feature_norm_forward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D)) : 
+noncomputable def feature_norm_forward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D)) :
     W (Fin S × Fin D) :=
   WithLp.equiv 2 _ |>.symm fun (s, d) =>
     let x_f := WithLp.equiv 2 _ x
@@ -57,7 +57,7 @@ noncomputable def feature_norm_forward (w : W (NormParam (Fin D))) (x : W (Fin S
     γ_d * ((row d - μ_s) / σ_s) + β_d
 
 /-- The Attention Block: Residual(LN + MHA) -/
-noncomputable def transformer_attn_block (S D : ℕ) : 
+noncomputable def transformer_attn_block (S D : ℕ) :
     Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   ParamDim := (NormParam (Fin D)) ⊕ (ATTParam (Fin D))
   fintypeParamDim := inferInstance
@@ -71,7 +71,7 @@ noncomputable def transformer_attn_block (S D : ℕ) :
   backward _ _ g_out := (0, g_out)
 
 /-- The MLP Block: Residual(LN + Linear + ReLU + Linear) -/
-noncomputable def transformer_mlp_block (S D D_ff : ℕ) : 
+noncomputable def transformer_mlp_block (S D D_ff : ℕ) :
     Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   ParamDim := (NormParam (Fin D)) ⊕ (Fin D × Fin D_ff) ⊕ (Fin D_ff × Fin D)
   fintypeParamDim := inferInstance
@@ -80,19 +80,15 @@ noncomputable def transformer_mlp_block (S D D_ff : ℕ) :
     let w_ln := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inl i))
     let w_l1_vec := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr (Sum.inl i)))
     let w_l2_vec := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr (Sum.inr i)))
-    
     let ln := feature_norm_forward w_ln x
     let x_ln_f := WithLp.equiv 2 _ ln
     let w1_f := WithLp.equiv 2 _ w_l1_vec
     let w2_f := WithLp.equiv 2 _ w_l2_vec
-    
     let mlp1 := WithLp.equiv 2 (Fin S × Fin D_ff → ℝ) |>.symm fun (s, df) =>
       ∑ d, x_ln_f (s, d) * w1_f (d, df)
-    
-    let relu := WithLp.equiv 2 _ |>.symm fun p => 
+    let relu := WithLp.equiv 2 _ |>.symm fun p =>
       let val := (WithLp.equiv 2 _ mlp1) p
       if val > 0 then val else 0
-    
     let mlp2 := WithLp.equiv 2 (Fin S × Fin D → ℝ) |>.symm fun (s, d) =>
       ∑ df, (WithLp.equiv 2 _ relu) (s, df) * w2_f (df, d)
     x + mlp2
