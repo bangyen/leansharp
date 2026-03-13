@@ -19,6 +19,7 @@ import LeanSharp.Layers.Activation
 import LeanSharp.Layers.Convolution
 import LeanSharp.Layers.Linear
 import LeanSharp.Layers.Normalization
+import LeanSharp.Layers.Residual
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization
