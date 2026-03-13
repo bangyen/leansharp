@@ -10,14 +10,14 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
-# Advanced Toy Application: Ill-Conditioned Landscape
+# Ill-Conditioned Landscape Example
 
 This module provides a more challenging quadratic landscape with a high condition
 number (gradient scales differ by an order of magnitude). This verifies that
 ZSharp convergence holds even when curvature is non-uniform.
 -/
 
-namespace LeanSharp.AdvancedToy
+namespace LeanSharp.IllConditioned
 
 open BigOperators
 
@@ -110,4 +110,4 @@ theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
     ring_nf
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
-end LeanSharp.AdvancedToy
+end LeanSharp.IllConditioned

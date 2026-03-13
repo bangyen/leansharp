@@ -10,7 +10,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
-# Toy Application of ZSharp
+# Quadratic Bowl Example
 
 This module provides a concrete demonstration of the ZSharp algorithm on a
 simple 2D quadratic landscape. It verifies that the abstract definitions
@@ -27,7 +27,7 @@ in `W ι` can be explicitly evaluated on Euclidean vectors.
 * `exact_gradient_w_init`: Verifies the manual evaluation of the gradient at `w_init`.
 -/
 
-namespace LeanSharp.Toy
+namespace LeanSharp.QuadraticBowl
 
 open BigOperators
 
@@ -106,4 +106,4 @@ theorem toy_zsharp_step_reduction :
   simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
   norm_num
 
-end LeanSharp.Toy
+end LeanSharp.QuadraticBowl

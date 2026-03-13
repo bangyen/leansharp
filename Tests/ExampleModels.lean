@@ -3,12 +3,12 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Examples.ToyApplication
+import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Theory.Convergence
 
 namespace LeanSharp.Tests
 
-open LeanSharp.Toy
+open LeanSharp.QuadraticBowl
 
 /-- Verifies the fundamental L2 contraction property of the Z-score filter on the toy model. -/
 theorem test_toy_filter_contraction :

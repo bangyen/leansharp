@@ -1,6 +1,6 @@
 import LeanSharp.Theory.Convergence
 import LeanSharp.Theory.Schedulers
-import LeanSharp.Examples.ToyApplication
+import LeanSharp.Examples.QuadraticBowl
 
 namespace LeanSharp
 
@@ -8,9 +8,9 @@ namespace LeanSharp
 the generalized convergence theorem can be applied to `cosine_decay_schedule`. -/
 theorem toy_cosine_convergence (T : ℕ) (hT : T > 0) (η0 ρ z μ L_smooth : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * L_smooth ^ 2 ≤ μ ∧ η0 ≤ 1 / L_smooth ∧ μ < L_smooth)
-    (h_align : ∀ w : W (Fin 2), alignment_condition Toy.L_toy w 0
-                (sam_perturbation Toy.L_toy w ρ) z μ L_smooth) :
-    zsharp_convergence_holds Toy.L_toy 0
+    (h_align : ∀ w : W (Fin 2), alignment_condition QuadraticBowl.L_toy w 0
+                (sam_perturbation QuadraticBowl.L_toy w ρ) z μ L_smooth) :
+    zsharp_convergence_holds QuadraticBowl.L_toy 0
       (cosine_decay_schedule η0 0 T) ρ z L_smooth μ := by
   apply zsharp_convergence
   · intro t; dsimp [cosine_decay_schedule]

@@ -1,6 +1,6 @@
 import LeanSharp.Theory.Convergence
 import LeanSharp.Theory.Schedulers
-import LeanSharp.Examples.AdvancedToy
+import LeanSharp.Examples.IllConditioned
 
 namespace LeanSharp
 
@@ -8,9 +8,9 @@ namespace LeanSharp
 holds for the ill-conditioned landscape with a cosine decay schedule. -/
 theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
-    (h_align : ∀ w : W (Fin 2), alignment_condition AdvancedToy.L_advanced w 0
-                (sam_perturbation AdvancedToy.L_advanced w ρ) z 2 20) :
-    zsharp_convergence_holds AdvancedToy.L_advanced 0
+    (h_align : ∀ w : W (Fin 2), alignment_condition IllConditioned.L_advanced w 0
+                (sam_perturbation IllConditioned.L_advanced w ρ) z 2 20) :
+    zsharp_convergence_holds IllConditioned.L_advanced 0
       (cosine_decay_schedule η0 0 T) ρ z 20 2 := by
   apply zsharp_convergence
   · intro t; dsimp [cosine_decay_schedule]
