@@ -7,6 +7,9 @@ import LeanSharp.Layers.Basic.Dropout
 import LeanSharp.Layers.Specialized.Quantization
 import LeanSharp.Layers.Architectures.Transformer
 import LeanSharp.Layers.Architectures.ViT
+import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Architectures.Attention
 import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Layers.Specialized.Convolution
 import LeanSharp.Layers.Normalization.BatchNormalization
@@ -62,5 +65,27 @@ theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w} (x 
 theorem test_residual_forward {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) (w : W f.ParamDim)
     (x : W ι) : (residual_layer f).forward w x = x + f.forward w x := by
   rfl
+
+/-- Test: ReLU forward pass is max(0, x). -/
+theorem test_relu_forward {ι : Type} (x : W ι) (i : ι) :
+    (WithLp.equiv 2 _ (relu x)) i = Max.max 0 ((WithLp.equiv 2 _ x) i) := by
+  unfold relu
+  simp
+
+/-- Test: LayerNorm output is zero when γ=0 and β=0. -/
+theorem test_layernorm_zero {ι : Type} [Fintype ι] (x : W ι) :
+    layernorm_forward (0 : W (NormParam ι)) x = 0 := by
+  unfold layernorm_forward
+  ext i
+  simp
+
+/-- Test: MHA output is zero when all projections are zero. -/
+theorem test_mha_zero {S D : ℕ} (x : W (Fin S × Fin D)) :
+    (mha_layer S D).forward 0 x = 0 := by
+  unfold mha_layer
+  dsimp [Layer.forward]
+  unfold attention_forward
+  ext p
+  simp
 
 end LeanSharp.Tests
