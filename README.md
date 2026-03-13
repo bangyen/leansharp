@@ -17,15 +17,13 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 ### Verification Status
 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**. This status is automatically enforced by strict CI quality guards:
-*   `check_axioms.sh`: Fails if any `axiom` declaration is found.
-*   `check_sorry.sh`: Fails if any `sorry` proof marker is found.
-*   `audit_usage.sh`: Automatically audits for unused public declarations.
+- `check_axioms.sh`: Fails if any `axiom` declaration is found.
+- `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
-- ✅ **Stability & Robustness** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems to support time-varying learning rate schedules ($\eta_t$).
+- ✅ **Stability & Schedulers** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems for time-varying learning rate schedules ($\eta_t$) like Cosine Decay, proving boundary conditions and monotonicity.
 - ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
-- ✅ **Advanced Schedulers** (`Theory/`): Formalized learning rate schedules, starting with Cosine Decay. Proved boundary conditions and monotonicity. Verified that scheduled optimization maintains geometric convergence on toy models.
-- ✅ **Advanced Toy Application** (`Examples/`): Formalized an ill-conditioned quadratic landscape ($L_{smooth}=20, \mu=2$). Verified the gradient identity, L-smoothness, and strong convexity with zero `sorry` markers.
+- ✅ **Toy Examples** (`Examples/`): Formalized an ill-conditioned quadratic landscape ($L_{\text{smooth}}=20, \mu=2$). Verified the gradient identity, L-smoothness, and strong convexity with zero `sorry` markers.
 - ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
 
 ## Roadmap & Future Work
@@ -33,6 +31,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
 ### Immediate Roadmap (Usability & Tooling)
+- **MLP Verification**: Formalize a 2-layer MLP to verify $L$-smoothness and gradient identity on a standard architecture.
 - **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions more robustly, further reducing manual proof overhead.
 
 ### Core Foundation (Required for Completeness)
@@ -40,9 +39,9 @@ Addressing these gaps ensures that the central claims of the project are fully s
 
 | Direction | Necessity | Difficulty | Bottleneck |
 | :--- | :--- | :--- | :--- |
-| **Formal Stochastic Descent** | Completes convergence proof for noisy gradients. | **Med-High** | Integration with Mathlib Measure Theory. |
-| **Deterministic Stability** | Proves Z-score filtering actually stabilizes training. | **High** | Handling non-Lipschitz hard-thresholding. |
-| **Z-Score Universality** | Justifies Z-score filtering statistical optimality. | **Extreme** | Formalizing a custom CLT for filtered distributions. |
+| **Formal Stochastic Descent** | Completes convergence proof for noisy gradients | **Med-High** | Integration with Mathlib Measure Theory |
+| **Deterministic Stability** | Proves Z-score filtering actually stabilizes training | **High** | Handling non-Lipschitz hard-thresholding |
+| **Z-Score Universality** | Justifies Z-score filtering statistical optimality | **Extreme** | Formalizing a custom CLT for filtered distributions |
 
 ### Extensions & Grand Challenges
 These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
