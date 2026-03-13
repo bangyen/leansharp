@@ -23,6 +23,7 @@ import LeanSharp.Layers.Dropout
 import LeanSharp.Layers.Linear
 import LeanSharp.Layers.Normalization
 import LeanSharp.Layers.Residual
+import LeanSharp.Layers.Transformer
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization
