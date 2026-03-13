@@ -8,6 +8,7 @@ import Tests.ExampleModels
 import Tests.SchedulerTests
 import Tests.ScheduleConvergence
 import Tests.AdvancedVerification
+import Tests.LayerTests
 
 namespace LeanSharp.Tests
 
