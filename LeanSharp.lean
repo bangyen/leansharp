@@ -37,6 +37,7 @@ import LeanSharp.Theory.Generalization
 import LeanSharp.Theory.HessianContraction
 import LeanSharp.Theory.SamBound
 import LeanSharp.Theory.Schedulers
+import LeanSharp.Theory.Stability
 
 /-!
 # LeanSharp
