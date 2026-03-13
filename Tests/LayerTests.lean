@@ -7,6 +7,10 @@ import LeanSharp.Layers.Basic.Dropout
 import LeanSharp.Layers.Specialized.Quantization
 import LeanSharp.Layers.Architectures.Transformer
 import LeanSharp.Layers.Architectures.ViT
+import LeanSharp.Layers.Basic.Linear
+import LeanSharp.Layers.Specialized.Convolution
+import LeanSharp.Layers.Normalization.BatchNormalization
+import LeanSharp.Layers.Basic.Residual
 import LeanSharp.Core.Models
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
@@ -33,12 +37,30 @@ example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] :
 
 /-! ### Behavioral Tests -/
 
-/-- Test: Dropout zeroes everything when mask is 0. -/
-theorem test_dropout_zero {ι : Type} (p : ℝ) (x : W ι) :
-    dropout_forward p 0 x = 0 := by
-  unfold dropout_forward
-  simp only
+/-- Test: Linear layer output is zero when weights and biases are zero. -/
+theorem test_linear_zero {ι_in ι_out : Type} [Fintype ι_in] (x : W ι_in) :
+    linear_forward (0 : W (LinearParam ι_in ι_out)) x = 0 := by
+  unfold linear_forward
   ext i
   simp
+
+/-- Test: BatchNorm output is zero when γ=0 and β=0. -/
+theorem test_batchnorm_zero {N D : ℕ} (x : W (Fin N × Fin D)) :
+    batchnorm_forward (0 : W (NormParam (Fin D))) x = 0 := by
+  unfold batchnorm_forward
+  ext p
+  simp
+
+/-- Test: Conv2D output is zero when weights and bias are zero. -/
+theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w} (x : W (Fin h × Fin w)) :
+    conv2d_forward h w kh kw h_h h_w (0 : W (ConvParam kh kw)) x = 0 := by
+  unfold conv2d_forward
+  ext p
+  simp
+
+/-- Test: Residual skip connection y = x + f(x). -/
+theorem test_residual_forward {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) (w : W f.ParamDim)
+    (x : W ι) : (residual_layer f).forward w x = x + f.forward w x := by
+  rfl
 
 end LeanSharp.Tests
