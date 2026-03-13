@@ -19,6 +19,7 @@ import LeanSharp.Layers.Activation
 import LeanSharp.Layers.Attention
 import LeanSharp.Layers.BatchNormalization
 import LeanSharp.Layers.Convolution
+import LeanSharp.Layers.Dropout
 import LeanSharp.Layers.Linear
 import LeanSharp.Layers.Normalization
 import LeanSharp.Layers.Residual
