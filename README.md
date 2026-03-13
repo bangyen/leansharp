@@ -46,6 +46,9 @@ Addressing these gaps ensures that the central claims of the project are fully s
 
 ### Extensions & Grand Challenges
 These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
+- **Robbins-Monro Convergence**: Formalize Martingale Convergence Theorems for Z-score filtered SGD to prove almost sure convergence.
+- **Neural Tangent Kernels**: Formalize the NTK limit as layer width $D \to \infty$ to explain deep net training dynamics.
+- **Denoising Diffusion**: Formalize the Stochastic Differential Equations (SDEs) governing DDPMs and prove score-matching stability.
 - **Sobolev Regularity**: Transition foundations to $H^1/H^2$ spaces using weak derivatives.
 - **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise).
 - **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores.
