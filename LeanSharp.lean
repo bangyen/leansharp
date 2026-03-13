@@ -7,10 +7,10 @@ import LeanSharp.Core.Filters
 import LeanSharp.Core.Stats
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
-import LeanSharp.Core.LinearLayer
-import LeanSharp.Core.Activation
-import LeanSharp.Core.Normalization
-import LeanSharp.Core.Convolution
+import LeanSharp.Layers.Linear
+import LeanSharp.Layers.Activation
+import LeanSharp.Layers.Normalization
+import LeanSharp.Layers.Convolution
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Taylor
 

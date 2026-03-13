@@ -3,8 +3,8 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Core.LinearLayer
-import LeanSharp.Core.Activation
+import LeanSharp.Layers.Linear
+import LeanSharp.Layers.Activation
 
 /-!
 # 2-Layer MLP Example
