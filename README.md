@@ -21,10 +21,10 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
-- ✅ **Deep Model Foundations** (`Core/`): Formalized linear, ReLU, LayerNorm, and Conv2D/Pooling layers. Implemented and verified standard MLP and CNN architectural components with zero `sorry` markers.
+- ✅ **Deep Model Foundations** (`Layers/`): Formalized linear, ReLU, LayerNorm, and Conv2D/Pooling layers. Implemented and verified standard MLP and CNN architectural components with zero `sorry` markers.
 - ✅ **Stability & Schedulers** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems for time-varying learning rate schedules ($\eta_t$) like Cosine Decay, proving boundary conditions and monotonicity.
 - ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
-- ✅ **Toy Examples** (`Examples/`): Formalized an ill-conditioned quadratic landscape ($L_{\text{smooth}}=20, \mu=2$). Verified the gradient identity, L-smoothness, and strong convexity with zero `sorry` markers.
+- ✅ **Complex Architectures** (`Layers/`): Initial formalization of Residual blocks, Transformers (Attention), and Vision Transformers (ViT).
 - ✅ **Tactic Support** (`Tactic/`): Implemented and hardened the `zsharp_solve` custom tactic. Automates complex algebraic normalization and recursive splitting of absolute value and inequality expressions for Z-score filters.
 
 ## Roadmap & Future Work
@@ -32,17 +32,20 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
 ### Immediate Roadmap (Usability & Tooling)
-- **Residual Foundations**: Formalize Skip-Connections/ResNet blocks to verify stability on deeper architectures.
-- **Layer-wise Normalization**: Formalize BatchNorm and its unique interaction with Z-score filtering in training mode.
+- **Transformer Gradient Verification**: Formalize the backward pass for multi-head attention and MLP blocks to establish full differentiability.
+- **Analytical Verification**: Resolve placeholder proofs for coordinate-wise gradient correctness in `Rosenbrock.lean` and establish multi-layer Lipschitz stability markers for the architectures in `MLP.lean`.
+- **ViT Patching Invariance**: Formally prove the mathematical equivalence between Patch Embedding sequences and strided Convolutional mappings.
+- **Quantization Stability**: Establish rigorous error bounds and convergence guarantees for the verified 8-bit and 4-bit quantization layers.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
 
 | Direction | Necessity | Difficulty | Bottleneck |
 | :--- | :--- | :--- | :--- |
-| **Formal Stochastic Descent** | Completes convergence proof for noisy gradients | **Med-High** | Integration with Mathlib Measure Theory |
+| **Formal Stochastic Descent** | Prove the stochastic descent lemma for filtered gradients | **Med-High** | Non-trivial variance terms in the Taylor expansion |
 | **Deterministic Stability** | Proves Z-score filtering actually stabilizes training | **High** | Handling non-Lipschitz hard-thresholding |
 | **Z-Score Universality** | Justifies Z-score filtering statistical optimality | **Extreme** | Formalizing a custom CLT for filtered distributions |
+| **Hessian-Aware Filtering** | Generalize filtering based on local landscape curvature | **Med-High** | Second-order Fréchet derivatives in Mathlib |
 
 ### Extensions & Grand Challenges
 These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
