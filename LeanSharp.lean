@@ -10,6 +10,7 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.LinearLayer
 import LeanSharp.Core.Activation
 import LeanSharp.Core.Normalization
+import LeanSharp.Core.Convolution
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Taylor
 
