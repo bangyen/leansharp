@@ -7,6 +7,8 @@ import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Dual
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.ContDiff
 
 set_option linter.unusedSimpArgs false
 
@@ -111,11 +113,60 @@ theorem gradient_rosenbrock_eq (w : W2) :
     try simp only [one_mul, zero_mul, add_zero, sub_zero, zero_sub]
     ring
 
+/-- The Rosenbrock function is smooth. -/
+lemma contDiff_rosenbrock : ContDiff ℝ ⊤ L_rosenbrock := by
+  unfold L_rosenbrock
+  let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj (ι := Fin 2) (𝕜 := ℝ) 0
+  let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj (ι := Fin 2) (𝕜 := ℝ) 1
+  have h0 : ContDiff ℝ ⊤ p0 := p0.contDiff
+  have h1 : ContDiff ℝ ⊤ p1 := p1.contDiff
+  refine ContDiff.add ?_ ?_
+  · exact (contDiff_const.sub h0).pow 2
+  · exact (contDiff_const.mul ((h1.sub (h0.pow 2)).pow 2))
+
+/-- The analytical gradient is smooth. -/
+lemma contDiff_exact_gradient_rosenbrock : ContDiff ℝ ⊤ exact_gradient_rosenbrock := by
+  unfold exact_gradient_rosenbrock
+  let equiv := (WithLp.equiv 2 (Fin 2 → ℝ)).symm
+  have h_equiv : ContDiff ℝ ⊤ equiv := equiv.contDiff
+  refine h_equiv.comp (contDiff_pi.mpr (fun i => ?_))
+  let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj (ι := Fin 2) (𝕜 := ℝ) 0
+  let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj (ι := Fin 2) (𝕜 := ℝ) 1
+  fin_cases i
+  · simp only [if_true]
+    refine ContDiff.sub (ContDiff.mul contDiff_const (contDiff_const.sub p0.contDiff)) ?_
+    exact contDiff_const.mul (p0.contDiff.mul ((p1.contDiff.sub (p0.contDiff.pow 2))))
+  · simp only [if_false]
+    exact contDiff_const.mul (p1.contDiff.sub (p0.contDiff.pow 2))
+
+/-- The Fréchet gradient is smooth. -/
+lemma contDiff_gradient_rosenbrock : ContDiff ℝ ⊤ (gradient L_rosenbrock) := by
+  have h := funext gradient_rosenbrock_eq
+  rw [h]
+  exact contDiff_exact_gradient_rosenbrock
+
 /-- **L-Smoothness**: The Rosenbrock function is $L$-smooth on any compact set.
     For simplicity, we show it is locally $L$-smooth at any point. -/
 lemma rosenbrock_locally_L_smooth (w : W2) :
     ∃ L > 0, ∀ v ∈ Metric.ball w 1, ∀ u ∈ Metric.ball w 1,
       ‖gradient L_rosenbrock u - gradient L_rosenbrock v‖ ≤ L * ‖u - v‖ := by
-  sorry
+  let f := gradient L_rosenbrock
+  have hf : ContDiff ℝ 1 f := contDiff_gradient_rosenbrock.of_le (by simp)
+  let s := Metric.ball w 1
+  let K := closure s
+  have hK : IsCompact K := isCompact_closure_ball w 1
+  let f' := fderiv ℝ f
+  have hf' : Continuous f' := hf.continuous_fderiv (by simp)
+  have hf'K : IsCompact (f' '' K) := hK.image hf'
+  obtain ⟨M, hM⟩ := hf'K.isBounded.exists_pos_norm_le
+  use M, hM.1
+  intro v hv u hu
+  have h_conv : Convex ℝ s := convex_ball w 1
+  have h_f_diff : Differentiable ℝ f := hf.differentiable (by simp)
+  have h_bound : ∀ x ∈ s, ‖fderiv ℝ f x‖ ≤ M := by
+    intro x hx
+    exact hM.2 (f' x) (mem_image_of_mem f' (subset_closure hx))
+  let L_lip := h_conv.lipschitzOnWith_of_fderiv_norm_le (fun x hx => Real.nnnorm_le_iff.mpr (h_bound x hx))
+  exact L_lip hu hv
 
 end LeanSharp.Rosenbrock
