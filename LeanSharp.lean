@@ -16,6 +16,7 @@ import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Examples.Rosenbrock
 
 import LeanSharp.Layers.Activation
+import LeanSharp.Layers.Attention
 import LeanSharp.Layers.BatchNormalization
 import LeanSharp.Layers.Convolution
 import LeanSharp.Layers.Linear
