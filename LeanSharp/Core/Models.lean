@@ -48,6 +48,11 @@ inductive Chain : Type → Type → Type 1 where
   | single {In Out : Type} : Layer In Out → Chain In Out
   | append {In Mid Out : Type} : Chain In Mid → Layer Mid Out → Chain In Out
 
+/-- Concatenate two chains. -/
+def Chain.concat {In Mid Out : Type} (c1 : Chain In Mid) : Chain Mid Out → Chain In Out
+  | .single L => Chain.append c1 L
+  | .append prev L => Chain.append (Chain.concat c1 prev) L
+
 /-- Data (parameters or gradients) for a specific chain. -/
 inductive ChainData : {In Out : Type} → Chain In Out → Type 1 where
   | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainData (.single L)

@@ -25,6 +25,7 @@ import LeanSharp.Layers.Normalization
 import LeanSharp.Layers.Quantization
 import LeanSharp.Layers.Residual
 import LeanSharp.Layers.Transformer
+import LeanSharp.Layers.ViT
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization

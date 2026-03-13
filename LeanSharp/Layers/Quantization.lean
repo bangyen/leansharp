@@ -47,15 +47,20 @@ theorem pruning_error_bound (ε : ℝ) (w : W ι) (hε : 0 ≤ ε) :
     dsimp [pruned, prune_weights]
     -- Pointwise subtraction
     split_ifs with h
-    · simp only [sub_zero, sq_abs]
+    · rw [sub_zero, sq_abs]
       apply sq_le_sq.mpr
       rw [abs_of_nonneg hε]
       exact h.le
-    · simp; positivity
+    · rw [sub_self, abs_zero, zero_pow (by norm_num)]
+      exact sq_nonneg ε
   
-  calc (∑ i, ‖(w - pruned).ofLp i‖^2)
-    _ ≤ (∑ i : ι, ε^2) := Finset.sum_le_sum (fun i _ => h_bound i)
-    _ = (Fintype.card ι : ℝ) * ε^2 := by simp
+  -- Use sum_le_sum with an explicit type to avoid metavariables
+  let f := fun i : ι => ‖(w - pruned).ofLp i‖^2
+  let g := fun _ : ι => ε^2
+  refine (@Finset.sum_le_sum ι ℝ _ _ f g Finset.univ _ ?_).trans ?_
+  · intro i _
+    exact h_bound i
+  · rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ]
 
 /-- **Pruning Stability**: If a layer's forward pass is Lipschitz in its weights,
     the output error due to pruning is bounded. -/
