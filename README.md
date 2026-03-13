@@ -20,12 +20,10 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - `check_axioms.sh`: Fails if any `axiom` declaration is found.
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
-- ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
-- ✅ **Deep Model Foundations** (`Layers/`): Formalized linear, ReLU, LayerNorm, and Conv2D/Pooling layers. Implemented and verified standard MLP and CNN architectural components with zero `sorry` markers.
-- ✅ **Stability & Schedulers** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems for time-varying learning rate schedules ($\eta_t$) like Cosine Decay, proving boundary conditions and monotonicity.
-- ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
-- ✅ **Complex Architectures** (`Layers/`): Initial formalization of Residual blocks, Transformers (Attention), and Vision Transformers (ViT).
-- ✅ **Tactic Support** (`Tactic/`): Implemented and hardened the `zsharp_solve` custom tactic. Automates complex algebraic normalization and recursive splitting of absolute value and inequality expressions for Z-score filters.
+- ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
+- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
+- ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates, PAC-Bayes bounds, and uniform stability markers for filtered gradients.
+- ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 
 ## Roadmap & Future Work
 
@@ -43,16 +41,16 @@ Addressing these gaps ensures that the central claims of the project are fully s
 | Direction | Necessity | Difficulty | Bottleneck |
 | :--- | :--- | :--- | :--- |
 | **Formal Stochastic Descent** | Prove the stochastic descent lemma for filtered gradients | **Med-High** | Non-trivial variance terms in the Taylor expansion |
+| **Robbins-Monro Convergence** | Prove almost sure convergence for Z-score filtered SGD | **Med-High** | Formalizing Martingale Convergence for non-convexity |
 | **Deterministic Stability** | Proves Z-score filtering actually stabilizes training | **High** | Handling non-Lipschitz hard-thresholding |
 | **Z-Score Universality** | Justifies Z-score filtering statistical optimality | **Extreme** | Formalizing a custom CLT for filtered distributions |
+| **Sobolev Regularity** | Transition foundations to $H^1/H^2$ spaces using weak derivatives | **Med-High** | Re-engineering vector spaces to $H^k$ |
 | **Hessian-Aware Filtering** | Generalize filtering based on local landscape curvature | **Med-High** | Second-order Fréchet derivatives in Mathlib |
 
 ### Extensions & Grand Challenges
 These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
-- **Robbins-Monro Convergence**: Formalize Martingale Convergence Theorems for Z-score filtered SGD to prove almost sure convergence.
 - **Neural Tangent Kernels**: Formalize the NTK limit as layer width $D \to \infty$ to explain deep net training dynamics.
 - **Denoising Diffusion**: Formalize the Stochastic Differential Equations (SDEs) governing DDPMs and prove score-matching stability.
-- **Sobolev Regularity**: Transition foundations to $H^1/H^2$ spaces using weak derivatives.
 - **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise).
 - **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores.
 - **Third-Order Descent**: Implement multilinear Taylor remainder theory.
