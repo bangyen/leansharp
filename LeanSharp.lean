@@ -7,11 +7,14 @@ import LeanSharp.Core.Filters
 import LeanSharp.Core.Stats
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
+import LeanSharp.Core.LinearLayer
+import LeanSharp.Core.Activation
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Taylor
 
 import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Examples.IllConditioned
+import LeanSharp.Examples.MLP
 
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Generalization

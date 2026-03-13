@@ -23,12 +23,15 @@ syntax "zsharp_solve" : tactic
 macro_rules
   | `(tactic| zsharp_solve) => `(tactic| (
     simp (config := {zeta := false}) only [filtered_gradient,
-      z_score_mask, hadamard] at *
+      z_score_mask, hadamard, ge_iff_le, gt_iff_lt] at *
     simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at *
-    try split_ifs <;> try (simp at *; linarith)
-    try positivity
-    try linarith
-    try aesop
+    try split_ifs
+    all_goals
+      try (simp [*] at *)
+      try (repeat' split)
+      try positivity
+      try linarith
+      try aesop
   ))
 
 end LeanSharp
