@@ -22,6 +22,7 @@ import LeanSharp.Layers.Convolution
 import LeanSharp.Layers.Dropout
 import LeanSharp.Layers.Linear
 import LeanSharp.Layers.Normalization
+import LeanSharp.Layers.Quantization
 import LeanSharp.Layers.Residual
 import LeanSharp.Layers.Transformer
 
