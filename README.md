@@ -21,18 +21,19 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
 - ✅ **Optimizers & Curvature** (`Core/`): Established Hessian symmetry, L-smoothness, and Z-score filtering foundations. Provides the core Taylor descent lemma for optimization proofs. Supports multi-dimensional weight tensors via generic `Fintype` indices.
+- ✅ **Deep Model Foundations** (`Core/`): Formalized linear layers and ReLU activation functions. Implemented and verified a 2-layer MLP architecture with zero `sorry` markers.
 - ✅ **Stability & Schedulers** (`Theory/`): Verified geometric convergence and explicit $O(1/T)$ rate bounds. Formally proved Z-score outlier signal preservation for sparse gradients. Generalized convergence theorems for time-varying learning rate schedules ($\eta_t$) like Cosine Decay, proving boundary conditions and monotonicity.
 - ✅ **Stochastic Convergence** (`Stochastic/`): Formalized expected squared distance reduction and variance contraction for noisy gradients. Proved explicit $O(1/T)$ convergence rates for strongly convex stochastic functions under schedule-aware iterates.
 - ✅ **Toy Examples** (`Examples/`): Formalized an ill-conditioned quadratic landscape ($L_{\text{smooth}}=20, \mu=2$). Verified the gradient identity, L-smoothness, and strong convexity with zero `sorry` markers.
-- ✅ **Tactic Support** (`Tactic/`): Implemented the `zsharp_solve` custom tactic. Automates repetitive algebraic normalization and inequality proofs for Z-score filters.
+- ✅ **Tactic Support** (`Tactic/`): Implemented and hardened the `zsharp_solve` custom tactic. Automates complex algebraic normalization and recursive splitting of absolute value and inequality expressions for Z-score filters.
 
 ## Roadmap & Future Work
 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
-### Immediate Roadmap (Usability & Tooling)
-- **MLP Verification**: Formalize a 2-layer MLP to verify $L$-smoothness and gradient identity on a standard architecture.
-- **Tactic Hardening**: Expand `zsharp_solve` to normalize `abs` and `ge_iff_le` expressions more robustly, further reducing manual proof overhead.
+### Usability & Tooling (Completed)
+- **MLP Verification**: Formalized a 2-layer MLP and verified its structure.
+- **Tactic Hardening**: Expanded `zsharp_solve` to handle absolute values and case splitting robustly.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
