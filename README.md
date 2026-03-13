@@ -31,9 +31,9 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
-### Usability & Tooling (Completed)
-- **MLP Verification**: Formalized a 2-layer MLP and verified its structure.
-- **Tactic Hardening**: Expanded `zsharp_solve` to handle absolute values and case splitting robustly.
+### Immediate Roadmap (Architecture & Optimizers)
+- **CNN Foundations**: Formalize 2D Convolution and Pooling layers to verify stability on vision architectures.
+- **Normalization Layers**: Formalize BatchNorm and LayerNorm to analyze their interaction with Z-score filtering.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
