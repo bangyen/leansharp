@@ -21,7 +21,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
-- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
+- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT) with **full backward pass formalization**.
 - ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates, PAC-Bayes bounds, and uniform stability markers for filtered gradients.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 
@@ -29,8 +29,8 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
-### Immediate Roadmap (Usability & Tooling)
-- **Transformer Gradient Verification**: Formalize the backward pass for multi-head attention and MLP blocks to establish full differentiability.
+- **Softmax Activation Formalization**: Implement the Softmax function and its Jacobian to replace the structural stubs in Multi-Head Attention.
+- **SAM Update Logic Verification**: Formally prove that the Z-Score SAM update step satisfies the Fréchet differentiability requirements for multi-layer chains.
 - **ViT Patching Invariance**: Formally prove the mathematical equivalence between Patch Embedding sequences and strided Convolutional mappings.
 
 ### Core Foundation (Required for Completeness)
