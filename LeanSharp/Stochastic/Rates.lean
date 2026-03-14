@@ -142,7 +142,7 @@ private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_
     _ = (L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
       have h_init : (fun ω => L (weight_sequence w0 η z g_adv 0 ω)) = fun _ => L w0 := by
-        ext ω; simp [weight_sequence]
+        ext ω; rw [weight_sequence]
       rw [h_init, integral_const, probReal_univ, one_smul]
 
 /-- Auxiliary: the final algebraic rearrangement for the non-convex rate. -/
@@ -187,7 +187,7 @@ theorem zsharp_nonconvex_rate (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : 
       h_eta g_adv T h_L_descent
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
     have h_const : (𝔼[fun _ : Ω => sInf (Set.range L)]) = sInf (Set.range L) := by
-      simp [integral_const, probReal_univ]
+      rw [integral_const, probReal_univ, smul_eq_mul, one_mul]
     rw [← h_const]
     apply integral_mono (integrable_const _) (h_int_L T)
     intro ω; apply csInf_le h_bdd; apply Set.mem_range_self

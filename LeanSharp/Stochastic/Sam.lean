@@ -88,16 +88,36 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     l2_bias_variance_integrability g h_int h_int_g
   calc 𝔼[fun ω => ‖g ω‖ ^ 2]
       = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c] := by
-        congr; ext ω; dsimp; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
+        congr; ext ω; dsimp only; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
     _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by
         have h_int_inner' : Integrable (fun ω => inner ℝ (g ω - c) c) :=
           h_int_mc.inner_const c
         have h_zero : 𝔼[fun ω => inner ℝ (g ω - c) c] = 0 := by
           simp_rw [real_inner_comm]
           erw [integral_inner h_int_mc c, integral_sub h_int_g h_int_c]
-          simp only [integral_const, probReal_univ, one_smul, sub_self, inner_zero_right, c]
-        dsimp [c] at *
-        simp [integral_add, h_int_diff2, h_int_c2, h_int_inner, integral_const,
-              probReal_univ, integral_const_mul, h_zero]
+          simp only [
+            integral_const,
+            probReal_univ,
+            one_smul,
+            sub_self,
+            inner_zero_right,
+            c
+          ]
+        dsimp only [c] at *
+        simp only [
+          h_int_diff2,
+          integrable_add_iff_integrable_right',
+          h_int_c2,
+          h_int_inner,
+          integral_add,
+          integral_const,
+          probReal_univ,
+          smul_eq_mul,
+          one_mul,
+          integral_const_mul,
+          h_zero,
+          mul_zero,
+          add_zero
+        ]
 
 end LeanSharp

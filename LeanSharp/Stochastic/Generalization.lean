@@ -52,6 +52,9 @@ theorem zsharp_variance_bound (L : W ι → ℝ) (g_adv : Ω → W ι) (w : W ι
     _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
         rw [l2_bias_variance_decomposition g_adv h_int_g h_unbiased.1, h_unbiased.2]
     _ ≤ σsq + ‖gradient L w‖ ^ 2 := by
-        simpa [has_bounded_variance] using h_base_var
+        simpa only [
+          add_le_add_iff_right,
+          has_bounded_variance
+        ] using h_base_var
 
 end LeanSharp
