@@ -31,9 +31,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Usability & Tooling)
 - **Transformer Gradient Verification**: Formalize the backward pass for multi-head attention and MLP blocks to establish full differentiability.
-- **Analytical Verification**: Resolve placeholder proofs for coordinate-wise gradient correctness in `Rosenbrock.lean` and establish multi-layer Lipschitz stability markers for the architectures in `MLP.lean`.
 - **ViT Patching Invariance**: Formally prove the mathematical equivalence between Patch Embedding sequences and strided Convolutional mappings.
-- **Quantization Stability**: Establish rigorous error bounds and convergence guarantees for the verified 8-bit and 4-bit quantization layers.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
