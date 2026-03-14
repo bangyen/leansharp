@@ -1,14 +1,17 @@
 #!/bin/bash
 
-# Search for 'sorry' markers in the LeanSharp source directory.
+# Search for 'sorry' markers in the source directories.
 # This script fails if any sorry markers are found, ensuring proof completeness.
 
-SEARCH_DIR="LeanSharp"
+SEARCH_DIRS=("LeanSharp" "Tests")
 
-if grep -rn "sorry" "$SEARCH_DIR"; then
-    echo "ERROR: 'sorry' markers found in $SEARCH_DIR. All proofs must be completed before merging."
+MATCHES=$(grep -rn "sorry" "${SEARCH_DIRS[@]}")
+
+if [ -n "$MATCHES" ]; then
+    echo "ERROR: 'sorry' markers found in source directories. All proofs must be completed."
+    echo "$MATCHES"
     exit 1
 fi
 
-echo "✓ No 'sorry' markers found in $SEARCH_DIR."
+echo "✓ No 'sorry' markers found in source directories."
 exit 0

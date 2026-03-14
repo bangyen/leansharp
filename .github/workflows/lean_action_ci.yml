@@ -36,8 +36,13 @@ jobs:
 
       - name: Guard against new axiom declarations
         run: |
-          chmod +x scripts/check_axioms.sh
-          ./scripts/check_axioms.sh
+          chmod +x scripts/check_axiom.sh
+          ./scripts/check_axiom.sh
+
+      - name: Guard against unsqueezed simp tactics
+        run: |
+          chmod +x scripts/check_simp.sh
+          ./scripts/check_simp.sh
 
       - name: Guard against 'sorry' markers
         run: |

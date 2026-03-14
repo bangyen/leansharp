@@ -32,7 +32,7 @@ macro_rules
     simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at *
     try split_ifs
     all_goals
-      try (simp [*] at *)
+      try (simp [*] at *) -- no_squeeze
       try (repeat' split)
       try positivity
       try linarith
