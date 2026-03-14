@@ -21,7 +21,7 @@ for dir in "${SEARCH_DIRS[@]}"; do
         if ! grep -q "^import $module" "$root_file"; then
             MATCHES+=("${root_file}: missing 'import ${module}'")
         fi
-    done < <(find "$dir" -type f -name "*.lean")
+    done < <(git ls-files "${dir}/*.lean")
 done
 
 if [ ${#MATCHES[@]} -gt 0 ]; then

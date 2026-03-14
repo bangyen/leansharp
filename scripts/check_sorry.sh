@@ -3,9 +3,7 @@
 # Search for 'sorry' markers in the source directories.
 # This script fails if any sorry markers are found, ensuring proof completeness.
 
-SEARCH_DIRS=("LeanSharp" "Tests")
-
-MATCHES=$(grep -rn "sorry" "${SEARCH_DIRS[@]}")
+MATCHES=$(git grep -n "sorry" -- '*.lean')
 
 if [ -n "$MATCHES" ]; then
     echo "ERROR: 'sorry' markers found in source directories. All proofs must be completed."

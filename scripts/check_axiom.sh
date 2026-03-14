@@ -3,9 +3,7 @@
 # Search for 'axiom' declarations in the source directories.
 # This script fails if any axioms are found, ensuring all results are proved within Lean.
 
-SEARCH_DIRS=("LeanSharp" "Tests")
-
-MATCHES=$(grep -rn "^axiom " "${SEARCH_DIRS[@]}")
+MATCHES=$(git grep -n "^axiom " -- '*.lean')
 
 if [ -n "$MATCHES" ]; then
     echo "ERROR: Unverified 'axiom' declarations found in source directories."
