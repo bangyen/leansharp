@@ -74,14 +74,20 @@ private lemma hessian_symmetry_reduction (L : W ι → ℝ) (w : W ι)
     (hessian L w).toLinearMap.IsSymmetric := by
   intro x y
   rw [h_hess]
-  simp only [ContinuousLinearMap.coe_comp, LinearMap.coe_toContinuousLinearMap,
-             LinearMap.comp_apply, LinearEquiv.coe_toLinearMap,
-             LinearIsometryEquiv.coe_toLinearEquiv]
+  simp only [
+    ContinuousLinearMap.coe_comp,
+    LinearMap.coe_toContinuousLinearMap,
+    LinearMap.comp_apply,
+    LinearEquiv.coe_toLinearMap,
+    LinearIsometryEquiv.coe_toLinearEquiv
+  ]
   -- Inlined: the inner product with the Riesz representation is the evaluation.
   have h_riesz (φ : W ι →L[ℝ] ℝ) (z : W ι) :
       inner ℝ ((InnerProductSpace.toDual ℝ (W ι)).symm φ) z = φ z := by
-    rw [← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ)]
-    simp [LinearIsometryEquiv.apply_symm_apply]
+    rw [
+      ← InnerProductSpace.toDual_apply_apply (𝕜 := ℝ),
+      LinearIsometryEquiv.apply_symm_apply
+    ]
   rw [h_riesz, real_inner_comm, h_riesz]
   exact h_sym x y
 
@@ -102,8 +108,15 @@ theorem hessian_symmetric (L : W ι → ℝ) (w : W ι)
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/
 lemma norm_sub_smul_sq (a b : W ι) (η : ℝ) :
     ‖a - η • b‖^2 = ‖a‖^2 - 2 * η * inner ℝ b a + η^2 * ‖b‖^2 := by
-  rw [norm_sub_sq_real, inner_smul_right, real_inner_comm]
-  simp only [norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+  rw [
+    norm_sub_sq_real,
+    inner_smul_right,
+    real_inner_comm,
+    norm_smul,
+    Real.norm_eq_abs,
+    mul_pow,
+    sq_abs
+  ]
   ring
 
 /-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a

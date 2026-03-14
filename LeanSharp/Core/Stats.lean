@@ -44,7 +44,7 @@ lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W ι) :
     vector_std (k • g) = k * vector_std g := by
   unfold vector_std
   have h_var_smul : vector_variance (k • g) = k^2 * vector_variance g := by
-    unfold vector_variance; simp only [vector_mean_smul]
+    unfold vector_variance; rw [vector_mean_smul]
     have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vector_mean g)^2 =
       k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2 := by
       have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i = k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl

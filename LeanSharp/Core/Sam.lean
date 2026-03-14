@@ -55,6 +55,10 @@ theorem sam_objective_ge_self (L : W ι → ℝ) (w : W ι) {ρ : ℝ} (hρ : 0 
     (h_bdd : BddAbove (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))) :
     L w ≤ sam_objective L w ρ := by
   unfold sam_objective perturbation_neighborhood
-  refine le_csSup h_bdd ⟨w, ⟨0, by simp [Metric.mem_closedBall, hρ], by simp⟩, rfl⟩
+  refine le_csSup h_bdd ⟨w, ⟨
+    0,
+    by simp only [Metric.mem_closedBall, dist_self, hρ],
+    by simp only [add_zero]
+  ⟩, rfl⟩
 
 end LeanSharp

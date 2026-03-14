@@ -56,15 +56,22 @@ noncomputable def filtered_gradient (g : W ι) (z : ℝ) : W ι :=
 by the original. -/
 theorem filtered_gradient_norm_sq_le (g : W ι) (z : ℝ) :
     ‖filtered_gradient g z‖^2 ≤ ‖g‖^2 := by
-  simp_rw [EuclideanSpace.norm_sq_eq]
+  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   apply Finset.sum_le_sum
   intro i _
   unfold filtered_gradient hadamard z_score_mask
-  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  dsimp
+  rw [WithLp.equiv_apply, Equiv.apply_symm_apply]
+  dsimp only [ge_iff_le, WithLp.equiv_symm_apply, Real.norm_eq_abs]
   split_ifs
-  · simp
-  · simp only [mul_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sq_abs]
+  · rw [mul_one, sq_abs]
+  · simp only [
+      mul_zero,
+      ne_eq,
+      OfNat.ofNat_ne_zero,
+      not_false_eq_true,
+      zero_pow,
+      sq_abs
+    ]
     positivity
 
 /-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
@@ -87,7 +94,7 @@ private lemma z_score_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) 
     intro i
     have hi := h_filtered i
     unfold z_score_mask at hi
-    simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi
+    rw [Equiv.apply_symm_apply] at hi
     split_ifs at hi with h_cond
     · norm_num at hi
     · have h_abs := not_le.mp h_cond
@@ -103,7 +110,8 @@ private lemma z_score_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) 
     calc (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2)
         < (∑ i : ι, (vector_std g)^2) :=
           Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
-      _ = (Fintype.card ι : ℝ) * (vector_std g)^2 := by simp
+      _ = (Fintype.card ι : ℝ) * (vector_std g)^2 := by
+        rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   have h_sum_eq : (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2) =
       (Fintype.card ι : ℝ) * (vector_std g)^2 := by
     have h_var_pos : 0 ≤ vector_variance g := by unfold vector_variance; positivity
@@ -121,13 +129,29 @@ theorem z_score_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
   let σ := vector_std g
   haveI : 0 < Fintype.card ι := Fintype.card_pos
   by_cases hσ : σ = 0
-  · use Classical.arbitrary ι; simp [z_score_mask, σ, hσ]
+  · use Classical.arbitrary ι; simp only [
+      z_score_mask,
+      WithLp.equiv_apply,
+      hσ,
+      mul_zero,
+      ge_iff_le,
+      abs_nonneg,
+      ↓reduceIte,
+      WithLp.equiv_symm_apply,
+      σ
+    ]
   · by_contra h
     push_neg at h
     refine z_score_nonempty_contradiction g z hz_le (fun i => ?_)
     have hi := h i
     unfold z_score_mask at hi ⊢
-    simp only [WithLp.equiv_apply, Equiv.apply_symm_apply] at hi ⊢
-    split_ifs with h_cond <;> simp [*] at hi ⊢
+    rw [Equiv.apply_symm_apply] at hi ⊢
+    split_ifs with h_cond <;> simp only [
+      ge_iff_le,
+      ↓reduceIte,
+      ne_eq,
+      not_true_eq_false,
+      h_cond
+    ] at hi ⊢
 
 end LeanSharp

@@ -34,9 +34,10 @@ private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
     (h_diff : Differentiable ℝ L) :
     HasDerivAt (fun (t : ℝ) => L (p + t • ε)) (inner ℝ (gradient L (p + t • ε)) ε) t := by
   have hf : HasDerivAt (fun (s : ℝ) => p + s • ε) ε t := by
-    simpa using (hasDerivAt_id t).smul_const ε |>.const_add p
+    simpa only [hasDerivAt_const_add_iff, id_eq, one_smul]
+      using (hasDerivAt_id t).smul_const ε |>.const_add p
   have hcomp := (h_diff (p + t • ε)).hasFDerivAt.comp_hasDerivAt t hf
-  simpa [gradient, InnerProductSpace.toDual_symm_apply] using hcomp
+  simpa only [gradient, toDual_symm_apply] using hcomp
 
 /-- **MVT Comparison Step**: Auxiliary lemma for the smooth descent bound. Concludes
 $\phi(1) \le \phi(0)$ given that the derivative of $\phi$ is non-positive. -/
@@ -63,7 +64,15 @@ private lemma smooth_descent_phi_deriv_nonpos (L : W ι → ℝ) (w ε : W ι) (
     real_inner_le_norm _ _
   have hlip : ‖gradient L (w + t • ε) - gradient L w‖ ≤ (M : ℝ) * t * ‖ε‖ := by
     have := h_smooth.dist_le_mul (w + t • ε) w
-    simpa [dist_eq_norm, norm_smul, abs_of_nonneg h0t, mul_assoc] using this
+    simpa only [
+      mul_assoc,
+      ge_iff_le,
+      dist_eq_norm,
+      add_sub_cancel_left,
+      norm_smul,
+      norm_eq_abs,
+      abs_of_nonneg h0t
+    ] using this
   have h_bound : inner ℝ (gradient L (w + t • ε) - gradient L w) ε ≤
       (M : ℝ) * t * ‖ε‖ ^ 2 := by
     calc inner ℝ (gradient L (w + t • ε) - gradient L w) ε
@@ -88,12 +97,21 @@ theorem smooth_descent (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     have h1 := path_hasDerivAt L w ε t h_diff
     have h2 := (hasDerivAt_id t).mul_const c
     have h3 := (hasDerivAt_id t).pow 2 |>.mul_const m
-    simpa [inner_sub_left, c] using h1.sub h2 |>.sub h3
+    simpa only [
+      inner_sub_left,
+      id_eq,
+      Pi.pow_apply,
+      one_mul,
+      Nat.cast_ofNat,
+      Nat.add_one_sub_one,
+      pow_one,
+      mul_one
+    ] using h1.sub h2 |>.sub h3
   have hφ'_nonpos : ∀ (t : ℝ), 0 ≤ t → t ≤ 1 →
       inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m ≤ 0 := by
     intro t h0t ht1
     apply smooth_descent_phi_deriv_nonpos L w ε M h_smooth t h0t m
-    simp [m]; ring
+    simp only [m]; ring
   -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
   have hφ_cont : Continuous φ := by
     apply Continuous.sub
@@ -105,8 +123,27 @@ theorem smooth_descent (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     smooth_descent_mvt_step hφ_cont.continuousOn (fun t ht => (hφ' t).hasDerivWithinAt)
       (fun x hx => hφ'_nonpos x hx.1 (le_of_lt hx.2))
   -- Step 4: Recover the descent bound from φ(1) ≤ φ(0)
-  have hφ0 : φ 0 = L w := by simp [φ]
-  simp [φ, hφ0, m, c] at hφ_le
+  have hφ0 : φ 0 = L w := by simp only [
+    zero_smul,
+    add_zero,
+    zero_mul,
+    sub_zero,
+    ne_eq,
+    OfNat.ofNat_ne_zero,
+    not_false_eq_true,
+    zero_pow,
+    φ
+  ]
+  simp only [
+    one_smul,
+    one_mul,
+    one_pow,
+    hφ0,
+    tsub_le_iff_right,
+    φ,
+    c,
+    m
+  ] at hφ_le
   linarith
 
 /-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
@@ -117,7 +154,7 @@ private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (
       _ ≤ ‖g‖ * ρ := mul_le_mul_of_nonneg_left h_norm (norm_nonneg _)
   have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
     apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
-      simp [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
+      simp only [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
     positivity
   linarith
 
@@ -130,7 +167,11 @@ theorem sam_taylor_bound (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
     sam_objective L w ρ ≤ L w + ‖gradient L w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
   unfold sam_objective perturbation_neighborhood
   apply csSup_le
-  · exact ⟨L w, w, ⟨0, by simpa [Metric.mem_closedBall] using hρ, by simp⟩, rfl⟩
+  · exact ⟨L w, w, ⟨
+      0,
+      by simpa only [Metric.mem_closedBall, dist_self] using hρ,
+      by simp only [add_zero]
+    ⟩, rfl⟩
   · rintro v ⟨_, ⟨ε, hε_norm, rfl⟩, rfl⟩
     rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
     -- Step 1: Apply the smooth descent lemma to the perturbation ε
@@ -147,7 +188,7 @@ private lemma one_step_descent_radius_check (M : ℝ≥0) (η : ℝ)
     linarith [((le_div_iff₀ hM).mp h_eta_bound : η * M ≤ 1)]
   else
     have : (M : ℝ) = 0 := by linarith [NNReal.coe_nonneg M]
-    simp [this]
+    simp only [this, zero_mul, zero_le_one]
 
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
@@ -164,9 +205,16 @@ theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η 
   -- Step 1: Verify the descent radius bound
   have h_bound := one_step_descent_radius_check M η h_eta_bound
   have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
-    simp [inner_neg_right, inner_smul_right]
+    rw [
+      inner_neg_right,
+      inner_smul_right,
+      inner_self_eq_norm_sq_to_K,
+      RCLike.ofReal_real_eq_id,
+      id_eq,
+      neg_mul
+    ]
   have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by
-    simp [norm_neg, norm_smul, mul_pow]
+    rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
   calc L (w - η • g)
     _ = L (w + -(η • g)) := by rw [h_step]
     _ ≤ L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
