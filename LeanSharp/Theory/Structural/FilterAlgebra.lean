@@ -45,7 +45,10 @@ theorem single_outlier_extraction (g : W ι) (z : ℝ) (i : ι)
       (fun j => if j = i then (WithLp.equiv 2 (ι → ℝ) g) i else 0) := by
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext j
-  simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
+  rw [
+    Equiv.apply_symm_apply,
+    WithLp.equiv_apply
+  ]
   split_ifs with hj
   · rw [hj]; zsharp_solve
   · have h_not := h_others j hj
@@ -61,7 +64,17 @@ theorem sparse_signal_recovery (g : W ι) (z : ℝ) (i : ι)
     (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
     (WithLp.equiv 2 (ι → ℝ) g) i := by
   apply filtered_gradient_coord_preservation
-  simpa [z_score_mask] using h_sparse
+  simpa only [
+    z_score_mask,
+    WithLp.equiv_apply,
+    ge_iff_le,
+    WithLp.equiv_symm_apply,
+    ite_eq_left_iff,
+    not_le,
+    zero_ne_one,
+    imp_false,
+    not_lt
+  ] using h_sparse
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/
@@ -70,7 +83,12 @@ theorem z_score_mask_scale_invariance (g : W ι) (z : ℝ) {k : ℝ} (hk : 0 < k
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext i
   unfold z_score_mask
-  simp only [WithLp.equiv_apply, Equiv.apply_symm_apply, vector_mean_smul, vector_std_smul hk.le]
+  simp only [
+    WithLp.equiv_apply,
+    Equiv.apply_symm_apply,
+    vector_mean_smul,
+    vector_std_smul hk.le
+  ]
   congr! 1
   have h_pt : (k • g).ofLp i = k * g.ofLp i := rfl
   rw [h_pt, ← mul_sub, abs_mul, abs_of_pos hk, mul_left_comm]

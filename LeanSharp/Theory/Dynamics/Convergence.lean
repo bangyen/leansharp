@@ -97,7 +97,7 @@ theorem zsharp_convergence (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
       exact sub_pos.mpr this
     · exact sub_lt_self 1 (mul_pos (hη t) h_convex.1)
   refine ⟨c, h_c_valid, fun w t => ?_⟩
-  simp only [zsharp_step]
+  rw [zsharp_step]
   let ε := sam_perturbation L w ρ
   let g_f := filtered_gradient (gradient L (w + ε)) z
   -- Step 2: Bound the filtered gradient norm squared using the alignment condition
@@ -120,7 +120,7 @@ theorem zsharp_convergence (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
           η t ^ 2 * (L_smooth * ‖w - w_star‖) ^ 2 := by
         nlinarith [h_inner_bound, h_gf_sq, h_eta_pos]
       _ = (1 - 2 * η t * μ + η t ^ 2 * L_smooth ^ 2) * ‖w - w_star‖ ^ 2 := by
-        simp only [sq]; ring
+        rw [sq]; ring
       _ ≤ (1 - η t * μ) * ‖w - w_star‖ ^ 2 := by
         nlinarith [hkey, sq_nonneg ‖w - w_star‖]
   exact h_main

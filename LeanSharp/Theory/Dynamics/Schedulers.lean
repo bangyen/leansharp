@@ -64,14 +64,22 @@ theorem cosine_decay_zero (η_max η_min : ℝ) (T : ℕ) (hT : 0 < T) :
   unfold cosine_decay_schedule
   rw [if_pos hT]
   norm_cast
-  simp [cos_zero]
+  rw [
+    one_div,
+    zero_mul,
+    zero_div,
+    cos_zero
+  ]
   ring
 
 /-- The Cosine Decay schedule reaches `η_min` at `t = T`. -/
 theorem cosine_decay_at_T (η_max η_min : ℝ) (T : ℕ) :
     cosine_decay_schedule η_max η_min T T = η_min := by
   unfold cosine_decay_schedule
-  simp
+  simp only [
+    lt_self_iff_false,
+    ↓reduceIte
+  ]
 
 /-- **Monotonicity of Cosine Decay**: The schedule is non-increasing for `η_min ≤ η_max`. -/
 theorem cosine_decay_antitone (η_max η_min : ℝ) (T : ℕ) (h_le : η_min ≤ η_max) :

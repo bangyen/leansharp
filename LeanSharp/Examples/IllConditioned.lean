@@ -97,7 +97,7 @@ theorem gradient_advanced_eq (w : W2) :
   unfold exact_gradient_advanced
   rw [coordinate_dual_apply g_analytical i]
   fin_cases i
-  · simp (config := {zeta := true}) only [
+  · simp only [
       g_analytical,
       ContinuousLinearMap.add_apply,
       ContinuousLinearMap.smul_apply,
@@ -107,7 +107,7 @@ theorem gradient_advanced_eq (w : W2) :
     ]
     unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
     norm_num
-  · simp (config := {zeta := true}) only [
+  · simp only [
       g_analytical,
       ContinuousLinearMap.add_apply,
       ContinuousLinearMap.smul_apply,
@@ -129,7 +129,7 @@ theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
     rw [← abs_of_nonneg h1, ← abs_of_nonneg h2, ← sq_le_sq]
     rw [mul_pow, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two,
         Fin.sum_univ_two]
-    simp (config := {zeta := true}) only [
+    simp only [
       Fin.isValue,
       exact_gradient_advanced,
       WithLp.equiv_symm_apply,
@@ -147,7 +147,7 @@ theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
   constructor
   · norm_num
   · intro w v
-    simp (config := {zeta := true}) only [
+    simp only [
       L_advanced,
       Fin.isValue,
       inner,

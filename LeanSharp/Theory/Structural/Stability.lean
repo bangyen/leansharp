@@ -38,11 +38,11 @@ theorem residual_filtered_stability {ι_in : Type} [Fintype ι_in]
     ‖(residual_layer f).forward (w - η • filtered_gradient g z) x -
       (residual_layer f).forward w x‖ ≤ K * η * ‖g‖ := by
   unfold residual_layer
-  simp only [add_sub_add_left_eq_sub]
+  rw [add_sub_add_left_eq_sub]
   -- Use Lipschitz property
   have h_bound := h_lip.norm_sub_le (w - η • filtered_gradient g z) w
   apply h_bound.trans
-  simp only [sub_sub_cancel_left, norm_neg, norm_smul]
+  rw [sub_sub_cancel_left, norm_neg, norm_smul]
   have h_norm : ‖η‖ = η := by rw [Real.norm_eq_abs, abs_of_nonneg hη]
   rw [h_norm, ← mul_assoc]
   apply mul_le_mul_of_nonneg_left
