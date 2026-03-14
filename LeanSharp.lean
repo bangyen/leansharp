@@ -1,1 +1,62 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+
+/- Core -/
+import LeanSharp.Core.Filters
+import LeanSharp.Core.Landscape
+import LeanSharp.Core.Models
+import LeanSharp.Core.Sam
+import LeanSharp.Core.Stats
+import LeanSharp.Core.Taylor
+
+/- Examples -/
+import LeanSharp.Examples.IllConditioned
+import LeanSharp.Examples.MLP
+import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Examples.Rosenbrock
+
+/- Layers -/
+-- Architectures
+import LeanSharp.Layers.Architectures.Attention
+import LeanSharp.Layers.Architectures.Transformer
+import LeanSharp.Layers.Architectures.ViT
+
+-- Basic
+import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Layers.Basic.Dropout
+import LeanSharp.Layers.Basic.Linear
+import LeanSharp.Layers.Basic.Residual
+
+-- Normalization
+import LeanSharp.Layers.Normalization.BatchNormalization
+import LeanSharp.Layers.Normalization.Normalization
+
+-- Specialized
+import LeanSharp.Layers.Specialized.Convolution
+import LeanSharp.Layers.Specialized.Quantization
+
+/- Stochastic -/
+import LeanSharp.Stochastic.Convergence
+import LeanSharp.Stochastic.Generalization
+import LeanSharp.Stochastic.Rates
+import LeanSharp.Stochastic.Sam
+
+/- Tactics -/
 import LeanSharp.Tactic.ZSolve
+
+/- Theory -/
+-- Dynamics
+import LeanSharp.Theory.Dynamics.Convergence
+import LeanSharp.Theory.Dynamics.Generalization
+import LeanSharp.Theory.Dynamics.SamBound
+import LeanSharp.Theory.Dynamics.Schedulers
+
+-- Structural
+import LeanSharp.Theory.Structural.ChainStability
+import LeanSharp.Theory.Structural.FilterAlgebra
+import LeanSharp.Theory.Structural.HessianContraction
+import LeanSharp.Theory.Structural.SAMDifferentiability
+import LeanSharp.Theory.Structural.Stability
