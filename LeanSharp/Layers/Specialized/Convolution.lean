@@ -36,10 +36,10 @@ noncomputable def conv2d_forward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw �
       (WithLp.equiv 2 _ Wp) (Sum.inl (m, n)) *
       (WithLp.equiv 2 _ x) (⟨i.val + m.val, by
                               have hi := i.is_lt; have hm := m.is_lt
-                              dsimp [h'] at hi; omega⟩,
+                              dsimp only [h'] at hi; omega⟩,
                             ⟨j.val + n.val, by
                               have hj := j.is_lt; have hn := n.is_lt
-                              dsimp [w'] at hj; omega⟩)
+                              dsimp only [w'] at hj; omega⟩)
     let bias := (WithLp.equiv 2 _ Wp) (Sum.inr ())
     kernel_sum + bias
 
@@ -55,10 +55,10 @@ noncomputable def conv2d_backward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw �
         (WithLp.equiv 2 _ g_out) (i, j) *
         (WithLp.equiv 2 _ x) (⟨i.val + m.val, by
                                 have hi := i.is_lt; have hm := m.is_lt
-                                dsimp [h'] at hi; omega⟩,
+                                dsimp only [h'] at hi; omega⟩,
                               ⟨j.val + n.val, by
                                 have hj := j.is_lt; have hn := n.is_lt
-                                dsimp [w'] at hj; omega⟩)
+                                dsimp only [w'] at hj; omega⟩)
     | Sum.inr () => ∑ i : Fin h', ∑ j : Fin w', (WithLp.equiv 2 _ g_out) (i, j)
   -- Simplified input gradient for structural purposes
   let g_x := WithLp.equiv 2 _ |>.symm fun _ => 0

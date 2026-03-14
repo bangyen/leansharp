@@ -44,7 +44,15 @@ theorem pruning_error_bound (ε : ℝ) (w : W ι) (hε : 0 ≤ ε) :
   rw [EuclideanSpace.norm_sq_eq]
   let pruned := prune_weights ε w
   have h_bound (i : ι) : ‖(w - pruned).ofLp i‖^2 ≤ ε^2 := by
-    dsimp [pruned, prune_weights]
+    dsimp only [
+      prune_weights,
+      WithLp.equiv_apply,
+      Lean.Elab.WF.paramLet,
+      WithLp.equiv_symm_apply,
+      PiLp.sub_apply,
+      Real.norm_eq_abs,
+      pruned
+    ]
     -- Pointwise subtraction
     split_ifs with h
     · rw [sub_zero, sq_abs]
@@ -86,7 +94,7 @@ theorem uniform_quantize_error_bound (step : ℝ) (w : W ι) (h_step : 0 < step)
   refine (@Finset.sum_le_sum ι ℝ _ _ (fun i => ‖(w - quantized).ofLp i‖^2)
     (fun _ => (step / 2)^2) Finset.univ _ ?_).trans ?_
   · intro i _
-    dsimp
+    dsimp only [PiLp.sub_apply, Real.norm_eq_abs]
     simp only [quantized, uniform_quantize, h_step.ne', if_false]
     let x := (WithLp.equiv 2 (ι → ℝ) w) i
     change |x - round (x / step) * step| ^ 2 ≤ (step / 2) ^ 2
