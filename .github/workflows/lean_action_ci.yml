@@ -26,6 +26,11 @@ jobs:
           chmod +x scripts/check_axiom.sh
           ./scripts/check_axiom.sh
 
+      - name: Guard against missing imports
+        run: |
+          chmod +x scripts/check_import.sh
+          ./scripts/check_import.sh
+
       - name: Guard against unsqueezed simp tactics
         run: |
           chmod +x scripts/check_simp.sh

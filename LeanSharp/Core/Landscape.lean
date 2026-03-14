@@ -57,6 +57,10 @@ It is a continuous linear map from the parameter space to itself: $W \toL[ℝ] W
 noncomputable def hessian (L : W ι → ℝ) (w : W ι) : W ι →L[ℝ] W ι :=
   fderiv ℝ (gradient L) w
 
+/-- Helper: If gradient is differentiable, then it is DifferentiableAt. -/
+theorem differentiable_at_gradient {L : W ι → ℝ} {w : W ι}
+    (h : DifferentiableAt ℝ (gradient L) w) : DifferentiableAt ℝ (gradient L) w := h
+
 /-- **Hessian Riesz Composition Definition**: Relates the Hessian operator
 to the second Fréchet derivative via the Riesz isometry. -/
 private lemma hessian_def_riesz_comp (L : W ι → ℝ) (w : W ι)

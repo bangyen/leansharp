@@ -154,4 +154,8 @@ theorem z_score_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
       h_cond
     ] at hi ⊢
 
+/-- The update step for Sharpness-Aware Minimization with Z-score filtering. -/
+noncomputable def sam_zsharp_update (L : W ι → ℝ) (w : W ι) (η ρ z : ℝ) : W ι :=
+  w - η • filtered_gradient (gradient L (w + sam_perturbation L w ρ)) z
+
 end LeanSharp
