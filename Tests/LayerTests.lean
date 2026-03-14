@@ -45,21 +45,42 @@ theorem test_linear_zero {ι_in ι_out : Type} [Fintype ι_in] (x : W ι_in) :
     linear_forward (0 : W (LinearParam ι_in ι_out)) x = 0 := by
   unfold linear_forward
   ext i
-  simp
+  simp only [
+    WithLp.equiv_apply,
+    PiLp.zero_apply,
+    zero_mul,
+    Finset.sum_const_zero,
+    add_zero,
+    WithLp.equiv_symm_apply
+  ]
 
 /-- Test: BatchNorm output is zero when γ=0 and β=0. -/
 theorem test_batchnorm_zero {N D : ℕ} (x : W (Fin N × Fin D)) :
     batchnorm_forward (0 : W (NormParam (Fin D))) x = 0 := by
   unfold batchnorm_forward
   ext p
-  simp
+  simp only [
+    WithLp.equiv_apply,
+    PiLp.zero_apply,
+    Prod.mk.eta,
+    zero_mul,
+    add_zero,
+    WithLp.equiv_symm_apply
+  ]
 
 /-- Test: Conv2D output is zero when weights and bias are zero. -/
 theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w} (x : W (Fin h × Fin w)) :
     conv2d_forward h w kh kw h_h h_w (0 : W (ConvParam kh kw)) x = 0 := by
   unfold conv2d_forward
   ext p
-  simp
+  simp only [
+    WithLp.equiv_apply,
+    PiLp.zero_apply,
+    zero_mul,
+    Finset.sum_const_zero,
+    add_zero,
+    WithLp.equiv_symm_apply
+  ]
 
 /-- Test: Residual skip connection y = x + f(x). -/
 theorem test_residual_forward {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) (w : W f.ParamDim)
@@ -70,23 +91,44 @@ theorem test_residual_forward {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι))
 theorem test_relu_forward {ι : Type} (x : W ι) (i : ι) :
     (WithLp.equiv 2 _ (relu x)) i = Max.max 0 ((WithLp.equiv 2 _ x) i) := by
   unfold relu
-  simp
+  rw [
+    WithLp.equiv_apply,
+    WithLp.equiv_symm_apply
+  ]
 
 /-- Test: LayerNorm output is zero when γ=0 and β=0. -/
 theorem test_layernorm_zero {ι : Type} [Fintype ι] (x : W ι) :
     layernorm_forward (0 : W (NormParam ι)) x = 0 := by
   unfold layernorm_forward
   ext i
-  simp
+  simp only [
+    WithLp.equiv_apply,
+    PiLp.zero_apply,
+    zero_mul,
+    add_zero,
+    WithLp.equiv_symm_apply
+  ]
 
 /-- Test: MHA output is zero when all projections are zero. -/
 theorem test_mha_zero {S D : ℕ} (x : W (Fin S × Fin D)) :
     (mha_layer S D).forward 0 x = 0 := by
   unfold mha_layer
-  dsimp [Layer.forward]
+  dsimp only [
+    WithLp.equiv_apply,
+    WithLp.equiv_symm_apply,
+    Lean.Elab.WF.paramLet,
+    PiLp.zero_apply
+  ]
   unfold attention_forward
   ext p
-  simp
+  simp only [
+    mul_zero,
+    Finset.sum_const_zero,
+    WithLp.equiv_apply,
+    zero_div,
+    WithLp.equiv_symm_apply,
+    PiLp.zero_apply
+  ]
 
 /-- Test: Linear backward pass returns zero gradients when output gradient is zero. -/
 theorem test_linear_backward_zero {ι_in ι_out : Type} [Fintype ι_out]
@@ -94,16 +136,39 @@ theorem test_linear_backward_zero {ι_in ι_out : Type} [Fintype ι_out]
     linear_backward w x 0 = (0, 0) := by
   unfold linear_backward
   apply Prod.ext
-  · ext p; cases p <;> simp
-  · ext p; simp
+  · ext p; cases p <;> simp only [
+      WithLp.equiv_apply,
+      PiLp.zero_apply,
+      zero_mul,
+      WithLp.equiv_symm_apply
+    ]
+  · ext p; simp only [
+      WithLp.equiv_apply,
+      PiLp.zero_apply,
+      mul_zero,
+      Finset.sum_const_zero,
+      WithLp.equiv_symm_apply
+    ]
 
 /-- Test: BatchNorm backward pass returns zero gradients when output gradient is zero. -/
 theorem test_batchnorm_backward_zero {N D : ℕ} (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
     batchnorm_backward w x 0 = (0, 0) := by
   unfold batchnorm_backward
   apply Prod.ext
-  · ext p; cases p <;> simp
-  · ext p; simp
+  · ext p; cases p <;> simp only [
+      WithLp.equiv_apply,
+      PiLp.zero_apply,
+      zero_mul,
+      Finset.sum_const_zero,
+      WithLp.equiv_symm_apply
+    ]
+  · ext p; simp only [
+      WithLp.equiv_apply,
+      PiLp.zero_apply,
+      mul_zero,
+      zero_div,
+      WithLp.equiv_symm_apply
+    ]
 
 /-- Test: Chain composition forward pass for a 2-layer sequence (Linear + ReLU). -/
 theorem test_chain_composition_forward {ι_in ι_out : Type} [Fintype ι_in] [Fintype ι_out]
@@ -112,7 +177,12 @@ theorem test_chain_composition_forward {ι_in ι_out : Type} [Fintype ι_in] [Fi
     let l2 := relu_layer ι_out
     let p := ChainData.append (ChainData.single l1 w_l) (0 : W l2.ParamDim)
     forward_chain p x = relu (linear_forward w_l x) := by
-  dsimp [forward_chain, relu_layer, linear_layer]
+  dsimp only [
+    linear_layer,
+    relu_layer,
+    forward_chain,
+    Lean.Elab.WF.paramLet
+  ]
   rfl
 
 end LeanSharp.Tests

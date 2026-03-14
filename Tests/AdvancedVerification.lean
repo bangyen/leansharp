@@ -13,7 +13,7 @@ theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     zsharp_convergence_holds IllConditioned.L_advanced 0
       (cosine_decay_schedule η0 0 T) ρ z 20 2 := by
   apply zsharp_convergence
-  · intro t; dsimp [cosine_decay_schedule]
+  · intro t; rw [cosine_decay_schedule]
     have h_mono : cosine_decay_schedule η0 0 T t ≤ cosine_decay_schedule η0 0 T 0 :=
       cosine_decay_antitone η0 0 T (by linarith) (Nat.zero_le t)
     have h_eta0 : η0 = cosine_decay_schedule η0 0 T 0 := by
@@ -22,7 +22,7 @@ theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     calc cosine_decay_schedule η0 0 T t * 20 ^ 2
       _ ≤ η0 * 20 ^ 2 := mul_le_mul_of_nonneg_right h_mono (by norm_num)
       _ ≤ 2 := h_bounds.2.1
-  · intro t; dsimp [cosine_decay_schedule]
+  · intro t; rw [cosine_decay_schedule]
     have h_mono : cosine_decay_schedule η0 0 T t ≤ cosine_decay_schedule η0 0 T 0 :=
       cosine_decay_antitone η0 0 T (by linarith) (Nat.zero_le t)
     have h_eta0 : η0 = cosine_decay_schedule η0 0 T 0 := by
