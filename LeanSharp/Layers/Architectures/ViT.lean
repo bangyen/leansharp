@@ -19,7 +19,8 @@ It includes:
 -/
 
 /-- Patch Embedding Layer: Maps an image (C x H x W) to a sequence (S x D). -/
-noncomputable def patch_embedding (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] :
+noncomputable def patch_embedding (nc nh nw np ns nd : ℕ)
+    [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
     Layer (LeanSharp.W (Fin nc × Fin nh × Fin nw)) (LeanSharp.W (Fin ns × Fin nd)) where
   ParamDim := (Fin nc × Fin np × Fin np) × Fin nd
   fintypeParamDim := inferInstance
@@ -31,10 +32,28 @@ noncomputable def patch_embedding (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero 
         let row : ℕ := (s : ℕ) / (nw / np) * np + (ph : ℕ)
         let col : ℕ := (s : ℕ) % (nw / np) * np + (pw : ℕ)
         x_vec (c, Fin.ofNat nh row, Fin.ofNat nw col) * w_vec ((c, ph, pw), d)
-  backward _ _ _ := (0, 0)
+  backward w x g_out :=
+    let w_vec := WithLp.equiv 2 _ w
+    let x_vec := WithLp.equiv 2 _ x
+    let g_out_f := WithLp.equiv 2 _ g_out
+    -- Gradient w.r.t weights w
+    let g_w := WithLp.equiv 2 _ |>.symm fun ((c, ph, pw), d) =>
+      ∑ s : Fin ns,
+        let row : ℕ := (s : ℕ) / (nw / np) * np + (ph : ℕ)
+        let col : ℕ := (s : ℕ) % (nw / np) * np + (pw : ℕ)
+        g_out_f (s, d) * x_vec (c, Fin.ofNat nh row, Fin.ofNat nw col)
+    -- Gradient w.r.t input x
+    let g_x := WithLp.equiv 2 _ |>.symm fun (c, h, w) =>
+      let s_idx : ℕ := (h : ℕ) / np * (nw / np) + (w : ℕ) / np
+      let ph : ℕ := (h : ℕ) % np
+      let pw : ℕ := (w : ℕ) % np
+      ∑ d : Fin nd, g_out_f (Fin.ofNat ns s_idx, d) * w_vec
+        ((c, Fin.ofNat np ph, Fin.ofNat np pw), d)
+    (g_w, g_x)
 
 /-- Full Vision Transformer (ViT) architecture. -/
-noncomputable def vit_architecture (nc nh nw np ns nd nd_ff : ℕ) [NeZero nh] [NeZero nw] :
+noncomputable def vit_architecture (nc nh nw np ns nd nd_ff : ℕ)
+    [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
     Chain (LeanSharp.W (Fin nc × Fin nh × Fin nw)) (LeanSharp.W (Fin ns × Fin nd)) :=
   let patch := patch_embedding nc nh nw np ns nd
   let transformer := transformer_encoder_block ns nd nd_ff

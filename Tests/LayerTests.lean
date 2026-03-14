@@ -33,7 +33,7 @@ example (S D D_ff : ℕ) [NeZero S] [NeZero D] :
   rfl
 
 /-- Test: Patch Embedding Layer Parameter Dimensions. -/
-example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] :
+example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
     (patch_embedding nc nh nw np ns nd).ParamDim =
     ((Fin nc × Fin np × Fin np) × Fin nd) := by
   rfl
