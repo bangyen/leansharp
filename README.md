@@ -21,7 +21,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
-- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT) with **full backward pass formalization**.
+- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
 - ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates, PAC-Bayes bounds, and uniform stability markers for filtered gradients.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 

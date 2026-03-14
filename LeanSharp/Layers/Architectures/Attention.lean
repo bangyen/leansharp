@@ -6,13 +6,15 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Models
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
+import LeanSharp.Layers.Basic.Activation
+
 namespace LeanSharp
 
 /-!
 # Multi-Head Attention
 
 This module formalizes Multi-Head Attention (MHA) for sequence-based models.
-It includes scaled dot-product attention and the associated linear projections.
+It includes scaled dot-product attention (with Softmax) and the associated linear projections.
 
 ## Main definitions
 
@@ -26,16 +28,25 @@ variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]
     Each projection is (D × D). -/
 abbrev ATTParam (D : Type*) := (D × D) ⊕ (D × D) ⊕ (D × D) ⊕ (D × D)
 
-/-- Simplified Scaled Dot-Product Attention (without Softmax for structural validation).
-    y = ((Q Kᵀ) / √d) V -/
+/-- Scaled Dot-Product Attention (with row-wise Softmax).
+    y = Softmax((Q Kᵀ) / √d) V -/
 noncomputable def attention_forward (S D : ℕ) (Q K V : W (Fin S × Fin D)) : W (Fin S × Fin D) :=
   let scale := Real.sqrt (D : ℝ)
-  WithLp.equiv 2 (Fin S × Fin D → ℝ) |>.symm fun p =>
-    let (i, d) := p
-    let attn_i := ∑ j : Fin S,
-      (∑ k : Fin D, (WithLp.equiv 2 _ Q) (i, k) * (WithLp.equiv 2 _ K) (j, k)) / scale *
-      (WithLp.equiv 2 _ V) (j, d)
-    attn_i
+  let Q_f := WithLp.equiv 2 _ Q
+  let K_f := WithLp.equiv 2 _ K
+  let V_f := WithLp.equiv 2 _ V
+
+  -- Pre-softmax scores A
+  let A := fun (i j : Fin S) => (∑ k, Q_f (i, k) * K_f (j, k)) / scale
+
+  -- Row-wise softmax
+  let S_mat := fun (i j : Fin S) =>
+    let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
+    let row_s := WithLp.equiv 2 _ (softmax row)
+    row_s j
+
+  WithLp.equiv 2 (Fin S × Fin D → ℝ) |>.symm fun (i, d) =>
+    ∑ j, S_mat i j * V_f (j, d)
 
 /-- Scaled Dot-Product Attention backward pass. -/
 noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
@@ -45,16 +56,30 @@ noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
   let K_f := WithLp.equiv 2 _ K
   let V_f := WithLp.equiv 2 _ V
   let g_out_f := WithLp.equiv 2 _ g_out
-  -- A_ij = (∑_k Q_ik * K_jk) / scale
+
+  -- Recompute A and Softmax(A)
   let A := fun (i j : Fin S) => (∑ k, Q_f (i, k) * K_f (j, k)) / scale
-  -- gA_ij = ∑_d g_out_id * V_jd
-  let gA := fun (i j : Fin S) => ∑ d, g_out_f (i, d) * V_f (j, d)
-  -- gV_jd = ∑_i g_out_id * A_ij
-  let gV := WithLp.equiv 2 _ |>.symm fun (j, d) => ∑ i, g_out_f (i, d) * A i j
+  let SM := fun (i j : Fin S) =>
+    let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
+    (WithLp.equiv 2 _ (softmax row)) j
+
+  -- gV_jd = ∑_i g_out_id * SM_ij
+  let gV := WithLp.equiv 2 _ |>.symm fun (j, d) => ∑ i, g_out_f (i, d) * SM i j
+
+  -- gSM_ij = ∑_d g_out_id * V_jd
+  let gSM := fun (i j : Fin S) => ∑ d, g_out_f (i, d) * V_f (j, d)
+
+  -- gA_ij: backward through row-wise softmax
+  let gA := fun (i j : Fin S) =>
+    let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
+    let g_row_out := WithLp.equiv 2 _ |>.symm fun j' => gSM i j'
+    (WithLp.equiv 2 _ (softmax_backward row g_row_out)) j
+
   -- gQ_ik = ∑_j gA_ij * K_jk / scale
   let gQ := WithLp.equiv 2 _ |>.symm fun (i, k) => (∑ j, gA i j * K_f (j, k)) / scale
   -- gK_jk = ∑_i gA_ij * Q_ik / scale
   let gK := WithLp.equiv 2 _ |>.symm fun (j, k) => (∑ i, gA i j * Q_f (i, k)) / scale
+
   (gQ, gK, gV)
 
 /-- Multi-Head Attention Layer instance.

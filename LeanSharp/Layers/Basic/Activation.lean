@@ -13,6 +13,7 @@ This module formalizes activation functions as neural network layers.
 ## Main definitions
 
 * `relu_layer`: The Rectified Linear Unit (ReLU) activation function.
+* `softmax`: The Softmax activation function.
 -/
 
 namespace LeanSharp
@@ -35,5 +36,30 @@ noncomputable def relu_layer (ι : Type) : Layer (W ι) (W ι) where
   fintypeParamDim := inferInstance
   forward := fun _ x => relu x
   backward := fun _ x g_out => (0, relu_backward x g_out)
+
+/-- Softmax activation for a vector x. -/
+noncomputable def softmax [Fintype ι] (x : W ι) : W ι :=
+  let x_f := WithLp.equiv 2 _ x
+  let exps := fun i => Real.exp (x_f i)
+  let sum_exps := ∑ i, exps i
+  WithLp.equiv 2 _ |>.symm fun i =>
+    exps i / sum_exps
+
+/-- Softmax backward pass.
+    The Jacobian is J_ij = s_i (δ_ij - s_j). -/
+noncomputable def softmax_backward [Fintype ι] (x : W ι) (g_out : W ι) : W ι :=
+  let s := softmax x
+  let s_f := WithLp.equiv 2 _ s
+  let g_out_f := WithLp.equiv 2 _ g_out
+  let sum_sg := ∑ i, s_f i * g_out_f i
+  WithLp.equiv 2 _ |>.symm fun i =>
+    s_f i * (g_out_f i - sum_sg)
+
+/-- Softmax Layer instance. -/
+noncomputable def softmax_layer (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
+  ParamDim := Empty
+  fintypeParamDim := inferInstance
+  forward := fun _ x => softmax x
+  backward := fun _ x g_out => (0, softmax_backward x g_out)
 
 end LeanSharp
