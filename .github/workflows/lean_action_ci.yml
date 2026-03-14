@@ -22,9 +22,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .lake
-          key: ${{ runner.os }}-lean-${{ hashFiles('lake-manifest.json') }}
+          key: ${{ runner.os }}-lean-v2-${{ hashFiles('lake-manifest.json') }}
           restore-keys: |
-            ${{ runner.os }}-lean-
+            ${{ runner.os }}-lean-v2-
 
       - name: Build Lean project
         uses: leanprover/lean-action@v1
