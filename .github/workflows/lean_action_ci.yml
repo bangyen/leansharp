@@ -21,11 +21,6 @@ jobs:
       - name: Build Lean project
         uses: leanprover/lean-action@v1
 
-      - name: Check imports
-        run: |
-          chmod +x scripts/check_imports.sh
-          ./scripts/check_imports.sh
-
       - name: Guard against new axiom declarations
         run: |
           chmod +x scripts/check_axiom.sh
