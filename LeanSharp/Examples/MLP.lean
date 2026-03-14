@@ -53,8 +53,30 @@ theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) 
           have h_affine (x : W ι_in) :
               (linear_layer ι_in ι_mid).forward w1 x = L x + b := by
             ext i
-            simp [linear_layer, linear_forward, L, b, LinearMap.comp_apply,
-                  Matrix.toLin'_apply, Matrix.mulVec]
+            simp only [
+              linear_layer,
+              linear_forward,
+              WithLp.equiv_apply,
+              WithLp.equiv_symm_apply,
+              LinearMap.comp_apply,
+              LinearEquiv.coe_coe,
+              WithLp.linearEquiv_apply,
+              AddEquiv.toEquiv_eq_coe,
+              Equiv.toFun_as_coe,
+              EquivLike.coe_coe,
+              WithLp.addEquiv_apply,
+              Matrix.toLin'_apply,
+              WithLp.linearEquiv_symm_apply,
+              Equiv.invFun_as_coe,
+              AddEquiv.coe_toEquiv_symm,
+              WithLp.addEquiv_symm_apply,
+              PiLp.add_apply,
+              Matrix.mulVec,
+              Matrix.of_apply,
+              add_left_inj,
+              L,
+              b
+            ]
             rfl
           let LC := L.toContinuousLinearMap
           use ‖LC‖₊
@@ -65,16 +87,22 @@ theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) 
         have h2 : LipschitzWith 1 (fun x => (relu_layer ι_mid).forward w_relu x) := by
           apply LipschitzWith.of_dist_le_mul
           intro x y
-          simp! [relu_layer, relu]
+          simp only [
+            relu_layer,
+            relu,
+            WithLp.equiv_apply,
+            WithLp.equiv_symm_apply,
+            NNReal.coe_one,
+            one_mul
+          ]
           rw [PiLp.dist_eq_of_L2, PiLp.dist_eq_of_L2]
-          simp only
           apply Real.sqrt_le_sqrt
           apply Finset.sum_le_sum
           intro i _
-          dsimp [WithLp.linearEquiv, WithLp.equiv]
           rw [sq_le_sq, abs_of_nonneg dist_nonneg, abs_of_nonneg dist_nonneg]
           rw [Real.dist_eq, Real.dist_eq]
-          exact (abs_max_sub_max_le_max 0 (x.ofLp i) 0 (y.ofLp i)).trans (by simp)
+          exact (abs_max_sub_max_le_max 0 (x.ofLp i) 0 (y.ofLp i)).trans
+            (by simp only [sub_self, abs_zero, abs_nonneg, sup_of_le_right, le_refl])
         have h3 : ∃ K : NNReal,
             LipschitzWith K (fun x => (linear_layer ι_mid ι_out).forward w2 x) := by
           classical
@@ -88,8 +116,30 @@ theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) 
           have h_affine (x : W ι_mid) :
               (linear_layer ι_mid ι_out).forward w2 x = L x + b := by
             ext i
-            simp [linear_layer, linear_forward, L, b, LinearMap.comp_apply,
-                  Matrix.toLin'_apply, Matrix.mulVec]
+            simp only [
+              linear_layer,
+              linear_forward,
+              WithLp.equiv_apply,
+              WithLp.equiv_symm_apply,
+              LinearMap.comp_apply,
+              LinearEquiv.coe_coe,
+              WithLp.linearEquiv_apply,
+              AddEquiv.toEquiv_eq_coe,
+              Equiv.toFun_as_coe,
+              EquivLike.coe_coe,
+              WithLp.addEquiv_apply,
+              Matrix.toLin'_apply,
+              WithLp.linearEquiv_symm_apply,
+              Equiv.invFun_as_coe,
+              AddEquiv.coe_toEquiv_symm,
+              WithLp.addEquiv_symm_apply,
+              PiLp.add_apply,
+              Matrix.mulVec,
+              Matrix.of_apply,
+              add_left_inj,
+              L,
+              b
+            ]
             rfl
           let LC := L.toContinuousLinearMap
           use ‖LC‖₊
@@ -101,7 +151,7 @@ theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) 
         rcases h3 with ⟨K3, h3L⟩
         use K3 * (1 : NNReal) * K1
         convert h3L.comp (h2.comp h1L) using 1
-        · simp
+        · rw [mul_one, one_mul]
 
 /-- Verification that the MLP chain can be evaluated. -/
 noncomputable example (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) (x : W ι_in) : W ι_out :=

@@ -56,7 +56,7 @@ theorem exact_gradient_w_init :
       (WithLp.equiv 2 (Fin 2 → ℝ)).symm (fun i => if i = 0 then 2 else 6) := by
   unfold exact_gradient_toy w_init
   ext i
-  simp only [Equiv.apply_symm_apply]
+  rw [Equiv.apply_symm_apply]
   fin_cases i
   · norm_num
   · norm_num
@@ -73,14 +73,14 @@ theorem toy_filtered_gradient_check :
     filtered_gradient (exact_gradient_toy w_init) 1 = exact_gradient_toy w_init := by
   have h_mean : vector_mean (exact_gradient_toy w_init) = 4 := by
     unfold vector_mean exact_gradient_toy w_init
-    simp (config := {decide := true}) only [Equiv.apply_symm_apply]
+    rw [Equiv.apply_symm_apply]
     norm_num
   have h_std : vector_std (exact_gradient_toy w_init) = 2 := by
     have h_var : vector_variance (exact_gradient_toy w_init) = 4 := by
       unfold vector_variance
       rw [h_mean]
       unfold exact_gradient_toy w_init
-      simp (config := {decide := true}) only [Equiv.apply_symm_apply]
+      rw [Equiv.apply_symm_apply]
       norm_num
     unfold vector_std
     rw [h_var]
@@ -89,8 +89,12 @@ theorem toy_filtered_gradient_check :
   unfold filtered_gradient z_score_mask hadamard
   rw [h_mean, h_std]
   ext i
-  dsimp only [Equiv.symm_apply_apply, Equiv.apply_symm_apply,
-              WithLp.equiv_symm_apply, WithLp.equiv_apply]
+  dsimp only [
+    Equiv.symm_apply_apply,
+    Equiv.apply_symm_apply,
+    WithLp.equiv_symm_apply,
+    WithLp.equiv_apply
+  ]
   fin_cases i <;> {
     unfold exact_gradient_toy w_init
     split_ifs with h <;> norm_num at *
@@ -103,7 +107,7 @@ theorem toy_zsharp_step_reduction :
     L_toy w_next < L_toy w_init := by
   intro w_next
   unfold L_toy w_next w_init exact_gradient_toy
-  simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
+  rw [Equiv.apply_symm_apply, WithLp.equiv_apply]
   norm_num
 
 end LeanSharp.QuadraticBowl
