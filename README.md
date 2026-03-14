@@ -28,8 +28,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 ## Roadmap & Future Work
 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
-
-- **Softmax Activation Formalization**: Implement the Softmax function and its Jacobian to replace the structural stubs in Multi-Head Attention.
+### Immediate Roadmap (Usability & Tooling)
 - **SAM Update Logic Verification**: Formally prove that the Z-Score SAM update step satisfies the Fréchet differentiability requirements for multi-layer chains.
 - **ViT Patching Invariance**: Formally prove the mathematical equivalence between Patch Embedding sequences and strided Convolutional mappings.
 
