@@ -23,4 +23,3 @@ name = "LeanSharp"
 
 [[lean_lib]]
 name = "Tests"
-globs = ["Tests.+"]

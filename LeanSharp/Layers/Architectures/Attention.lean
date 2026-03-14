@@ -35,16 +35,13 @@ noncomputable def attention_forward (S D : ℕ) (Q K V : W (Fin S × Fin D)) : W
   let Q_f := WithLp.equiv 2 _ Q
   let K_f := WithLp.equiv 2 _ K
   let V_f := WithLp.equiv 2 _ V
-
   -- Pre-softmax scores A
   let A := fun (i j : Fin S) => (∑ k, Q_f (i, k) * K_f (j, k)) / scale
-
   -- Row-wise softmax
   let S_mat := fun (i j : Fin S) =>
     let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
     let row_s := WithLp.equiv 2 _ (softmax row)
     row_s j
-
   WithLp.equiv 2 (Fin S × Fin D → ℝ) |>.symm fun (i, d) =>
     ∑ j, S_mat i j * V_f (j, d)
 
@@ -56,30 +53,24 @@ noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
   let K_f := WithLp.equiv 2 _ K
   let V_f := WithLp.equiv 2 _ V
   let g_out_f := WithLp.equiv 2 _ g_out
-
   -- Recompute A and Softmax(A)
   let A := fun (i j : Fin S) => (∑ k, Q_f (i, k) * K_f (j, k)) / scale
   let SM := fun (i j : Fin S) =>
     let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
     (WithLp.equiv 2 _ (softmax row)) j
-
   -- gV_jd = ∑_i g_out_id * SM_ij
   let gV := WithLp.equiv 2 _ |>.symm fun (j, d) => ∑ i, g_out_f (i, d) * SM i j
-
   -- gSM_ij = ∑_d g_out_id * V_jd
   let gSM := fun (i j : Fin S) => ∑ d, g_out_f (i, d) * V_f (j, d)
-
   -- gA_ij: backward through row-wise softmax
   let gA := fun (i j : Fin S) =>
     let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
     let g_row_out := WithLp.equiv 2 _ |>.symm fun j' => gSM i j'
     (WithLp.equiv 2 _ (softmax_backward row g_row_out)) j
-
   -- gQ_ik = ∑_j gA_ij * K_jk / scale
   let gQ := WithLp.equiv 2 _ |>.symm fun (i, k) => (∑ j, gA i j * K_f (j, k)) / scale
   -- gK_jk = ∑_i gA_ij * Q_ik / scale
   let gK := WithLp.equiv 2 _ |>.symm fun (j, k) => (∑ i, gA i j * Q_f (i, k)) / scale
-
   (gQ, gK, gV)
 
 /-- Multi-Head Attention Layer instance.

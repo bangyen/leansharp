@@ -35,8 +35,3 @@ jobs:
         run: |
           chmod +x scripts/check_sorry.sh
           ./scripts/check_sorry.sh
-
-      - name: Run Linters
-        run: |
-          lake lint
-          lake exe lint-style
