@@ -9,6 +9,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Sum
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Order.Ring.Abs
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
 /-!
 # Z-Score Gradient Filtering
