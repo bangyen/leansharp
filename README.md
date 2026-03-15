@@ -30,12 +30,15 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project completeness and implementation complexity.
 
-### Immediate Roadmap (Usability & Tooling)
+### Immediate Roadmap (Verification & Refinement)
 
-#### Formal Stochastic Descent
-* [x] Define the variance bounds specific to Z-score filtered gradients.
-* [x] Formulate the Taylor expansion accommodating stochastic noise terms.
-* [x] Prove the expected descent bound lemma.
+#### Z-Score Sensitivity Analysis
+* Formalize the analytical relationship between threshold $z$ and the signal alignment probability. **[High]**
+* Implement automated scripts for finding optimal $z$ based on empirical variance traces. **[Medium]**
+
+#### Convergence Theory Sharpening
+* Use the newly verified `z_score_descent` lemma to tighten bounds in `Stochastic/Convergence.lean`. **[Medium]**
+* Formalize the transition from expected descent to almost-sure convergence sequences. **[High]**
 
 ---
 
