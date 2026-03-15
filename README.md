@@ -23,7 +23,7 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
 - ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
 - ✅ **SAM Logic & Invariance** (`Theory/`): Formalized the mathematical definition of the Z-Score SAM update step and proved the functional equivalence of patch embeddings to strided 2D convolutions.
-- ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates, PAC-Bayes bounds, and uniform stability markers for filtered gradients.
+- ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates and established the formal **expected descent bound** for Z-score filtered gradients under signal alignment.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 
 ## Roadmap & Future Work
@@ -33,9 +33,9 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Usability & Tooling)
 
 #### Formal Stochastic Descent
-* Define the variance bounds specific to Z-score filtered gradients. **[Medium]**
-* Formulate the Taylor expansion accommodating stochastic noise terms. **[Medium-High]**
-* Prove the expected descent bound lemma. **[Medium-High]**
+* [x] Define the variance bounds specific to Z-score filtered gradients.
+* [x] Formulate the Taylor expansion accommodating stochastic noise terms.
+* [x] Prove the expected descent bound lemma.
 
 ---
 

@@ -10,6 +10,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Probability.Notation
 import Mathlib.Probability.Moments.Basic
+import Mathlib.Analysis.Normed.Field.Basic
 
 /-!
 # Formal Stochastic Descent Lemma
@@ -101,13 +102,13 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
   -- Step 2: Simplify point-wise bound
   have h_simp (ω : Ω) : f (w - η • g ω) ≤ f w - η * inner ℝ (gradient f w) (g ω) +
       (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 := by
-    have h_diff : w - η • g ω - w = -η • g ω := by simp
+    have h_diff : w - η • g ω - w = -η • g ω := by simp only [sub_sub_cancel_left, neg_smul]
     have h_point := h_taylor_loc ω
     rw [h_diff] at h_point
     have h_term1 : inner ℝ (gradient f w) (-η • g ω) = -η * inner ℝ (gradient f w) (g ω) := by
       rw [inner_smul_right, real_inner_comm]
     have h_term2 : ‖-η • g ω‖ ^ 2 = η ^ 2 * ‖g ω‖ ^ 2 := by
-      simp [norm_smul, mul_pow]
+      simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
     calc f (w - η • g ω)
       _ ≤ f w + inner ℝ (gradient f w) (-η • g ω) + (L_smooth / 2) * ‖-η • g ω‖ ^ 2 := h_point
       _ = f w - η * inner ℝ (gradient f w) (g ω) + (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 := by
@@ -133,7 +134,7 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
       = f w - η * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2)
       * 𝔼[fun ω => ‖g ω‖ ^ 2] := by
     -- Use linearity of integral
-    have h1 : ∫ (ω : Ω), f w ∂ℙ = f w := by simp [integral_const]
+    have h1 : ∫ (ω : Ω), f w ∂ℙ = f w := by simp only [integral_const, probReal_univ, one_smul]
     have h2 : ∫ (ω : Ω), η * inner ℝ (gradient f w) (g ω) ∂ℙ = η * ‖gradient f w‖ ^ 2 := by
       calc ∫ ω, η * inner ℝ (gradient f w) (g ω) ∂ℙ
         _ = η * ∫ ω, inner ℝ (gradient f w) (g ω) ∂ℙ := integral_const_mul η _
@@ -196,7 +197,9 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
     (h_η : 0 < η ∧ η ≤ 1 / L_smooth)
     (h_meas_f : AEStronglyMeasurable (fun ω => filtered_gradient (g ω) z) ℙ)
     (h_int_f : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2) ℙ)
-    (h_int_f_val : Integrable (fun ω => f (w - η • filtered_gradient (g ω) z)) ℙ) :
+    (h_int_f_val : Integrable (fun ω => f (w - η • filtered_gradient (g ω) z)) ℙ)
+    (h_align : ‖gradient f w‖ ^ 2 ≤
+      2 * inner ℝ (gradient f w) (𝔼[fun ω => filtered_gradient (g ω) z])) :
     𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)] ≤
       f w - (η / 2) * ‖gradient f w‖ ^ 2 +
       (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := by
@@ -219,6 +222,55 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
       (η^2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2) ℙ := 
     (integrable_const (f w) |>.sub h_int_inner).add (h_int_f.const_mul _)
   -- Final combined bound: Filtering preserves the descent property on average.
-  sorry
+  -- Step 4: Integrate the point-wise bound
+  have h_simp_f (ω : Ω) : f (w - η • g_f_loc ω) ≤ f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
+      (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2 := by
+    have h_taylor := h_smooth w (w - η • g_f_loc ω)
+    have h_diff : w - η • g_f_loc ω - w = -η • g_f_loc ω := by simp only [sub_sub_cancel_left, neg_smul]
+    rw [h_diff] at h_taylor
+    have h_term1 : inner ℝ (gradient f w) (-η • g_f_loc ω) = 
+        -η * inner ℝ (gradient f w) (g_f_loc ω) := by
+      rw [inner_smul_right, real_inner_comm]
+    have h_term2 : ‖-η • g_f_loc ω‖ ^ 2 = η ^ 2 * ‖g_f_loc ω‖ ^ 2 := by
+      simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+    rw [h_term1, h_term2] at h_taylor
+    linarith
+  have h_int_le : 𝔼[fun ω => f (w - η • g_f_loc ω)] ≤ 
+      𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
+      (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2] :=
+    integral_mono h_int_f_val h_int_rhs h_simp_f
+  -- Step 5: Decompose and bound
+  have h_exp_rhs : 𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
+      (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2] =
+      f w - η * inner ℝ (gradient f w) (𝔼[g_f_loc]) + 
+      (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2] := by
+    have h_int_c : Integrable (fun (_ : Ω) => f w) ℙ := integrable_const _
+    have h_part1 : Integrable (fun ω => f w - 
+        η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ := 
+      h_int_c.sub h_int_inner
+    rw [integral_add h_part1 (h_int_f.const_mul _)]
+    rw [integral_sub h_int_c h_int_inner, integral_const, 
+        probReal_univ, one_smul, integral_const_mul]
+    rw [integral_const_mul, real_inner_comm]
+    congr 2; rw [integral_inner h_int_gf (gradient f w), real_inner_comm]
+  rw [h_exp_rhs] at h_int_le
+  -- Final step: use contraction and variance bound
+  let G := ‖gradient f w‖ ^ 2
+  let V_f := 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2]
+  let I_f := inner ℝ (gradient f w) (𝔼[g_f_loc])
+  have h_ps : - η * I_f ≤ - (η / 2) * G := by
+    rw [neg_mul, neg_mul, neg_le_neg_iff]
+    calc η * I_f = (η / 2) * (2 * I_f) := by ring
+      _ ≥ (η / 2) * G := by
+        apply mul_le_mul_of_nonneg_left h_align
+        linarith [h_η.1]
+  have h_vs : (η ^ 2 * L_smooth / 2) * V_f ≤ (η ^ 2 * L_smooth / 2) * (σsq + G) := by
+    apply mul_le_mul_of_nonneg_left (h_norm_le.trans h_input_bound)
+    have h_L_pos : 0 < L_smooth := by
+      have h_inv_pos : 0 < 1 / L_smooth := h_η.1.trans_le h_η.2
+      exact one_div_pos.mp h_inv_pos
+    positivity
+  linarith [h_int_le, h_ps, h_vs]
+
 
 end LeanSharp
