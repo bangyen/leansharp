@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Sam
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
@@ -12,6 +13,7 @@ import Mathlib.Probability.Moments.Basic
 import Mathlib.MeasureTheory.Function.LpSpace.Basic
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Data.NNReal.Basic
+import Mathlib.Algebra.Order.Field.Basic
 
 /-!
 # Stochastic ZSharp Convergence Bound
@@ -116,5 +118,65 @@ theorem zsharp_stochastic_convergence (L : W ι → ℝ) (w : W ι) (η : ℕ �
       L w - (η t) * (1 - (M : ℝ) * (η t) / 2) * ‖gradient L w‖ ^ 2 +
         (M : ℝ) * (η t) ^ 2 * σsq / 2 := by
   linarith
+theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η z : ℝ)
+    (σsq : ℝ)
+    (h_smooth : is_smooth f L_smooth)
+    (h_stoch : is_stochastic_gradient f g w)
+    (h_var : has_bounded_variance f g w σsq)
+    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
+    (h_η : 0 < η ∧ η ≤ 1 / (2 * L_smooth))
+    (h_meas_f : AEStronglyMeasurable (fun ω => filtered_gradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable (fun ω => f (w - η • filtered_gradient (g ω) z)) ℙ)
+    (h_align : ‖gradient f w‖ ^ 2 ≤
+      2 * inner ℝ (gradient f w) (𝔼[fun ω => filtered_gradient (g ω) z])) :
+    𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)] ≤
+      f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
+  have h_L : 0 < L_smooth := by
+    by_contra h; push_neg at h
+    if h_zero : L_smooth = 0 then
+      rw [h_zero] at h_η
+      have : η ≤ 0 := by
+        replace h_η := h_η.2
+        simpa only [
+          ge_iff_le,
+          mul_zero,
+          div_zero
+        ] using h_η
+      linarith
+    else
+      have h_neg : L_smooth < 0 := lt_of_le_of_ne h h_zero
+      have h_div : 1 / (2 * L_smooth) < 0 := by
+        apply div_neg_of_pos_of_neg
+        · exact zero_lt_one
+        · linarith
+      linarith
+  have h_η_orig : η ≤ 1 / L_smooth := by
+    calc η ≤ 1 / (2 * L_smooth) := h_η.2
+      _ ≤ 1 / L_smooth := by
+        apply one_div_le_one_div_of_le h_L
+        linarith
+  have h_descent := z_score_descent L_smooth f g w η z σsq
+    h_smooth h_stoch h_var h_int ⟨h_η.1, h_η_orig⟩ h_meas_f h_int_f h_int_f_val h_align
+  calc 𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)]
+    _ ≤ f w - (η / 2) * ‖gradient f w‖ ^ 2 +
+        (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := h_descent
+    _ = f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq -
+        (η / 4 - η^2 * L_smooth / 2) * ‖gradient f w‖ ^ 2 := by ring
+    _ ≤ f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
+        simp only [sub_le_self_iff]
+        apply mul_nonneg
+        · have h1 : 0 ≤ (η / 4) * (1 - 2 * η * L_smooth) := by
+            apply mul_nonneg (by linarith)
+            have h_ηL : η * L_smooth ≤ 1 / 2 := by
+              have h_inv : η ≤ 1 / (2 * L_smooth) := h_η.2
+              have h_pos : 2 * L_smooth > 0 := by linarith
+              have h_2ηL : η * (2 * L_smooth) ≤ 1 := by
+                rwa [le_div_iff₀ h_pos] at h_inv
+              linarith
+            linarith
+          field_simp
+          linarith
+        · exact pow_two_nonneg _
 
 end LeanSharp

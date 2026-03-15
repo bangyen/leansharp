@@ -142,26 +142,26 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
           congr 1; exact integral_inner h_stoch.1 (gradient f w)
         _ = η * inner ℝ (gradient f w) (gradient f w) := by rw [h_stoch.2]
         _ = η * ‖gradient f w‖ ^ 2 := by rw [real_inner_self_eq_norm_sq]
-    have h3 : ∫ (ω : Ω), (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ = 
-        (η ^ 2 * L_smooth / 2) * ∫ (ω : Ω), ‖g ω‖ ^ 2 ∂ℙ := 
+    have h3 : ∫ (ω : Ω), (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ =
+        (η ^ 2 * L_smooth / 2) * ∫ (ω : Ω), ‖g ω‖ ^ 2 ∂ℙ :=
       integral_const_mul _ (fun (ω : Ω) => ‖g ω‖ ^ 2)
     -- Decompose integral
     have h_int1 : Integrable (fun (_ : Ω) => f w) ℙ := integrable_const _
     have h_int2_inner := (Integrable.inner_const h_stoch.1 (gradient f w)).const_mul η
-    have h_int2 : Integrable (fun ω => η * inner ℝ (gradient f w) (g ω)) ℙ := 
+    have h_int2 : Integrable (fun ω => η * inner ℝ (gradient f w) (g ω)) ℙ :=
       h_int2_inner.congr (Filter.Eventually.of_forall (fun ω => by
         dsimp only; rw [real_inner_comm]))
     -- Final reduction using calc for distribution
-    calc ∫ ω, f w - η * inner ℝ (gradient f w) (g ω) + 
+    calc ∫ ω, f w - η * inner ℝ (gradient f w) (g ω) +
           (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ
-      _ = ∫ ω, (f w - η * inner ℝ (gradient f w) (g ω)) + 
+      _ = ∫ ω, (f w - η * inner ℝ (gradient f w) (g ω)) +
           (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ := rfl
-      _ = ∫ ω, (f w - η * inner ℝ (gradient f w) (g ω)) ∂ℙ + 
+      _ = ∫ ω, (f w - η * inner ℝ (gradient f w) (g ω)) ∂ℙ +
           ∫ ω, (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ :=
           integral_add (h_int1.sub h_int2) (Integrable.const_mul h_int _)
-      _ = ∫ ω, f w ∂ℙ - ∫ ω, η * inner ℝ (gradient f w) (g ω) ∂ℙ + 
+      _ = ∫ ω, f w ∂ℙ - ∫ ω, η * inner ℝ (gradient f w) (g ω) ∂ℙ +
           ∫ ω, (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ := by rw [integral_sub h_int1 h_int2]
-      _ = f w - η * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g ω‖ ^ 2] := 
+      _ = f w - η * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g ω‖ ^ 2] :=
           by rw [h1, h2, h3]
   rw [h_exp_rhs] at h_int_le
   -- Step 5: Use bias-variance decomposition of 𝔼[‖g‖^2]
@@ -213,43 +213,44 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
   have h_input_bound : 𝔼[fun ω => ‖g ω‖ ^ 2] ≤ σsq + ‖gradient f w‖ ^ 2 := by
     rw [h_raw_decomp]; unfold has_bounded_variance at h_var; linarith [h_var]
   -- Step 3: Integrate the Taylor bound for the filtered gradient
-  have h_int_gf : Integrable g_f_loc ℙ := 
+  have h_int_gf : Integrable g_f_loc ℙ :=
     h_stoch.1.mono h_meas_f (Filter.Eventually.of_forall (fun ω => filtered_norm_bound (g ω) z))
   have h_int_inner : Integrable (fun ω => η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ := by
     apply (Integrable.inner_const h_int_gf (gradient f w)).const_mul η |>.congr
     apply Filter.Eventually.of_forall; intro ω; dsimp only; rw [real_inner_comm]
   have h_int_rhs : Integrable (fun ω => f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
-      (η^2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2) ℙ := 
+      (η^2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2) ℙ :=
     (integrable_const (f w) |>.sub h_int_inner).add (h_int_f.const_mul _)
   -- Final combined bound: Filtering preserves the descent property on average.
   -- Step 4: Integrate the point-wise bound
   have h_simp_f (ω : Ω) : f (w - η • g_f_loc ω) ≤ f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
       (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2 := by
     have h_taylor := h_smooth w (w - η • g_f_loc ω)
-    have h_diff : w - η • g_f_loc ω - w = -η • g_f_loc ω := by simp only [sub_sub_cancel_left, neg_smul]
+    have h_diff : w - η • g_f_loc ω - w = -η • g_f_loc ω :=
+      by simp only [sub_sub_cancel_left, neg_smul]
     rw [h_diff] at h_taylor
-    have h_term1 : inner ℝ (gradient f w) (-η • g_f_loc ω) = 
+    have h_term1 : inner ℝ (gradient f w) (-η • g_f_loc ω) =
         -η * inner ℝ (gradient f w) (g_f_loc ω) := by
       rw [inner_smul_right, real_inner_comm]
     have h_term2 : ‖-η • g_f_loc ω‖ ^ 2 = η ^ 2 * ‖g_f_loc ω‖ ^ 2 := by
       simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
     rw [h_term1, h_term2] at h_taylor
     linarith
-  have h_int_le : 𝔼[fun ω => f (w - η • g_f_loc ω)] ≤ 
+  have h_int_le : 𝔼[fun ω => f (w - η • g_f_loc ω)] ≤
       𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
       (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2] :=
     integral_mono h_int_f_val h_int_rhs h_simp_f
   -- Step 5: Decompose and bound
   have h_exp_rhs : 𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
       (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2] =
-      f w - η * inner ℝ (gradient f w) (𝔼[g_f_loc]) + 
+      f w - η * inner ℝ (gradient f w) (𝔼[g_f_loc]) +
       (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2] := by
     have h_int_c : Integrable (fun (_ : Ω) => f w) ℙ := integrable_const _
-    have h_part1 : Integrable (fun ω => f w - 
-        η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ := 
+    have h_part1 : Integrable (fun ω => f w -
+        η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ :=
       h_int_c.sub h_int_inner
     rw [integral_add h_part1 (h_int_f.const_mul _)]
-    rw [integral_sub h_int_c h_int_inner, integral_const, 
+    rw [integral_sub h_int_c h_int_inner, integral_const,
         probReal_univ, one_smul, integral_const_mul]
     rw [integral_const_mul, real_inner_comm]
     congr 2; rw [integral_inner h_int_gf (gradient f w), real_inner_comm]
