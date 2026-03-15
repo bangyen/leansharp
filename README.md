@@ -30,8 +30,8 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
 
 ### Immediate Roadmap (Usability & Tooling)
-- **SAM Update Logic Verification**: Formally prove that the Z-Score SAM update step satisfies the Fréchet differentiability requirements for multi-layer chains.
-- **ViT Patching Invariance**: Formally prove the mathematical equivalence between Patch Embedding sequences and strided Convolutional mappings.
+- **Formal Stochastic Descent**: Prove the stochastic descent lemma for filtered gradients, specifically handling the non-trivial variance terms in the Taylor expansion.
+- **Robbins-Monro Convergence**: Formalize almost sure convergence for Z-score filtered SGD by establishing a custom martingale convergence theorem for non-convex landscapes.
 
 ### Core Foundation (Required for Completeness)
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
