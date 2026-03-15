@@ -22,36 +22,77 @@ All mathematical claims in LeanSharp are formally verified with **zero axioms** 
 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
 - ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
+- ✅ **SAM Logic & Invariance** (`Theory/`): Formalized the mathematical definition of the Z-Score SAM update step and proved the functional equivalence of patch embeddings to strided 2D convolutions.
 - ✅ **Convergence & Stability** (`Theory/`, `Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates, PAC-Bayes bounds, and uniform stability markers for filtered gradients.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 
 ## Roadmap & Future Work
 
-The following items represent the planned evolution of LeanSharp, categorized by their necessity for project "completeness" and their implementation complexity.
+The following items represent the planned evolution of LeanSharp, categorized by their necessity for project completeness and implementation complexity.
 
 ### Immediate Roadmap (Usability & Tooling)
-- **Formal Stochastic Descent**: Prove the stochastic descent lemma for filtered gradients, specifically handling the non-trivial variance terms in the Taylor expansion.
-- **Robbins-Monro Convergence**: Formalize almost sure convergence for Z-score filtered SGD by establishing a custom martingale convergence theorem for non-convex landscapes.
+
+#### Formal Stochastic Descent
+* Define the variance bounds specific to Z-score filtered gradients. **[Medium]**
+* Formulate the Taylor expansion accommodating stochastic noise terms. **[Medium-High]**
+* Prove the expected descent bound lemma. **[Medium-High]**
+
+---
 
 ### Core Foundation (Required for Completeness)
+
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
 
-| Direction | Necessity | Difficulty | Bottleneck |
-| :--- | :--- | :--- | :--- |
-| **Formal Stochastic Descent** | Prove the stochastic descent lemma for filtered gradients | **Med-High** | Non-trivial variance terms in the Taylor expansion |
-| **Robbins-Monro Convergence** | Prove almost sure convergence for Z-score filtered SGD | **Med-High** | Formalizing Martingale Convergence for non-convexity |
-| **Deterministic Stability** | Proves Z-score filtering actually stabilizes training | **High** | Handling non-Lipschitz hard-thresholding |
-| **Z-Score Universality** | Justifies Z-score filtering statistical optimality | **Extreme** | Formalizing a custom CLT for filtered distributions |
-| **Sobolev Regularity** | Transition foundations to $H^1/H^2$ spaces using weak derivatives | **Med-High** | Re-engineering vector spaces to $H^k$ |
-| **Hessian-Aware Filtering** | Generalize filtering based on local landscape curvature | **Med-High** | Second-order Fréchet derivatives in Mathlib |
+#### Robbins-Monro Convergence
+* Define the sequence of updates as a discrete-time Martingale for non-convex functions. **[Medium]**
+* Formalize the requisite Martingale Convergence Theorem in Mathlib. **[High]**
+* Prove almost sure convergence for the specific Z-score SGD sequence. **[High]**
+
+#### Deterministic Stability
+* Formalize the mathematical properties of non-Lipschitz hard-thresholding. **[Medium-High]**
+* Prove localized stability bounds for individual gradient updates. **[High]**
+* Prove the overarching uniform stability theorem for the entire filter process. **[High]**
+
+#### Sobolev Regularity
+* Define $H^1$ and $H^2$ Sobolev spaces and weak derivatives in the current vector space context. **[Medium]**
+* Prove equivalence or transition mappings between standard derivatives and weak derivatives. **[Medium-High]**
+* Refactor existing core Taylor descent lemmas to hold in $H^k$ spaces. **[Medium-High]**
+
+---
 
 ### Extensions & Grand Challenges
-These items represent specialized research directions or are currently limited by foundational gaps in Mathlib:
-- **Neural Tangent Kernels**: Formalize the NTK limit as layer width $D \to \infty$ to explain deep net training dynamics.
-- **Denoising Diffusion**: Formalize the Stochastic Differential Equations (SDEs) governing DDPMs and prove score-matching stability.
-- **Heavy-Tailed Noise**: Formalize non-Gaussian probability oracles (e.g., Cauchy noise).
-- **Median-Based Robustness**: Formalize median-based filtering as a robust alternative to Z-scores.
-- **Third-Order Descent**: Implement multilinear Taylor remainder theory.
+
+These items represent specialized research directions or are currently limited by foundational gaps in Mathlib.
+
+#### Z-Score Universality
+* Formalize the probability distribution of the filtered gradients. **[High]**
+* Prove a custom Central Limit Theorem (CLT) applicable to this specific filtered distribution. **[Extreme]**
+* Establish the statistical optimality lower bound. **[Extreme]**
+
+#### Hessian-Aware Filtering
+* Formalize second-order Fréchet derivatives in Mathlib. **[High]**
+* Define the local curvature matrix and the generalized filter condition. **[Medium]**
+* Prove the descent lemma utilizing the second-order information. **[Medium-High]**
+
+#### Neural Tangent Kernels
+* Define the analytical limit as layer width $D \to \infty$. **[High]**
+* Prove network initialization bounds. **[Extreme]**
+
+#### Denoising Diffusion
+* Formalize Forward/Reverse SDE definitions governing DDPMs. **[Extreme]**
+* Prove the score-matching stability objective. **[Extreme]**
+
+#### Heavy-Tailed Noise
+* Define Cauchy/non-Gaussian probability oracles. **[Medium-High]**
+* Prove bounds under infinite variance conditions. **[High]**
+
+#### Median-Based Robustness
+* Formalize the multivariate median operation. **[Medium]**
+* Prove robustness bounds compared to mean/Z-score baselines. **[Medium-High]**
+
+#### Third-Order Descent
+* Formalize third-order Fréchet derivatives. **[High]**
+* Prove the multilinear Taylor remainder theorem. **[High]**
 
 ## Installation & Building
 
