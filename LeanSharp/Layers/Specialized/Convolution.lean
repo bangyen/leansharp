@@ -65,6 +65,36 @@ noncomputable def conv2d_backward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw �
   let _ := Wp; let _ := x; -- Avoid unused variable warnings
   (g_w, g_x)
 
+/-- Parameter index type for multi-channel 2D Convolution. -/
+abbrev ConvMultiParam (kC kH kW nC : ℕ) := (Fin nC × Fin kC × Fin kH × Fin kW) ⊕ Fin nC
+
+/-- Strided 2D Convolution forward pass with multiple channels. -/
+noncomputable def conv2d_strided_forward (nc nh nw nC kh kw s : ℕ)
+    (h_h : kh ≤ nh) (h_w : kw ≤ nw) (h_s : 0 < s)
+    (Wp : W (ConvMultiParam nc kh kw nC)) (x : W (Fin nc × Fin nh × Fin nw)) :
+    W (Fin ((nh - kh) / s + 1) × Fin ((nw - kw) / s + 1) × Fin nC) :=
+  let _ := h_s
+  let h' := (nh - kh) / s + 1
+  let w' := (nw - kw) / s + 1
+  WithLp.equiv 2 (Fin h' × Fin w' × Fin nC → ℝ) |>.symm fun (i, j, c_out) =>
+    let kernel_sum := ∑ c_in : Fin nc, ∑ m : Fin kh, ∑ n : Fin kw,
+      (WithLp.equiv 2 _ Wp) (Sum.inl (c_out, c_in, m, n)) *
+      (WithLp.equiv 2 _ x) (c_in,
+                            ⟨i.val * s + m.val, by
+                              have hi := i.is_lt; have hm := m.is_lt
+                              have hi' := Nat.le_of_lt_succ hi
+                              have h_b := Nat.div_mul_le_self (nh - kh) s
+                              have h_bound := Nat.le_trans (Nat.mul_le_mul_right s hi') h_b
+                              omega⟩,
+                            ⟨j.val * s + n.val, by
+                              have hj := j.is_lt; have hn := n.is_lt
+                              have hj' := Nat.le_of_lt_succ hj
+                              have h_b := Nat.div_mul_le_self (nw - kw) s
+                              have h_bound := Nat.le_trans (Nat.mul_le_mul_right s hj') h_b
+                              omega⟩)
+    let bias := (WithLp.equiv 2 _ Wp) (Sum.inr c_out)
+    kernel_sum + bias
+
 /-- Conv2D Layer instance. -/
 noncomputable def conv2d_layer (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w) :
     Layer (W (Fin h × Fin w)) (W (Fin (h - kh + 1) × Fin (w - kw + 1))) where

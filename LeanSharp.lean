@@ -60,3 +60,4 @@ import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
 import LeanSharp.Theory.Structural.Stability
+import LeanSharp.Theory.Structural.ViTInvariance
