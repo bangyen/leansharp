@@ -65,3 +65,6 @@ import LeanSharp.Theory.Structural.ViTInvariance
 
 -- Robustness
 import LeanSharp.Theory.Robustness
+
+-- Sensitivity
+import LeanSharp.Theory.Sensitivity
