@@ -14,6 +14,10 @@ import Mathlib.MeasureTheory.Function.LpSpace.Basic
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Data.NNReal.Basic
 import Mathlib.Algebra.Order.Field.Basic
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Positivity
 
 /-!
 # Stochastic ZSharp Convergence Bound
@@ -132,52 +136,35 @@ theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W 
       2 * inner ℝ (gradient f w) (𝔼[fun ω => filtered_gradient (g ω) z])) :
     𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)] ≤
       f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
-  have h_L : 0 < L_smooth := by
-    by_contra h; push_neg at h
+  have h_η_pos := h_η.1
+  have h_η_le := h_η.2
+  have h_L_pos : 0 < L_smooth := by
+    by_contra h_le_zero; push_neg at h_le_zero
     if h_zero : L_smooth = 0 then
-      rw [h_zero] at h_η
-      have : η ≤ 0 := by
-        replace h_η := h_η.2
-        simpa only [
-          ge_iff_le,
-          mul_zero,
-          div_zero
-        ] using h_η
-      linarith
+      rw [h_zero] at h_η_le; norm_num at h_η_le; linarith
     else
-      have h_neg : L_smooth < 0 := lt_of_le_of_ne h h_zero
-      have h_div : 1 / (2 * L_smooth) < 0 := by
-        apply div_neg_of_pos_of_neg
-        · exact zero_lt_one
-        · linarith
+      have h_neg : L_smooth < 0 := lt_of_le_of_ne h_le_zero h_zero
+      have : 1 / (2 * L_smooth) < 0 := by apply div_neg_of_pos_of_neg <;> linarith
       linarith
-  have h_η_orig : η ≤ 1 / L_smooth := by
-    calc η ≤ 1 / (2 * L_smooth) := h_η.2
-      _ ≤ 1 / L_smooth := by
-        apply one_div_le_one_div_of_le h_L
-        linarith
+  have h_η_orig : η ≤ 1 / L_smooth :=
+    h_η_le.trans (by apply one_div_le_one_div_of_le h_L_pos; linarith)
   have h_descent := z_score_descent L_smooth f g w η z σsq
-    h_smooth h_stoch h_var h_int ⟨h_η.1, h_η_orig⟩ h_meas_f h_int_f h_int_f_val h_align
+    h_smooth h_stoch h_var h_int ⟨h_η_pos, h_η_orig⟩ h_meas_f h_int_f h_int_f_val h_align
   calc 𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)]
     _ ≤ f w - (η / 2) * ‖gradient f w‖ ^ 2 +
         (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := h_descent
-    _ = f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq -
-        (η / 4 - η^2 * L_smooth / 2) * ‖gradient f w‖ ^ 2 := by ring
+    _ = f w - (η / 2 - η ^ 2 * L_smooth / 2) * ‖gradient f w‖ ^ 2 +
+        (η ^ 2 * L_smooth / 2) * σsq := by ring
     _ ≤ f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
-        simp only [sub_le_self_iff]
-        apply mul_nonneg
-        · have h1 : 0 ≤ (η / 4) * (1 - 2 * η * L_smooth) := by
-            apply mul_nonneg (by linarith)
-            have h_ηL : η * L_smooth ≤ 1 / 2 := by
-              have h_inv : η ≤ 1 / (2 * L_smooth) := h_η.2
-              have h_pos : 2 * L_smooth > 0 := by linarith
-              have h_2ηL : η * (2 * L_smooth) ≤ 1 := by
-                rwa [le_div_iff₀ h_pos] at h_inv
-              linarith
-            linarith
-          field_simp
-          linarith
-        · exact pow_two_nonneg _
+      simp only [add_le_add_iff_right, sub_le_sub_iff_left]
+      have h_ηL : η * L_smooth ≤ 1 / 2 := by
+        have h_pos : 2 * L_smooth > 0 := by linarith [h_L_pos]
+        have h_le := h_η_le
+        rw [le_div_iff₀ h_pos] at h_le
+        nlinarith
+      have h_factor : η / 4 ≤ η / 2 - η ^ 2 * L_smooth / 2 := by
+        nlinarith [h_η_pos, h_ηL]
+      apply mul_le_mul_of_nonneg_right h_factor (pow_two_nonneg _)
 
 /-- **ZSharp Sequence Descent**:
 Aggregates the individual descent steps into a sequence-level bound.
