@@ -283,4 +283,20 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
       rwa [H] at this
     nlinarith [key, hR_large']
 
+/-- **Median vs mean under one outlier**: With a single movable point, the empirical mean
+can be made arbitrarily large while the geometric median stays bounded (when the sample has
+at least three points). So median-based aggregation is robust and mean-based is not. -/
+theorem median_bounded_mean_unbounded_one_outlier [Nonempty ι] (s : Finset α) (g : α → W ι)
+    (i0 : α) (hi0 : i0 ∈ s) (h_card : 3 ≤ s.card) (C : ℝ) (hC : -1 ≤ C) :
+    (∃ R : ℝ, ∀ g' : α → W ι, (∀ i ≠ i0, g' i = g i) →
+        ‖geometric_median s g'‖ ≤ R) ∧
+    (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C) := by
+  classical
+  have h_maj : 2 * (s.erase i0).card > s.card := by
+    rw [Finset.card_erase_of_mem hi0]; omega
+  constructor
+  · obtain ⟨R, hR⟩ := median_bounded_subset s g (s.erase i0) (Finset.erase_subset i0 s) h_maj
+    refine ⟨R, fun g' hg' => hR g' (fun i hi => hg' i (Finset.mem_erase.1 hi).1)⟩
+  · exact mean_unbounded s g i0 hi0 C hC
+
 end LeanSharp
