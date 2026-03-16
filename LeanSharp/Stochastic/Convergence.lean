@@ -179,4 +179,61 @@ theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W 
           linarith
         · exact pow_two_nonneg _
 
+/-- **ZSharp Sequence Descent**:
+Aggregates the individual descent steps into a sequence-level bound.
+This is the fundamental lemma used to prove the $O(1/\sqrt{T})$ convergence rate. -/
+theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
+  induction T with
+  | zero =>
+      simp only [Finset.range_zero, Finset.sum_empty, sub_self, add_zero]
+      exact le_refl _
+  | succ t ih =>
+      have h_sum1 : (∑ k ∈ Finset.range (t + 1), (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) =
+          (∑ k ∈ Finset.range t, (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) +
+          (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ := Finset.sum_range_succ _ _
+      have h_sum2 : (∑ k ∈ Finset.range (t + 1), (η k ^ 2 * L_smooth / 2) * σsq) =
+          (∑ k ∈ Finset.range t, (η k ^ 2 * L_smooth / 2) * σsq) +
+          (η t ^ 2 * L_smooth / 2) * σsq := Finset.sum_range_succ _ _
+      have h_int_next : Integrable (fun ω => f (w (t + 1) ω)) ℙ := h_int (t + 1)
+      have h_exp_step : ∫ ω, f (w (t + 1) ω) ∂ℙ ≤
+          ∫ ω, f (w t ω) ∂ℙ - (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ +
+          (η t ^ 2 * L_smooth / 2) * σsq := by
+        rw [← integral_condExp (h_meas t)]
+        have h_step_ae : ∀ᵐ ω ∂ℙ, f (w (t + 1) ω)
+          = f (stochastic_zsharp_step (w t ω) η t z (g_adv t) ω) := by
+          filter_upwards [h_step t] with ω h; rw [h]
+        have h_cond_exp_eq : volume[fun ω' => f (w (t + 1) ω') | ℱ t] =ᵐ[ℙ]
+            volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] := by
+          apply condExp_congr_ae h_step_ae
+        have h_bound_ae : volume[fun ω' => f (w (t + 1) ω') | ℱ t] ≤ᵐ[ℙ]
+            (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
+            + (η t ^ 2 * L_smooth / 2) * σsq) := by
+          apply h_cond_exp_eq.trans_le (h_desc_step t)
+        have h_int1 : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
+          h_int t |>.sub (h_int_grad t |>.const_mul _)
+        have h_int2 : Integrable (fun (_ : Ω) => (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
+          integrable_const _
+        have h_int_rhs : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
+          + (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
+          h_int1.add h_int2
+        have h_integral_le := integral_mono_ae integrable_condExp h_int_rhs h_bound_ae
+        rw [integral_add h_int1 h_int2] at h_integral_le
+        rw [integral_sub (h_int t) (h_int_grad t |>.const_mul _)] at h_integral_le
+        rw [integral_const (η t ^ 2 * L_smooth / 2 * σsq), probReal_univ, one_smul,
+            integral_const_mul] at h_integral_le
+        exact h_integral_le
+      linarith
+
 end LeanSharp

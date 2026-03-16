@@ -159,6 +159,19 @@ private lemma nonconvex_rate_rearrangement (T : ℕ) (hT : T > 0) (η0 S L_smoot
     _ = (2 * diff + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
         rw [h_eta]; field_simp [hT_pos]; rw [Real.sq_sqrt hT_pos.le]; ring
 
+private lemma z_score_rate_rearrangement (T : ℕ) (hT : T > 0) (η0 S L_smooth σsq diff : ℝ)
+    (hL : L_smooth > 0) (h_eta : η0 = 1 / (2 * L_smooth * Real.sqrt (T : ℝ)))
+    (h_S_bdd : (η0 / 4) * S ≤ diff + (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq) :
+    (1 / (T : ℝ)) * S ≤ (8 * L_smooth * diff + σsq) / Real.sqrt (T : ℝ) := by
+  have hT_pos : (T : ℝ) > 0 := by norm_cast
+  have h_eta_pos : η0 > 0 := by rw [h_eta]; positivity
+  have h_eta_nz : η0 ≠ 0 := h_eta_pos.ne'
+  field_simp [h_eta_nz, hT_pos.ne', hL.ne', (Real.sqrt_pos.mpr hT_pos).ne'] at h_S_bdd ⊢
+  rw [h_eta] at *
+  field_simp [hT_pos.ne', hL.ne', (Real.sqrt_pos.mpr hT_pos).ne'] at *
+  rw [Real.sq_sqrt hT_pos.le] at *
+  linarith
+
 /-- **Non-convex Rate ($O(1/\sqrt{T})$)**:
 For general smooth (but potentially non-convex) objectives, the average gradient
 norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
@@ -182,8 +195,7 @@ theorem zsharp_nonconvex_rate (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : 
   let S := ∑ t ∈ Finset.range T,
       𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2]
   let η0 := η 0
-  have h_eta : ∀ t, η t = η 0 := fun t => by
-    rw [h_step t, h_step 0]
+  have h_eta : ∀ t, η t = η 0 := fun t => by rw [h_step t, h_step 0]
   have h_telescope := nonconvex_telescoping_descent L w0 z L_smooth σsq (η 0) η
       h_eta g_adv T h_L_descent
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
@@ -193,92 +205,71 @@ theorem zsharp_nonconvex_rate (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : 
     apply integral_mono (integrable_const _) (h_int_L T)
     intro ω; apply csInf_le h_bdd; apply Set.mem_range_self
   have h_rearrange_input : η 0 = 1 / Real.sqrt (T : ℝ) := h_step 0
-  have h_S_bdd :
-    (η 0 / 2) * S ≤ L w0 - sInf (Set.range L) + (T : ℝ)
+  have h_S_bdd : (η 0 / 2) * S ≤ L w0 - sInf (Set.range L) + (T : ℝ)
       * (η 0 ^ 2 * L_smooth / 2) * σsq := by linarith
-  have h_rearrange :
-    (1 / (T : ℝ)) * S ≤ (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) :=
-    nonconvex_rate_rearrangement T hT η0 S L_smooth σsq (L w0 - sInf (Set.range L))
-      h_rearrange_input h_S_bdd
-  exact h_rearrange
+  exact nonconvex_rate_rearrangement T hT η0 S L_smooth σsq
+    (L w0 - sInf (Set.range L)) h_rearrange_input h_S_bdd
 
 theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : ℝ)
     (η : ℕ → ℝ) (g_adv : ℕ → Ω → W ι) (T : ℕ) (hT : T > 0)
+    (ℱ : ℕ → MeasurableSpace Ω)
     (h_step : ∀ t, η t = 1 / (2 * L_smooth * Real.sqrt T))
     (h_L_pos : L_smooth > 0)
     (h_bdd : BddBelow (Set.range L))
-    -- Assume the descent property holds at each step (simplified for grounding)
-    (h_descent : ∀ t,
-      𝔼[fun ω => L (stochastic_zsharp_step (weight_sequence w0 η z g_adv t ω) η t z (g_adv t) ω)] ≤
-      𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
-      (η t / 4) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] +
+    (h_int_L : ∀ t, Integrable (fun ω => L (weight_sequence w0 η z g_adv t ω)))
+    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2) ℙ)
+    (h_desc : ∀ t, ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => L (stochastic_zsharp_step
+        (weight_sequence w0 η z g_adv t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      L (weight_sequence w0 η z g_adv t ω) - (η t / 4) *
+        ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2 +
       ((η t) ^ 2 * L_smooth / 2) * σsq)
-    (h_int_L : ∀ t, Integrable (fun ω => L (weight_sequence w0 η z g_adv t ω))) :
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     ∃ C : ℝ,
       (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
         𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
       ≤ C / Real.sqrt (T : ℝ) := by
-  set S := ∑ t ∈ Finset.range T,
-    𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] with hS
-  let η0 := η 0
-  have h_eta : ∀ t, η t = η 0 := fun t => by rw [h_step t, h_step 0]
-  have hT_pos : (T : ℝ) > 0 := by norm_cast
-  have hη0_pos : η 0 > 0 := by
-    rw [h_step 0]; apply div_pos zero_lt_one
-    apply mul_pos (by linarith) (Real.sqrt_pos.mpr hT_pos)
-  have h_telescope : (η 0 / 4) * S ≤ L w0 - 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] +
-      (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-    rw [hS, Finset.mul_sum]
-    calc ∑ t ∈ Finset.range T, (η 0 / 4) *
-      (𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] : ℝ)
-      _ ≤ ∑ t ∈ Finset.range T, ((𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] : ℝ) -
-          (𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] : ℝ) +
-          (η 0 ^ 2 * L_smooth / 2) * σsq) := by
-        apply Finset.sum_le_sum; intro t _
-        have h := h_descent t; rw [h_eta t] at h
-        have hw : (𝔼[fun ω => L (stochastic_zsharp_step
-                  (weight_sequence w0 η z g_adv t ω) η t z (g_adv t) ω)] : ℝ) =
-                  (𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] : ℝ) := by
-          apply integral_congr_ae; apply Filter.Eventually.of_forall; intro ω
-          dsimp only; rw [weight_sequence.eq_2]
-        rw [hw] at h
-        linarith
-      _ = (∑ t ∈ Finset.range T, ((𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] : ℝ) -
-          (𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] : ℝ))) +
-          (∑ t ∈ Finset.range T, (η 0 ^ 2 * L_smooth / 2) * σsq) := by rw [Finset.sum_add_distrib]
-      _ = ((𝔼[fun ω => L (weight_sequence w0 η z g_adv 0 ω)] : ℝ) -
-          (𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] : ℝ)) +
-          (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-        rw [Finset.sum_range_sub' (f := fun t =>
-          (𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] : ℝ))]
-        rw [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
-        ring
-      _ = (L w0 - (𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] : ℝ)) +
-          (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-        have h_init : (fun ω => L (weight_sequence w0 η z g_adv 0 ω)) = fun _ => L w0 := by
-          ext ω; rw [weight_sequence.eq_1]
-        rw [h_init, integral_const, probReal_univ, one_smul]
+  let W_seq (t : ℕ) (ω : Ω) := weight_sequence w0 η z g_adv t ω
+  have h_step_seq (t : ℕ) : ∀ᵐ ω ∂ℙ, W_seq (t + 1) ω =
+      stochastic_zsharp_step (W_seq t ω) η t z (g_adv t) ω := by
+    apply Filter.Eventually.of_forall; intro ω; dsimp only [W_seq]; rw [weight_sequence]
+  have h_sequence_desc := LeanSharp.stochastic_zsharp_sequence_descent
+    L_smooth L W_seq η z σsq T g_adv ℱ h_step_seq h_desc h_int_L h_int_grad h_meas
+  have h_eta_iden : ∀ t, η t = η 0 := fun t => by rw [h_step t, h_step 0]
+  have h_sequence_desc_fixed : (η 0 / 4) * (∑ t ∈ Finset.range T,
+      𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
+      (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := by
+    rw [Finset.mul_sum]
+    have h_eq : (∑ t ∈ Finset.range T, (η 0 / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) =
+        (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) := by
+      apply Finset.sum_congr rfl; intro t _; rw [h_eta_iden t]
+    rw [h_eq]; exact h_sequence_desc
   let C := 8 * L_smooth * (L w0 - sInf (Set.range L)) + σsq
   use C
-  have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (weight_sequence w0 η z g_adv T ω)] := by
+  have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (W_seq T ω)] := by
     have h_le := integral_mono (integrable_const (sInf (Set.range L))) (h_int_L T)
-        (fun ω => csInf_le h_bdd (Set.mem_range_self (weight_sequence w0 η z g_adv T ω)))
+        (fun ω => csInf_le h_bdd (Set.mem_range_self (W_seq T ω)))
     simp only [integral_const, probReal_univ, smul_eq_mul, one_mul] at h_le
     exact h_le
-  have h_S_bdd : (η 0 / 4) * S ≤ L w0 - sInf (Set.range L)
-      + (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-    linarith
-  have h_scale : 1 / (T : ℝ) * S = (4 / ((T : ℝ) * η 0)) * ((η 0 / 4) * S) := by
-    field_simp [hη0_pos.ne', hT_pos.ne']
-  calc (1 / (T : ℝ)) * S = (4 / ((T : ℝ) * η 0)) * ((η 0 / 4) * S) := h_scale
-    _ ≤ (4 / ((T : ℝ) * η 0)) * (L w0 - sInf (Set.range L) + (T : ℝ)
-      * (η 0 ^ 2 * L_smooth / 2) * σsq) := by
-      apply mul_le_mul_of_nonneg_left h_S_bdd
-      apply div_nonneg (by linarith) (mul_nonneg hT_pos.le hη0_pos.le)
-    _ = (8 * L_smooth * (L w0 - sInf (Set.range L)) + σsq) / Real.sqrt (T : ℝ) := by
-      rw [h_step 0]
-      field_simp [hT_pos, h_L_pos, (Real.sqrt_pos.mpr hT_pos).ne']
-      rw [Real.sq_sqrt hT_pos.le]
-      ring
+  have hT_pos : (T : ℝ) > 0 := by norm_cast
+  have η0_val : η 0 = 1 / (2 * L_smooth * Real.sqrt T) := h_step 0
+  have h_rearrange := z_score_rate_rearrangement T hT (η 0)
+    (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) L_smooth σsq
+    (L w0 - 𝔼[fun ω => L (W_seq T ω)]) h_L_pos (h_step 0)
+  apply (h_rearrange ?_).trans
+  · apply div_le_div_of_nonneg_right _ (Real.sqrt_pos.mpr hT_pos).le
+    dsimp only [C]; nlinarith [h_inf, csInf_le h_bdd (Set.mem_range_self w0)]
+  · calc (η 0 / 4) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2])
+      _ ≤ 𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
+          (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := h_sequence_desc_fixed
+      _ = (L w0 - 𝔼[fun ω => L (W_seq T ω)]) + (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
+          have h0 : (fun ω => L (W_seq 0 ω)) = fun _ => L w0 := by
+            ext ω; dsimp only [W_seq]; rw [weight_sequence]
+          rw [h0, integral_const, probReal_univ, one_smul]
+          congr 1
+          rw [Finset.sum_congr rfl (fun t _ => by rw [h_eta_iden t]),
+              Finset.sum_const, nsmul_eq_mul, Finset.card_range]
+          ring
 
 end LeanSharp
