@@ -104,4 +104,10 @@ noncomputable def geometric_median {α : Type*} (s : Finset α) (g : α → W ι
   else
     0
 
+/-- When `s` is nonempty, `geometric_median` equals the chosen minimizer; used to apply
+`Classical.choose_spec` in robustness proofs. -/
+lemma geometric_median_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
+    geometric_median s g = Classical.choose (exists_isMin_on_finite_sum_norm s g h) := by
+  unfold geometric_median; rw [dif_pos h]
+
 end LeanSharp

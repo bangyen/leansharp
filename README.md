@@ -40,6 +40,10 @@ The following items represent the planned evolution of LeanSharp, categorized by
 * Use the newly verified `z_score_descent` lemma to tighten bounds in `Stochastic/Convergence.lean`. **[Medium]**
 * Formalize the transition from expected descent to almost-sure convergence sequences. **[High]**
 
+#### Robustness Theory (`Theory/Robustness.lean`)
+* Formalize a comparison theorem: median-based vs mean-based gradient aggregation in the presence of outliers. **[Medium-High]**
+* Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**
+
 ---
 
 ### Core Foundation (Required for Completeness)
@@ -90,8 +94,7 @@ These items represent specialized research directions or are currently limited b
 * Prove bounds under infinite variance conditions. **[High]**
 
 #### Median-Based Robustness
-* Formalize the multivariate median operation. **[Medium]**
-* Prove robustness bounds compared to mean/Z-score baselines. **[Medium-High]**
+* Prove robustness bounds compared to mean/Z-score baselines (mean unbounded / median bounded already in `Theory/Robustness.lean`). **[Medium-High]**
 
 #### Third-Order Descent
 * Formalize third-order Fréchet derivatives. **[High]**
