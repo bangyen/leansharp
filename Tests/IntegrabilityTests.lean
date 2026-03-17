@@ -15,12 +15,52 @@ Robbins-Monro convergence theorems.
 
 ## Theorems
 
+* `structural_integrability_derivation_test`.
+* `structural_descent_envelope_test`.
 * `integrability_interface_test`.
 -/
 
 namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
+
+/-- **Structural Integrability Derivation Verification**: This test checks that
+structural assumptions provide objective and gradient-square integrability via
+`zsharp_structural_integrability`, without taking those integrability witnesses
+as direct bundle fields. -/
+theorem structural_integrability_derivation_test
+    {Ω : Type*}
+    [MeasureSpace Ω]
+    (f : W (Fin 2) → ℝ)
+    (w : ℕ → Ω → W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
+    (∀ t, Integrable (fun ω => f (w t ω))) ∧
+      (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) := by
+  exact zsharp_structural_integrability f w η z σsq h_struct
+
+/-- **Structural Envelope Wiring Verification**: This test ensures the sequence
+descent envelope can be instantiated from structural assumptions by deriving
+integrability through `zsharp_structural_integrability`. -/
+theorem structural_descent_envelope_test
+    {Ω : Type*}
+    [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L_smooth : NNReal) (f : W (Fin 2) → ℝ)
+    (w : ℕ → Ω → W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq)
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
+        (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
+    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
+  have h_int_all := zsharp_structural_integrability f w η z σsq h_struct
+  exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T
+    (fun t ω => gradient f (w t ω)) ℱ (fun t => h_struct.h_step t) h_desc_step
+    h_int_all.1 h_int_all.2 h_meas
 
 /-- **Integrability Verification**: This "test" ensures that the structural
 hypothesis bundle can be instantiated and used to state a convergence result

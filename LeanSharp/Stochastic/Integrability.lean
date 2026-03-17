@@ -48,10 +48,24 @@ structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W �
   /-- Gradient estimator variance hypothesis witness. -/
   h_var :
     ∀ t, has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq
-  /-- Integrability of the objective value along the sequence. -/
-  h_f_int : ∀ t, Integrable (fun ω => f (w t ω))
-  /-- Integrability of the squared gradient norm along the sequence. -/
-  h_g_int : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)
+  /-- Objective process is strongly measurable, enabling domination-based
+  integrability. -/
+  h_f_aemeas : ∀ t, AEStronglyMeasurable (fun ω => f (w t ω))
+  /-- Squared gradient-norm process is strongly measurable, enabling
+  domination-based integrability. -/
+  h_g_aemeas : ∀ t, AEStronglyMeasurable (fun ω => ‖gradient f (w t ω)‖ ^ 2)
+  /-- Dominating process for the objective value. -/
+  f_dom : ℕ → Ω → ℝ
+  /-- Dominating process for the squared gradient norm. -/
+  g_dom : ℕ → Ω → ℝ
+  /-- Integrability of the objective dominating process. -/
+  h_f_dom_int : ∀ t, Integrable (f_dom t)
+  /-- Integrability of the gradient-norm-squared dominating process. -/
+  h_g_dom_int : ∀ t, Integrable (g_dom t)
+  /-- Almost-everywhere domination for the objective value. -/
+  h_f_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖f (w t ω)‖ ≤ ‖f_dom t ω‖
+  /-- Almost-everywhere domination for the squared gradient norm. -/
+  h_g_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖‖gradient f (w t ω)‖ ^ 2‖ ≤ ‖g_dom t ω‖
   /-- Initial weight integrability witness. -/
   h_w0 : Integrable (fun ω => ‖w 0 ω‖ ^ 2)
   /-- Measurability of the stochastic process. -/
@@ -69,7 +83,11 @@ integrability witnesses from structural assumptions. -/
 theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
     (∀ t, Integrable (fun ω => f (w t ω))) ∧
-    (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :=
-  ⟨h_struct.h_f_int, h_struct.h_g_int⟩
+    (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) := by
+  refine ⟨?_, ?_⟩
+  · intro t
+    exact (h_struct.h_f_dom_int t).mono (h_struct.h_f_aemeas t) (h_struct.h_f_dom_bound t)
+  · intro t
+    exact (h_struct.h_g_dom_int t).mono (h_struct.h_g_aemeas t) (h_struct.h_g_dom_bound t)
 
 end LeanSharp
