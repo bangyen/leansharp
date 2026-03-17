@@ -66,6 +66,7 @@ import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
 import LeanSharp.Theory.Structural.Stability
 import LeanSharp.Theory.Structural.ViTInvariance
+import LeanSharp.Stochastic.StructuralConvergence
 
 -- Robustness
 import LeanSharp.Theory.Robustness.BreakdownPoint

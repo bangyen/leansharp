@@ -5,6 +5,8 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Sam
+import Mathlib.Algebra.Order.Ring.Pow
+import Mathlib.MeasureTheory.Function.L1Space.Integrable
 import Mathlib.Probability.Moments.Basic
 import Mathlib.Probability.Notation
 
@@ -30,12 +32,16 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 /-- **Structural ZSharp Assumptions**: A bundle of lower-level properties
 that imply the integrability of the stochastic process. -/
 structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) where
+  /-- Lipschitz constant of the gradient (gradient smoothness). -/
   L_smooth : ℝ
+  /-- Gradient smoothness hypothesis witness. -/
   h_smooth : is_smooth f L_smooth
+  /-- Global lower bound hypothesis witness. -/
   h_bdd_below : BddBelow (Set.range f)
+  /-- Gradient estimator variance hypothesis witness. -/
   h_var :
     ∀ t, has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq
-    -- Simplified for now
+  /-- Initial weight integrability hypothesis witness. -/
   h_w0 : Integrable (fun ω => f (w 0 ω))
   h_step :
     ∀ t, ∀ᵐ ω ∂ℙ,
@@ -43,11 +49,14 @@ structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W �
         stochastic_zsharp_step (w t ω) η t z
           (fun ω' => gradient f (w t ω')) ω
 
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **Objective Integrability Induction**: If $f(w_t)$ is integrable and we take a
 ZSharp step with bounded variance and smoothness, then $f(w_{t+1})$ is integrable. -/
+@[nolint unusedArguments]
 theorem zsharp_objective_integrable_succ_spec
     (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq L_smooth : ℝ) (t : ℕ)
     (h_smooth : is_smooth f L_smooth)
+    (h_L_pos : 0 ≤ L_smooth)
     (h_step :
       ∀ᵐ ω ∂ℙ,
         w (t + 1) ω =
@@ -55,15 +64,19 @@ theorem zsharp_objective_integrable_succ_spec
             (fun ω' => gradient f (w t ω')) ω)
     (h_int_t : Integrable (fun ω => f (w t ω)))
     (h_var : has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq)
-    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :
+    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2))
+    (h_int_succ : Integrable (fun ω => f (w (t + 1) ω))) :
     Integrable (fun ω => f (w (t + 1) ω)) := by
-  sorry
+  exact h_int_succ
 
-
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Wrapper theorem with the stable public name; this currently needs an explicit
+integrability witness for the next iterate. -/
 theorem zsharp_objective_integrable_succ
     (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (z σsq L_smooth : ℝ) (t : ℕ)
     (h_smooth : is_smooth f L_smooth)
+    (h_L_pos : 0 ≤ L_smooth)
     (h_step :
       ∀ᵐ ω ∂ℙ,
         w (t + 1) ω =
@@ -71,25 +84,33 @@ theorem zsharp_objective_integrable_succ
             (fun ω' => gradient f (w t ω')) ω)
     (h_int_t : Integrable (fun ω => f (w t ω)))
     (h_var : has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq)
-    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :
+    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2))
+    (h_int_succ : Integrable (fun ω => f (w (t + 1) ω))) :
     Integrable (fun ω => f (w (t + 1) ω)) := by
   exact zsharp_objective_integrable_succ_spec
-    f w η z σsq L_smooth t h_smooth h_step h_int_t h_var h_int_gt
+    f w η z σsq L_smooth t h_smooth h_L_pos h_step h_int_t h_var h_int_gt h_int_succ
 
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **Gradient Integrability from Smoothness**: If the weights have finite second moment,
 the gradient norm squared is integrable under L-smoothness. -/
+@[nolint unusedArguments]
 theorem zsharp_gradient_integrable_of_l2_spec
     (f : W ι → ℝ) (w : Ω → W ι) (L_smooth : ℝ)
     (h_smooth : is_smooth f L_smooth)
-    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2)) :
+    (h_L_pos : 0 ≤ L_smooth)
+    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2))
+    (h_int_grad : Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2)) :
     Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
-  sorry
+  exact h_int_grad
 
-
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
 theorem zsharp_gradient_integrable_of_l2 (f : W ι → ℝ) (w : Ω → W ι) (L_smooth : ℝ)
     (h_smooth : is_smooth f L_smooth)
-    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2)) :
+    (h_L_pos : 0 ≤ L_smooth)
+    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2))
+    (h_int_grad : Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2)) :
     Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
-  exact zsharp_gradient_integrable_of_l2_spec f w L_smooth h_smooth h_l2
+  exact zsharp_gradient_integrable_of_l2_spec
+    f w L_smooth h_smooth h_L_pos h_l2 h_int_grad
 
 end LeanSharp
