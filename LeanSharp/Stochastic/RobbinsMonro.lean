@@ -197,7 +197,7 @@ theorem zsharp_robbins_monro_objective_limit_of_objective_step_and_l1
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_adapted_neg : StronglyAdapted ℱfil (fun t ω => -f (w t ω)))
+    (h_adapted_obj : StronglyAdapted ℱfil (fun t ω => f (w t ω)))
     (h_step_obj :
       ∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
     (R : NNReal)
@@ -210,8 +210,10 @@ theorem zsharp_robbins_monro_objective_limit_of_objective_step_and_l1
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
-  have hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R :=
-    zsharp_neg_uniform_l1_of_objective_uniform_l1 f w R hbdd_obj
+  rcases zsharp_neg_process_data_of_objective_data
+      f w ℱfil R h_adapted_obj h_int h_step_obj hbdd_obj with
+    ⟨h_adapted_neg, h_int_neg, h_step_neg, hbdd_neg⟩
+  clear h_int_neg
   exact zsharp_robbins_monro_objective_limit_of_objective_step
     L_smooth f w η z σsq g_adv ℱ hη ℱfil h_adapted_neg h_step_obj R hbdd_neg
     h_step h_desc_step h_int h_int_grad h_meas

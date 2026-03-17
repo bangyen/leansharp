@@ -114,6 +114,40 @@ theorem zsharp_neg_step_mono_of_objective_supermartingale_step
     exact (condExp_neg (μ := ℙ) (m := ℱ t) (f := fun ω => f (w (t + 1) ω))).symm
   exact hneg_obj.trans_eq hcond_neg
 
+omit [Fintype ι] [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Converts objective-process adaptedness into adaptedness of the transformed
+process `t ↦ -f (w t ·)`. This is the adaptedness component needed by the
+submartingale bridge and keeps callers in objective coordinates. -/
+theorem zsharp_neg_adapted_of_objective_adapted
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_adapted_obj : StronglyAdapted ℱ (fun t ω => f (w t ω))) :
+    StronglyAdapted ℱ (fun t ω => -f (w t ω)) := by
+  exact h_adapted_obj.neg
+
+omit [Fintype ι] [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Packs the transformed-process bridge data (`-f` adaptedness, integrability,
+one-step monotonicity, and uniform `L¹`) from objective-coordinate hypotheses.
+This removes repeated sign-flip boilerplate at end-to-end convergence callsites. -/
+theorem zsharp_neg_process_data_of_objective_data
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_adapted_obj : StronglyAdapted ℱ (fun t ω => f (w t ω)))
+    (h_int_obj : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_step_obj :
+      ∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱ t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+    (hbdd_obj : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    StronglyAdapted ℱ (fun t ω => -f (w t ω))
+      ∧ (∀ t, Integrable (fun ω => -f (w t ω)) ℙ)
+      ∧ (∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱ t])
+      ∧ (∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R) := by
+  refine ⟨zsharp_neg_adapted_of_objective_adapted f w ℱ h_adapted_obj, ?_, ?_, ?_⟩
+  · intro t
+    exact (h_int_obj t).neg
+  · exact zsharp_neg_step_mono_of_objective_supermartingale_step f w ℱ h_step_obj
+  · exact zsharp_neg_uniform_l1_of_objective_uniform_l1 f w R hbdd_obj
+
 /-- **Supermartingale-to-a.s. bridge contract for ZSharp objectives**: this
 predicate packages the expected-descent envelope and Robbins-Monro step-size
 assumptions into a single hypothesis that returns almost-sure convergence of the

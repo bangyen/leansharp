@@ -39,7 +39,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 #### Convergence Theory Sharpening
 * Formalize the transition from expected descent to almost-sure convergence sequences. **[High, In Progress]**  
-  Current status: reusable one-step/sequence descent envelopes are in `Stochastic/Convergence.lean`, and `Stochastic/RobbinsMonro.lean` now provides theorem-backed objective-limit interfaces in both transformed-process form and objective-coordinate wrapper form (including conversion lemmas for one-step conditional monotonicity and uniform `L¹` bounds). Remaining work is to derive transformed-process adaptedness and objective-coordinate `L¹` control directly from the strongest ZSharp descent hypotheses.
+  Current status: reusable one-step/sequence descent envelopes are in `Stochastic/Convergence.lean`, and `Stochastic/RobbinsMonro.lean` now provides theorem-backed objective-limit interfaces in both transformed-process form and objective-coordinate wrapper form (including derived transformed-process adaptedness, one-step monotonicity, integrability, and uniform `L¹` control from objective-coordinate hypotheses). Remaining work is to derive these objective-coordinate bridge hypotheses directly from the strongest ZSharp descent hypotheses.
 
 #### Robustness Theory (`Theory/Robustness.lean`)
 * Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**
