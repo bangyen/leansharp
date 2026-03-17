@@ -17,8 +17,10 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 ### Verification Status
 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**. This status is automatically enforced by strict CI quality guards:
-- `check_axioms.sh`: Fails if any `axiom` declaration is found.
+- `check_axiom.sh`: Fails if any `axiom` declaration is found.
 - `check_sorry.sh`: Fails if any `sorry` proof marker is found.
+- `check_import.sh`: Fails if banned or disallowed imports are detected.
+- `check_simp.sh`: Fails if risky simplification patterns are detected.
 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
 - ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
@@ -33,15 +35,12 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Verification & Refinement)
 
 #### Z-Score Sensitivity Analysis
-* Formalize the analytical relationship between threshold $z$ and the signal alignment probability. **[High]**
 * Implement automated scripts for finding optimal $z$ based on empirical variance traces. **[Medium]**
 
 #### Convergence Theory Sharpening
-* Use the newly verified `z_score_descent` lemma to tighten bounds in `Stochastic/Convergence.lean`. **[Medium]**
 * Formalize the transition from expected descent to almost-sure convergence sequences. **[High]**
 
 #### Robustness Theory (`Theory/Robustness.lean`)
-* Formalize a comparison theorem: median-based vs mean-based gradient aggregation in the presence of outliers. **[Medium-High]**
 * Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**
 
 ---

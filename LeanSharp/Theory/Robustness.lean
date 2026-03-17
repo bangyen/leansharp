@@ -1,4 +1,5 @@
 import LeanSharp.Core.Stats
+import LeanSharp.Core.Filters
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Tactic.Linarith
@@ -32,6 +33,50 @@ lemma norm_unit_vector (ι : Type*) [Fintype ι] [Nonempty ι] : ‖unit_vector 
 /-- The empirical mean of a collection of vectors. -/
 noncomputable def empirical_mean (s : Finset α) (g : α → W ι) : W ι :=
   (1 / (s.card : ℝ)) • ∑ i ∈ s, g i
+
+/-- The empirical mean after applying coordinate-wise Z-score filtering to each vector.
+This estimator starts the bridge between classical outlier robustness and Z-score gating. -/
+noncomputable def z_filtered_empirical_mean (s : Finset α) (g : α → W ι) (z : ℝ) : W ι :=
+  empirical_mean s (fun i => filtered_gradient (g i) z)
+
+/-- **Filtered mean norm control**: the norm of the Z-filtered empirical mean is bounded
+by the average unfiltered norm over the sample. This gives a direct quantitative handle
+for robust bounds that combine filtering with aggregation. -/
+theorem z_filtered_empirical_mean_norm_le
+    (s : Finset α) (g : α → W ι) (z : ℝ) (hs : s.Nonempty) :
+    ‖z_filtered_empirical_mean s g z‖ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
+  unfold z_filtered_empirical_mean empirical_mean
+  have hn_pos : 0 < (s.card : ℝ) := by exact_mod_cast hs.card_pos
+  rw [norm_smul, Real.norm_eq_abs, abs_of_pos (one_div_pos.mpr hn_pos)]
+  calc
+    (1 / (s.card : ℝ)) * ‖∑ i ∈ s, filtered_gradient (g i) z‖
+      ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖filtered_gradient (g i) z‖) := by
+        exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
+    _ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
+        apply mul_le_mul_of_nonneg_left
+        · exact Finset.sum_le_sum (fun i _ => filtered_norm_bound (g i) z)
+        · positivity
+
+/-- **Uniform-input bound for filtered mean**: if every sample gradient has norm at most
+`R`, then the Z-filtered empirical mean also has norm at most `R`. This is the first
+reusable step toward deciding when filtered-mean aggregation is safe. -/
+theorem z_filtered_empirical_mean_norm_le_of_pointwise_bound
+    (s : Finset α) (g : α → W ι) (z R : ℝ) (hs : s.Nonempty)
+    (hR : ∀ i ∈ s, ‖g i‖ ≤ R) :
+    ‖z_filtered_empirical_mean s g z‖ ≤ R := by
+  have h_base := z_filtered_empirical_mean_norm_le s g z hs
+  have hn_pos : 0 < (s.card : ℝ) := by exact_mod_cast hs.card_pos
+  refine h_base.trans ?_
+  calc
+    (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖)
+      ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, R) := by
+        apply mul_le_mul_of_nonneg_left
+        · exact Finset.sum_le_sum (fun i hi => hR i hi)
+        · positivity
+    _ = (1 / (s.card : ℝ)) * ((s.card : ℝ) * R) := by
+        rw [Finset.sum_const, nsmul_eq_mul]
+    _ = R := by
+        field_simp [ne_of_gt hn_pos]
 
 /-- **Mean Non-Robustness**: A single large outlier can move the mean arbitrarily far. -/
 lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ)
@@ -452,8 +497,5 @@ theorem geometric_median_breakdown_point_ge_half
     nlinarith [hk0_ge_half_real]
   · rw [dif_neg h_non]
     norm_num
-
-
-
 
 end LeanSharp
