@@ -39,7 +39,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 #### Convergence Theory Sharpening
 * Formalize the transition from expected descent to almost-sure convergence sequences. **[High, In Progress]**  
-  Current status: reusable one-step/sequence descent envelopes are in `Stochastic/Convergence.lean`, and `Stochastic/RobbinsMonro.lean` now contains a theorem-backed Mathlib martingale bridge (`Submartingale.ae_tendsto_limitProcess`) with explicit filtration/adaptedness/integrability assumptions; remaining work is deriving those submartingale premises directly from the full ZSharp descent pipeline for the strongest Robbins-Monro statement.
+  Current status: reusable one-step/sequence descent envelopes are in `Stochastic/Convergence.lean`, and `Stochastic/RobbinsMonro.lean` now routes the public objective-limit interface through theorem-backed Mathlib convergence (including a transformed-process `-f` bridge), removing the prior opaque bridge predicate from the main endpoint. Remaining work is tightening assumptions by deriving the transformed-process submartingale and uniform L¹ bounds directly from the strongest ZSharp descent hypotheses.
 
 #### Robustness Theory (`Theory/Robustness.lean`)
 * Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**

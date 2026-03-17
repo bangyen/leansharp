@@ -130,6 +130,35 @@ theorem zsharp_objective_as_convergence_of_one_step_submartingale
   exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 omit [Fintype ι] in
+/-- **Sign-flip convergence transfer**: if the transformed objective process
+`t ↦ -f (w t ·)` converges almost surely, then the original objective process
+`t ↦ f (w t ·)` also converges almost surely by continuity of negation. -/
+theorem zsharp_objective_as_convergence_of_neg_submartingale
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱ ℙ)
+    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  have h_ae_tendsto_neg :
+      ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => -f (w t ω)) Filter.atTop
+        (nhds (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω)) :=
+    h_sub_neg.ae_tendsto_limitProcess hbdd_neg
+  filter_upwards [h_ae_tendsto_neg] with ω hω
+  refine ⟨-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω), ?_⟩
+  have h_neg_cont :
+      Filter.Tendsto (fun x : ℝ => -x)
+        (nhds (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))
+        (nhds (-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+    continuous_neg.tendsto (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω)
+  have h_tendsto_obj :
+      Filter.Tendsto (fun t => -(-f (w t ω))) Filter.atTop
+        (nhds (-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+    h_neg_cont.comp hω
+  simp only [neg_neg] at h_tendsto_obj
+  exact h_tendsto_obj
+
+omit [Fintype ι] in
 /-- **End-to-end objective limit without opaque bridge assumptions**: this theorem
 uses explicit one-step submartingale hypotheses and L¹ bounds to derive almost-sure
 convergence of the ZSharp objective process via Mathlib's martingale convergence
@@ -178,15 +207,18 @@ theorem zsharp_objective_as_convergence_of_bridge
   exact h_bridge hη h_env
 
 /-- **Almost-sure convergence interface for ZSharp**: this theorem packages the
-Robbins-Monro assumptions with the sequence-descent envelope and an almost-sure
-convergence bridge (typically supplied by a supermartingale theorem) into one
-specialized result for the Z-score filtered objective process. -/
+Robbins-Monro assumptions with the sequence-descent envelope and a concrete
+Mathlib-backed transformed-process convergence premise into one specialized
+result for the Z-score filtered objective process. -/
 theorem zsharp_robbins_monro_almost_sure_convergence
     (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
-    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ)
+    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -205,8 +237,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence
   · intro T
     exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T g_adv ℱ
       h_step h_desc_step h_int h_int_grad h_meas
-  · exact zsharp_objective_as_convergence_of_bridge L_smooth f w η z σsq g_adv ℱ
-      hη h_bridge h_step h_desc_step h_int h_int_grad h_meas
+  · exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
 
 /-- **End-to-end Robbins-Monro objective convergence**: convenience projection of
 `zsharp_robbins_monro_almost_sure_convergence` that returns only the almost-sure
@@ -216,7 +247,10 @@ theorem zsharp_robbins_monro_objective_limit
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
-    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ)
+    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -226,6 +260,7 @@ theorem zsharp_robbins_monro_objective_limit
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
   exact (zsharp_robbins_monro_almost_sure_convergence
-    L_smooth f w η z σsq g_adv ℱ hη h_bridge h_step h_desc_step h_int h_int_grad h_meas).2
+    L_smooth f w η z σsq g_adv ℱ hη ℱfil R h_sub_neg hbdd_neg
+    h_step h_desc_step h_int h_int_grad h_meas).2
 
 end LeanSharp
