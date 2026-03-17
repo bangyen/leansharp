@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.ConvergenceHypotheses
 import LeanSharp.Stochastic.Integrability
+import LeanSharp.Stochastic.MartingaleModel
 
 /-!
 # Robbins-Monro Convergence Interface
@@ -16,6 +17,7 @@ exposes almost-sure convergence statements for the stochastic objective process.
 ## Theorems
 
 * `zsharp_robbins_monro_objective_limit_of_submartingale`.
+* `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
 * `zsharp_robbins_monro_objective_limit`.
@@ -44,6 +46,32 @@ theorem zsharp_robbins_monro_objective_limit_of_submartingale
   let _ := hη
   exact zsharp_objective_as_convergence_of_one_step_submartingale
     f w ℱ R h_adapted h_int h_step hbdd
+
+/-- **Objective limit with explicit martingale-update model**: combines the
+Robbins-Monro objective-limit interface with an explicit update decomposition
+`w_{t+1} = w_t - η_t(∇f(w_t) + ξ_t)` whose cumulative noise is modeled as a
+martingale process. This theorem exists to make the martingale update contract
+available at the same callsite where almost-sure objective convergence is
+requested. -/
+theorem zsharp_robbins_monro_objective_limit_with_martingale_model
+    (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (hη : robbins_monro_stepsize η)
+    (h_model : robbins_monro_update_martingale_model f w η ℱ)
+    (R : NNReal)
+    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_step :
+      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    (∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω =
+        w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
+      ∧ zsharp_objective_as_convergence f w := by
+  refine ⟨robbins_monro_update_recursion f w η ℱ h_model, ?_⟩
+  exact zsharp_robbins_monro_objective_limit_of_submartingale
+    f w η ℱ hη R h_adapted h_int h_step hbdd
 
 /-- **Bridge application theorem** -/
 theorem zsharp_objective_as_convergence_of_bridge
