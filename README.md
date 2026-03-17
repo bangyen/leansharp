@@ -39,13 +39,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-#### Z-Score Sensitivity Analysis
-* Implement automated scripts for finding optimal $z$ based on empirical variance traces. **[Medium]**
-
-#### Convergence Theory Sharpening
-* Formalize the transition from expected descent to almost-sure convergence sequences. **[High, In Progress]**  
-  Current status: reusable one-step/sequence descent envelopes are in `Stochastic/Convergence.lean`, and `Stochastic/RobbinsMonro.lean` now provides theorem-backed objective-limit and descent-envelope interfaces in transformed-process, objective-bridge, strongest-descent, concrete model-hypothesis, and filtration-specialized model forms with explicit projection theorems between each layer. Bridge-data derivation no longer needs explicit objective integrability, and envelope wrappers now hide manual side-condition plumbing at call sites. Remaining work is to derive bundle-level integrability assumptions from lower-level ZSharp structural assumptions.
-
 #### Robustness Theory (`Theory/Robustness.lean`)
 * Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**
 

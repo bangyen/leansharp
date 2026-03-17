@@ -8,6 +8,7 @@ import Tests.AdvancedVerification
 import Tests.ExampleModels
 import Tests.IntegrabilityTests
 import Tests.LayerTests
+import Tests.RobbinsMonroMartingaleTests
 import Tests.ScheduleConvergence
 import Tests.SchedulerTests
 import Tests.TacticTests
