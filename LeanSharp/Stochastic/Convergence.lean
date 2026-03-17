@@ -5,19 +5,19 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Sam
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Probability.Notation
-import Mathlib.Probability.Moments.Basic
-import Mathlib.MeasureTheory.Function.LpSpace.Basic
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.Data.NNReal.Basic
 import Mathlib.Algebra.Order.Field.Basic
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.Ring
+import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Data.NNReal.Basic
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Function.LpSpace.Basic
+import Mathlib.Probability.Moments.Basic
+import Mathlib.Probability.Notation
 import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Positivity
+import Mathlib.Tactic.Ring
 
 /-!
 # Stochastic ZSharp Convergence Bound
@@ -107,7 +107,6 @@ theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w :
       (η t) * μ * ‖A‖^2 :=
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
-
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows

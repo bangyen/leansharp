@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
-import Mathlib.Probability.Notation
-import Mathlib.Probability.Moments.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Probability.Moments.Basic
+import Mathlib.Probability.Notation
 
 set_option linter.unusedSimpArgs false
 set_option linter.style.longLine false

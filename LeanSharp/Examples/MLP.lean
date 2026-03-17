@@ -3,13 +3,13 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Layers.Basic.Linear
 import Mathlib.Algebra.Order.Algebra
 import Mathlib.Analysis.Normed.Group.Basic
+import Mathlib.Analysis.Normed.Lp.PiLp
 import Mathlib.Data.EReal.Inv
 import Mathlib.Data.Real.Sqrt
-import Mathlib.Analysis.Normed.Lp.PiLp
 
 /-!
 # 2-Layer MLP Example

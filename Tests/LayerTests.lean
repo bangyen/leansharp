@@ -3,18 +3,18 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Layers.Basic.Dropout
-import LeanSharp.Layers.Specialized.Quantization
+import LeanSharp.Core.Models
+import LeanSharp.Layers.Architectures.Attention
 import LeanSharp.Layers.Architectures.Transformer
 import LeanSharp.Layers.Architectures.ViT
 import LeanSharp.Layers.Basic.Activation
-import LeanSharp.Layers.Normalization.Normalization
-import LeanSharp.Layers.Architectures.Attention
+import LeanSharp.Layers.Basic.Dropout
 import LeanSharp.Layers.Basic.Linear
-import LeanSharp.Layers.Specialized.Convolution
-import LeanSharp.Layers.Normalization.BatchNormalization
 import LeanSharp.Layers.Basic.Residual
-import LeanSharp.Core.Models
+import LeanSharp.Layers.Normalization.BatchNormalization
+import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Specialized.Convolution
+import LeanSharp.Layers.Specialized.Quantization
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace LeanSharp.Tests

@@ -4,15 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Sam
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Finset.Sum
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Order.Ring.Abs
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.Normed.Group.Bounded
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Data.Finset.Sum
+import Mathlib.Data.Real.Basic
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.Order.Basic
-import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import Mathlib.Analysis.Normed.Group.Bounded
 
 namespace LeanSharp
 

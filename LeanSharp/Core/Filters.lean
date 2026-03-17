@@ -5,10 +5,10 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Sam
 import LeanSharp.Core.Stats
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Finset.Sum
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Order.Ring.Abs
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Data.Finset.Sum
+import Mathlib.Data.Real.Basic
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
 /-!
@@ -82,7 +82,6 @@ theorem filtered_norm_bound (g : W ι) (z : ℝ) :
   have h_sqrt := Real.sqrt_le_sqrt h_sq
   rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
   exact h_sqrt
-
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out, the empirical variance would be less than itself. -/

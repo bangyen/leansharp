@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
-import Mathlib.Tactic.Linarith
 import Mathlib.Algebra.Order.Ring.Abs
+import Mathlib.Tactic.Linarith
 
 /-!
 # Deep Model Stability Theorems

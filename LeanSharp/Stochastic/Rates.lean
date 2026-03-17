@@ -3,17 +3,17 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Stochastic.Convergence
+import LeanSharp.Theory.Dynamics.Convergence
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Probability.Notation
-import Mathlib.Probability.Moments.Basic
-import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Data.Finset.Basic
-import Mathlib.Probability.ConditionalExpectation
-import Mathlib.Order.Bounds.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Order.Bounds.Basic
+import Mathlib.Probability.ConditionalExpectation
+import Mathlib.Probability.Moments.Basic
+import Mathlib.Probability.Notation
 
 /-!
 # Explicit Convergence Rates

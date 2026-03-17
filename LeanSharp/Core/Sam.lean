@@ -4,13 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
-import Mathlib.Analysis.InnerProductSpace.Dual
-import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Algebra.Group.Pointwise.Set.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Add
+import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Norm
 import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.InnerProductSpace.Dual
+import Mathlib.Topology.MetricSpace.Basic
 
 open Topology
 

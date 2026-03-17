@@ -3,13 +3,13 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Sam
-import LeanSharp.Core.Filters
-import LeanSharp.Theory.Dynamics.SamBound
 import LeanSharp.Core.Taylor
-import Mathlib.Analysis.InnerProductSpace.Spectrum
+import LeanSharp.Theory.Dynamics.SamBound
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Spectrum
 
 /-!
 # Generalization & Sharpness

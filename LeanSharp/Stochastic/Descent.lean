@@ -3,14 +3,14 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Core.Sam
 import LeanSharp.Core.Filters
+import LeanSharp.Core.Sam
 import LeanSharp.Stochastic.Sam
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Probability.Notation
-import Mathlib.Probability.Moments.Basic
 import Mathlib.Analysis.Normed.Field.Basic
+import Mathlib.Probability.Moments.Basic
+import Mathlib.Probability.Notation
 
 /-!
 # Formal Stochastic Descent Lemma
@@ -272,6 +272,5 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
       exact one_div_pos.mp h_inv_pos
     positivity
   linarith [h_int_le, h_ps, h_vs]
-
 
 end LeanSharp

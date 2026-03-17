@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Order.Round
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace LeanSharp
 

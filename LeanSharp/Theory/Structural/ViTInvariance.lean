@@ -5,8 +5,8 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Layers.Architectures.ViT
 import LeanSharp.Layers.Specialized.Convolution
-import Mathlib.Tactic.Linarith
 import Mathlib.Data.Nat.ModEq
+import Mathlib.Tactic.Linarith
 
 namespace LeanSharp
 

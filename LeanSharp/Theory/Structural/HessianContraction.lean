@@ -3,8 +3,8 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Core.Landscape
 import LeanSharp.Core.Filters
+import LeanSharp.Core.Landscape
 import LeanSharp.Theory.Dynamics.Generalization
 import Mathlib.Analysis.InnerProductSpace.Spectrum
 
@@ -33,7 +33,6 @@ variable {ι : Type*} [Fintype ι]
 /-- The quadratic form $v^T H v$ for some vector $v$ and Hessian $H$. -/
 noncomputable def hessian_quadratic_form (L : W ι → ℝ) (w v : W ι) : ℝ :=
   @inner ℝ (W ι) _ v ((hessian L w) v)
-
 
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.

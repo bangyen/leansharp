@@ -1,10 +1,10 @@
-import LeanSharp.Core.Stats
 import LeanSharp.Core.Filters
+import LeanSharp.Core.Stats
+import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Tactic.Linarith
 import Mathlib.Analysis.Normed.Group.Basic
-import Mathlib.Algebra.Order.Field.Basic
+import Mathlib.Tactic.Linarith
 
 namespace LeanSharp
 

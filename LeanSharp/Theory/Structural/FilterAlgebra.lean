@@ -5,8 +5,8 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
 import LeanSharp.Tactic.ZSolve
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Algebra.Order.Field.Basic
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 /-!
 # Z-Score Filter Algebra
@@ -55,7 +55,6 @@ theorem single_outlier_extraction (g : W ι) (z : ℝ) (i : ι)
     have h_μ_j : |(WithLp.equiv 2 (ι → ℝ) g) j - vector_mean g| < z * vector_std g := by
       rw [h_μ, sub_zero]; exact h_not
     exact filtered_gradient_zero_of_not_outlier g z j h_μ_j
-
 
 /-- **Sparse Signal Recovery**: In a regime where one component is much larger
 than the rest (an outlier), the Z-score filter preserves it. -/

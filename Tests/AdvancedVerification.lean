@@ -1,6 +1,6 @@
+import LeanSharp.Examples.IllConditioned
 import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Schedulers
-import LeanSharp.Examples.IllConditioned
 
 namespace LeanSharp
 
