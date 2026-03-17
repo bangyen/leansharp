@@ -53,7 +53,38 @@ the asymptotic stabilization condition used in stochastic approximation. -/
 theorem robbins_monro_stepsize_tendsto_zero (η : ℕ → ℝ)
     (hη : robbins_monro_stepsize η) : Filter.Tendsto η Filter.atTop (nhds 0) :=
   hη.2.2
-
+/-- One-step assumptions for the transformed process `t ↦ -f (w t ·)` that are
+exactly sufficient to construct a submartingale certificate via Mathlib. -/
+def zsharp_neg_objective_one_step_data
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace) : Prop :=
+  StronglyAdapted ℱ (fun t ω => -f (w t ω)) ∧
+  (∀ t, Integrable (fun ω => -f (w t ω)) ℙ) ∧
+  (∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱ t])
+omit [Fintype ι] in
+/-- Constructor theorem that turns one-step transformed-objective assumptions into
+a `Submartingale` certificate for `t ↦ -f (w t ·)`. -/
+theorem zsharp_neg_objective_submartingale_of_one_step
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_one_step : zsharp_neg_objective_one_step_data f w ℱ) :
+    Submartingale (fun t ω => -f (w t ω)) ℱ ℙ := by
+  rcases h_one_step with ⟨h_adapted_neg, h_int_neg, h_step_neg⟩
+  exact submartingale_nat h_adapted_neg h_int_neg h_step_neg
+/-- Bridge contract for producing a uniform `L¹` bound for the transformed
+objective process from descent-level assumptions supplied by the caller. The
+witness `R` is later consumed by Mathlib's martingale convergence theorem. -/
+def zsharp_neg_objective_uniform_l1_from_descent
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι) : Prop :=
+  ∃ R : NNReal, ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R
+omit [Fintype ι] [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Extracts a reusable uniform `L¹` witness for the transformed objective
+process. This keeps the final convergence theorem free of raw `eLpNorm` inputs. -/
+theorem zsharp_neg_objective_uniform_l1_bound_of_descent
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (h_l1 : zsharp_neg_objective_uniform_l1_from_descent f w) :
+    ∃ R : NNReal, ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R :=
+  h_l1
 /-- **Robbins-Monro descent envelope for ZSharp**: under the standard conditional
 descent assumptions, the cumulative weighted gradient energy up to horizon `T`
 is bounded by initial-final objective gap plus variance accumulation. This is
@@ -216,9 +247,8 @@ theorem zsharp_robbins_monro_almost_sure_convergence
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ)
-    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
+    (h_one_step_neg : zsharp_neg_objective_one_step_data f w ℱfil)
+    (h_l1_from_descent : zsharp_neg_objective_uniform_l1_from_descent f w)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -237,7 +267,11 @@ theorem zsharp_robbins_monro_almost_sure_convergence
   · intro T
     exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T g_adv ℱ
       h_step h_desc_step h_int h_int_grad h_meas
-  · exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
+  · rcases zsharp_neg_objective_uniform_l1_bound_of_descent f w h_l1_from_descent with
+      ⟨R, hbdd_neg⟩
+    have h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ :=
+      zsharp_neg_objective_submartingale_of_one_step f w ℱfil h_one_step_neg
+    exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
 
 /-- **End-to-end Robbins-Monro objective convergence**: convenience projection of
 `zsharp_robbins_monro_almost_sure_convergence` that returns only the almost-sure
@@ -248,9 +282,8 @@ theorem zsharp_robbins_monro_objective_limit
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ)
-    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
+    (h_one_step_neg : zsharp_neg_objective_one_step_data f w ℱfil)
+    (h_l1_from_descent : zsharp_neg_objective_uniform_l1_from_descent f w)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -260,7 +293,7 @@ theorem zsharp_robbins_monro_objective_limit
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
   exact (zsharp_robbins_monro_almost_sure_convergence
-    L_smooth f w η z σsq g_adv ℱ hη ℱfil R h_sub_neg hbdd_neg
+    L_smooth f w η z σsq g_adv ℱ hη ℱfil h_one_step_neg h_l1_from_descent
     h_step h_desc_step h_int h_int_grad h_meas).2
 
 end LeanSharp
