@@ -17,6 +17,8 @@ downstream theorem statements.
 
 * `martingale_model_interface_test`.
 * `martingale_model_objective_limit_interface_test`.
+* `model_descent_almost_sure_interface_test`.
+* `objective_martingale_convergence_interface_test`.
 -/
 
 namespace LeanSharp
@@ -67,5 +69,40 @@ theorem martingale_model_objective_limit_interface_test
       ∧ zsharp_objective_as_convergence f w := by
   exact zsharp_robbins_monro_objective_limit_with_martingale_model
     f w η ℱ hη h_model R h_adapted h_int h_step hbdd
+
+/-- **Model-Descent Almost-Sure Interface Verification**: ensures the model-level
+descent hypothesis bundle can directly produce the Robbins-Monro envelope plus
+almost-sure objective convergence pair. -/
+theorem model_descent_almost_sure_interface_test
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L_smooth : NNReal)
+    (f : W (Fin 2) → ℝ)
+    (w : ℕ → Ω → W (Fin 2))
+    (η : ℕ → ℝ)
+    (z σsq : ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model : zsharp_model_descent_hypotheses L_smooth f w η z σsq ℱ ℱfil) :
+    (∀ T : ℕ,
+      (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+        𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
+      ∧ zsharp_objective_as_convergence f w := by
+  exact zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    L_smooth f w η z σsq ℱ ℱfil h_model
+
+/-- **Objective Martingale Convergence Interface Verification**: checks that the
+Mathlib-backed martingale convergence wrapper can be applied directly when the
+objective process is provided as a martingale with a uniform `L¹` bound. -/
+theorem objective_martingale_convergence_interface_test
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (f : W (Fin 2) → ℝ)
+    (w : ℕ → Ω → W (Fin 2))
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_mart : Martingale (fun t ω => f (w t ω)) ℱ ℙ)
+    (R : NNReal)
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  exact zsharp_objective_as_convergence_of_martingale f w ℱ R h_mart hbdd
 
 end LeanSharp

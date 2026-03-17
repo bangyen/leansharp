@@ -221,6 +221,20 @@ theorem zsharp_objective_as_convergence_of_submartingale
   exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
 
 omit [Fintype ι] in
+/-- **Martingale-to-a.s. objective convergence**: if the objective process is a
+martingale and uniformly `L¹` bounded, almost-sure objective convergence follows
+by reducing to the submartingale convergence interface theorem. -/
+theorem zsharp_objective_as_convergence_of_martingale
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_mart : Martingale (fun t ω => f (w t ω)) ℱ ℙ)
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  exact zsharp_objective_as_convergence_of_submartingale
+    f w ℱ R h_mart.submartingale hbdd
+
+omit [Fintype ι] in
 /-- **One-step bridge constructor**: packages explicit adaptedness, integrability,
 and one-step conditional expectation monotonicity into a submartingale certificate,
 then applies the theorem-backed Mathlib bridge to get almost-sure objective

@@ -20,6 +20,7 @@ exposes almost-sure convergence statements for the stochastic objective process.
 * `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
+* `zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses`.
 * `zsharp_robbins_monro_objective_limit`.
 -/
 
@@ -158,6 +159,31 @@ theorem zsharp_robbins_monro_objective_limit
     h_adapted_neg h_step_neg R hbdd_neg
     h_step h_desc_step h_int h_int_grad h_meas).2
 
+/-- **End-to-end almost-sure convergence theorem from concrete model-level ZSharp
+hypotheses**: returns both the descent-envelope inequality family and the
+almost-sure objective convergence statement. -/
+theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    (L_smooth : NNReal) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model :
+      zsharp_model_descent_hypotheses L_smooth f w η z σsq ℱ ℱfil) :
+    (∀ T : ℕ,
+      (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+        𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
+      ∧ zsharp_objective_as_convergence f w := by
+  rcases h_model with ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
+  let g_adv (t : ℕ) (ω : Ω) := gradient f (w t ω)
+  have ⟨h_int, h_int_grad⟩ := zsharp_structural_integrability f w η z σsq h_struct
+  obtain ⟨R_neg, h_adapted_neg, h_step_neg, hbdd_neg⟩ :=
+    zsharp_neg_process_data_of_objective_bridge_hypotheses f w ℱfil h_bridge
+  exact @zsharp_robbins_monro_almost_sure_convergence ι _ Ω _ _
+    L_smooth f w η z σsq g_adv ℱ h_rm ℱfil
+    h_adapted_neg h_step_neg R_neg hbdd_neg
+    (fun t => h_struct.h_step t) h_desc_step h_int h_int_grad h_meas
+
 /-- **End-to-end objective-limit theorem from concrete model-level ZSharp hypotheses** -/
 theorem zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
     (L_smooth : NNReal) (f : W ι → ℝ)
@@ -167,14 +193,7 @@ theorem zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
     (h_model :
       zsharp_model_descent_hypotheses L_smooth f w η z σsq ℱ ℱfil) :
     zsharp_objective_as_convergence f w := by
-  rcases h_model with ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
-  let g_adv (t : ℕ) (ω : Ω) := gradient f (w t ω)
-  have ⟨h_int, h_int_grad⟩ := zsharp_structural_integrability f w η z σsq h_struct
-  obtain ⟨R_neg, h_adapted_neg, h_step_neg, hbdd_neg⟩ :=
-    zsharp_neg_process_data_of_objective_bridge_hypotheses f w ℱfil h_bridge
-  exact @zsharp_robbins_monro_objective_limit ι _ Ω _ _
-    L_smooth f w η z σsq g_adv ℱ h_rm ℱfil
-    h_adapted_neg h_step_neg R_neg hbdd_neg
-    (fun t => h_struct.h_step t) h_desc_step h_int h_int_grad h_meas
+  exact (zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    L_smooth f w η z σsq ℱ ℱfil h_model).2
 
 end LeanSharp

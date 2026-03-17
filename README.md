@@ -48,11 +48,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 Addressing these gaps ensures that the central claims of the project are fully supported by rigorous proofs rather than hypotheses.
 
-#### Robbins-Monro Convergence
-* Define the sequence of updates as a discrete-time Martingale for non-convex functions. **[Medium]**
-* Formalize the requisite Martingale Convergence Theorem in Mathlib. **[High]**
-* Prove almost sure convergence for the specific Z-score SGD sequence. **[High]**
-
 #### Deterministic Stability
 * Formalize the mathematical properties of non-Lipschitz hard-thresholding. **[Medium-High]**
 * Prove localized stability bounds for individual gradient updates. **[High]**
