@@ -124,8 +124,8 @@ theorem zsharp_strongest_descent_hypotheses_of_model_descent_hypotheses
     zsharp_strongest_descent_hypotheses L_smooth f w η z σsq
       (fun t ω => gradient f (w t ω)) ℱ ℱfil := by
   rcases h_model with ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
-  have ⟨h_int, h_int_grad⟩ := zsharp_structural_integrability f w η z σsq h_struct
-  refine ⟨h_rm, h_bridge, (fun t => h_struct.h_step t), h_desc_step, h_int, h_int_grad, h_meas⟩
+  have h_int_all := zsharp_structural_integrability f w η z σsq h_struct
+  exact ⟨h_rm, h_bridge, h_struct.h_step, h_desc_step, h_int_all.1, h_int_all.2, h_meas⟩
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- Builds the objective-bridge contract from concrete model-level ZSharp hypotheses -/
