@@ -11,7 +11,15 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 /-!
 # Z-Score Filter Algebra
 
-These are "Green Zone" foundational proofs that do not require external axioms.
+These are "Green Zone" foundational proofs that do not require external assumptions.
+
+## Theorems
+
+* `filtered_gradient_coord_preservation`.
+* `filtered_gradient_zero_of_not_outlier`.
+* `single_outlier_extraction`.
+* `sparse_signal_recovery`.
+* `z_score_mask_scale_invariance`.
 -/
 
 namespace LeanSharp

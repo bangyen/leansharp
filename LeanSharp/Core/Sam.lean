@@ -18,6 +18,17 @@ import Mathlib.Topology.MetricSpace.Basic
 
 This module exists to formalize the mathematical SAM objective, perturbation
 set, and first-order update identities that the rest of LeanSharp builds on.
+
+## Definitions
+
+* `perturbation_neighborhood`.
+* `sam_objective`.
+* `sam_perturbation`.
+
+## Theorems
+
+* `sam_objective_ge_self`.
+* `has_fderiv_at_sam_perturbation`.
 -/
 
 open Topology

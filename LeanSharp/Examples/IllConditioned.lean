@@ -15,6 +15,19 @@ import Mathlib.Data.Real.Basic
 This module provides a more challenging quadratic landscape with a high condition
 number (gradient scales differ by an order of magnitude). This verifies that
 ZSharp convergence holds even when curvature is non-uniform.
+
+## Definitions
+
+* `L_advanced`.
+* `exact_gradient_advanced`.
+
+## Theorems
+
+* `hasFDerivAt_L_advanced`.
+* `coordinate_dual_apply`.
+* `gradient_advanced_eq`.
+* `advanced_L_smooth`.
+* `advanced_strongly_convex`.
 -/
 
 namespace LeanSharp.IllConditioned

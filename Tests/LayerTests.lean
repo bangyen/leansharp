@@ -19,7 +19,16 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace LeanSharp.Tests
 
-/-! ### Architectural Block Dimension Tests -/
+/-!
+# Layer Tests
+
+This module collects regression tests for core layer and architecture behavior.
+
+## Theorems
+
+* Dimension checks for dropout, transformer MLP blocks, and patch embeddings.
+* Behavioral checks for forward and backward passes of major layers.
+-/
 
 /-- Test: Dropout Layer Parameter Dimensions. -/
 example (ι : Type) [Fintype ι] (p : ℝ) :
@@ -38,7 +47,7 @@ example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns
     ((Fin nc × Fin np × Fin np) × Fin nd) := by
   rfl
 
-/-! ### Behavioral Tests -/
+-- Behavioral tests
 
 /-- Test: Linear layer output is zero when weights and biases are zero. -/
 theorem test_linear_zero {ι_in ι_out : Type} [Fintype ι_in] (x : W ι_in) :

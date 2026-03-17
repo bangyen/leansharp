@@ -20,6 +20,22 @@ import Mathlib.Topology.Order.Basic
 
 This module exists to define means, variances, z-scores, and masking lemmas for
 gradient vectors so filtering proofs can share a common statistical foundation.
+
+## Definitions
+
+* `vector_mean`.
+* `vector_variance`.
+* `vector_std`.
+* `geometric_median`.
+
+## Theorems
+
+* `vector_mean_smul`.
+* `vector_std_smul`.
+* `continuous_sum_distances`.
+* `tendsto_sum_distances_cocompact`.
+* `exists_isMin_on_finite_sum_norm`.
+* `geometric_median_eq_choose`.
 -/
 
 namespace LeanSharp

@@ -21,11 +21,6 @@ jobs:
       - name: Build Lean project
         uses: leanprover/lean-action@v1
 
-      - name: Guard against new axiom declarations
-        run: |
-          chmod +x scripts/check_axiom.sh
-          ./scripts/check_axiom.sh
-
       - name: Guard against missing imports
         run: |
           chmod +x scripts/check_import.sh
@@ -36,15 +31,10 @@ jobs:
           chmod +x scripts/check_simp.sh
           ./scripts/check_simp.sh
 
-      - name: Guard against 'sorry' markers
+      - name: Guard banned keywords
         run: |
-          chmod +x scripts/check_sorry.sh
-          ./scripts/check_sorry.sh
-
-      - name: Guard against `set_option` directives
-        run: |
-          chmod +x scripts/check_set_option.sh
-          ./scripts/check_set_option.sh
+          chmod +x scripts/check_banned.sh
+          ./scripts/check_banned.sh
 
       - name: Guard copyright header blocks
         run: |

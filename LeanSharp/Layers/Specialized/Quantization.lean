@@ -19,6 +19,13 @@ along with theorems regarding their stability.
 
 * `prune_weights`: Zeros out weights below a threshold.
 * `uniform_quantize`: Maps weights to the nearest level in a grid.
+
+## Theorems
+
+* `pruning_error_bound`.
+* `pruning_forward_stability`.
+* `uniform_quantize_error_bound`.
+* `quantization_forward_stability`.
 -/
 
 variable {ι : Type*} [Fintype ι]

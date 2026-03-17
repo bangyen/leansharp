@@ -12,6 +12,12 @@ import Mathlib.Tactic.Linarith
 
 This module exists to compare geometric-median and empirical-mean behavior
 under outliers, proving boundedness/unboundedness separation theorems.
+
+## Theorems
+
+* `mean_unbounded`.
+* `median_bounded_subset`.
+* `median_breakdown`.
 -/
 
 namespace LeanSharp

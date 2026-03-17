@@ -13,6 +13,12 @@ import Mathlib.Tactic.Linarith
 
 This module exists to check endpoint and monotonicity identities for learning
 rate schedules so later convergence proofs can rely on tested primitives.
+
+## Theorems
+
+* `test_cosine_decay_start`.
+* `test_cosine_decay_end`.
+* `test_cosine_decay_mono`.
 -/
 
 namespace LeanSharp.Tests

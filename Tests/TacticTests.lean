@@ -14,6 +14,12 @@ import Mathlib.Tactic.Linarith
 
 This module exists to exercise `zsharp_solve` on representative goals, ensuring
 proof automation remains stable as core lemmas evolve.
+
+## Theorems
+
+* `test_zsolve_identity`.
+* `test_zsolve_zero`.
+* `test_zsolve_outlier`.
 -/
 
 namespace LeanSharp.Tests

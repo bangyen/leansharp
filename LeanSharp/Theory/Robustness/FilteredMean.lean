@@ -14,6 +14,20 @@ import Mathlib.Analysis.Normed.Group.Basic
 
 This module exists to isolate filtered empirical-mean definitions and bounds so
 other robustness proofs can depend on a compact, reusable mean-aggregation API.
+
+## Definitions
+
+* `unit_vector`.
+* `empirical_mean`.
+* `z_filtered_empirical_mean`.
+
+## Theorems
+
+* `norm_unit_vector`.
+* `z_filtered_empirical_mean_norm_le`.
+* `z_filtered_empirical_mean_norm_le_of_pointwise_bound`.
+* `z_filtered_empirical_mean_bounded_subset`.
+* `z_filtered_empirical_mean_bounded_subset_max`.
 -/
 
 namespace LeanSharp

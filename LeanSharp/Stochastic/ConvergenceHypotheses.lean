@@ -13,6 +13,24 @@ This module provides packaged hypothesis bundles for ZSharp objective
 convergence. These bundles group Robbins-Monro step-size assumptions,
 objective-bridge data, and sequence-descent envelope premises to
 simplify interface theorems.
+
+## Definitions
+
+* `zsharp_objective_bridge_hypotheses`.
+* `zsharp_strongest_descent_hypotheses`.
+* `zsharp_model_descent_hypotheses`.
+* `zsharp_model_descent_hypotheses_filtration`.
+
+## Theorems
+
+* `zsharp_robbins_monro_descent_envelope`.
+* `zsharp_model_descent_hypotheses_of_structural_spec`.
+* `zsharp_model_descent_hypotheses_of_structural`.
+* `zsharp_model_descent_hypotheses_of_filtration`.
+* `zsharp_objective_bridge_hypotheses_of_model_descent_hypotheses`.
+* `zsharp_strongest_descent_hypotheses_of_model_descent_hypotheses`.
+* `zsharp_objective_bridge_hypotheses_of_strongest_descent_hypotheses`.
+* `zsharp_neg_process_data_of_objective_bridge_hypotheses`.
 -/
 
 namespace LeanSharp
@@ -121,9 +139,8 @@ This theorem provides the bridge from low-level structural assumptions (smoothne
 variance, boundedness) to the model-level hypotheses used by the convergence
 interface. It discharges the `Integrable` requirements using the derivations
 in `LeanSharp.Stochastic.Integrability`. -/
-@[nolint unusedArguments]
 theorem zsharp_model_descent_hypotheses_of_structural_spec
-    (L_smooth : ℝ) (h_L_pos : 0 ≤ L_smooth) (f : W ι → ℝ)
+    (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -154,7 +171,7 @@ theorem zsharp_model_descent_hypotheses_of_structural_spec
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 theorem zsharp_model_descent_hypotheses_of_structural
-    (L_smooth : ℝ) (h_L_pos : 0 ≤ L_smooth) (f : W ι → ℝ)
+    (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -174,7 +191,7 @@ theorem zsharp_model_descent_hypotheses_of_structural
     zsharp_model_descent_hypotheses
       L_smooth f w η z σsq (fun t ω => gradient f (w t ω)) ℱ ℱfil := by
   exact zsharp_model_descent_hypotheses_of_structural_spec
-    L_smooth h_L_pos f w η z σsq ℱ ℱfil h_struct h_rm h_bridge
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge
     h_desc_step h_int h_int_grad h_meas
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in

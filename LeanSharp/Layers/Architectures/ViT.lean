@@ -16,6 +16,11 @@ This module formalizes the Vision Transformer architecture.
 It includes:
 1. Patch Embedding: Projects image patches into a sequence of vectors.
 2. ViT Encoder: A composition of Patch Embedding and Transformer Blocks.
+
+## Definitions
+
+* `patch_embedding`.
+* `vit_architecture`.
 -/
 
 /-- Patch Embedding Layer: Maps an image (C x H x W) to a sequence (S x D). -/

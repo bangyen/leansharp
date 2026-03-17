@@ -16,6 +16,10 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 
 This module exists to prove differentiability conditions for SAM and z-sharp
 update maps, which are required for higher-order structural analyses.
+
+## Theorems
+
+* `differentiable_at_sam_zsharp_update`.
 -/
 
 open Set Filter

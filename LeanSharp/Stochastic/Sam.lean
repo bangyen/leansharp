@@ -24,6 +24,10 @@ where gradients are observed with zero-mean noise.
 * `has_bounded_variance`: Assumption that the stochastic gradient has variance
   bounded by $\sigma^2$.
 * `stochastic_zsharp_step`: The stochastic parameter update rule for ZSharp.
+
+## Theorems
+
+* `l2_bias_variance_decomposition`.
 -/
 
 namespace LeanSharp

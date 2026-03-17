@@ -19,6 +19,14 @@ gradient components in the presence of stochastic noise.
 
 * `signal_noise_model`: A stochastic gradient model $g = g_{true} + \xi$.
 * `preservation_event`: The event that a specific gradient component $i$ is preserved.
+
+## Theorems
+
+* `vector_mean_stability`.
+* `noise_expected_norm_sq`.
+* `noise_norm_sq_tail_prob`.
+* `vector_mean_observed_expected`.
+* `preservation_prob_lower_bound`.
 -/
 
 namespace LeanSharp

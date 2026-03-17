@@ -13,6 +13,10 @@ import LeanSharp.Theory.Dynamics.Schedulers
 
 This module exists to verify that scheduler-specific assumptions integrate with
 the generic convergence theorem in representative toy settings.
+
+## Theorems
+
+* `toy_cosine_convergence`.
 -/
 
 namespace LeanSharp

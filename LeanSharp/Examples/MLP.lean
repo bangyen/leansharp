@@ -16,6 +16,14 @@ import Mathlib.Data.Real.Sqrt
 
 This module implements a standard 2-layer Multi-Layer Perceptron (MLP).
 It also establishes Lipschitz stability markers for the architecture.
+
+## Definitions
+
+* `mlp_2_layer`.
+
+## Theorems
+
+* `mlp_forward_stability`.
 -/
 
 namespace LeanSharp

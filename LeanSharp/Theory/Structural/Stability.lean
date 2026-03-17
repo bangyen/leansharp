@@ -14,6 +14,11 @@ namespace LeanSharp
 
 This module proves that Z-score filtering maintains the stability of
 neural network architectures, particularly Residual blocks.
+
+## Theorems
+
+* `filtered_update_stability`.
+* `residual_filtered_stability`.
 -/
 
 variable {ι : Type*} [Fintype ι]

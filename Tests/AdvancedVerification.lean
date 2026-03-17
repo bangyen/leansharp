@@ -13,6 +13,10 @@ import LeanSharp.Theory.Dynamics.Schedulers
 
 This module exists to validate that convergence theorems instantiate correctly
 on harder example landscapes and schedule assumptions.
+
+## Theorems
+
+* `advanced_schedule_convergence`.
 -/
 
 namespace LeanSharp

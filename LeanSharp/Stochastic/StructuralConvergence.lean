@@ -15,6 +15,10 @@ the ZSharp algorithm. It bridges the gap between low-level structural
 assumptions (smoothness, variance, etc.) and high-level almost-sure
 convergence results by leveraging the integrability derivations and
 hypothesis promotion layers.
+
+## Theorems
+
+* `zsharp_robbins_monro_objective_limit_structural`.
 -/
 
 namespace LeanSharp
@@ -32,7 +36,6 @@ theorem zsharp_robbins_monro_objective_limit_structural
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_L_pos : 0 ≤ L_smooth)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq)
     (h_rm : robbins_monro_stepsize η)
     (h_bridge : ∃ R : NNReal,
@@ -48,7 +51,7 @@ theorem zsharp_robbins_monro_objective_limit_structural
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
   have h_model := zsharp_model_descent_hypotheses_of_structural
-    L_smooth h_L_pos f w η z σsq ℱ ℱfil h_struct h_rm h_bridge
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge
     h_desc_step h_int h_int_grad h_meas
   exact zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
     L_smooth f w η z σsq (fun t ω => gradient f (w t ω)) ℱ ℱfil h_model

@@ -11,6 +11,17 @@ import LeanSharp.Stochastic.ConvergenceHypotheses
 This module exists to package Robbins-Monro style step-size assumptions together
 with reusable ZSharp descent bounds, and to provide an interface theorem that
 exposes almost-sure convergence statements for the stochastic objective process.
+
+## Theorems
+
+* `zsharp_robbins_monro_objective_limit_of_submartingale`.
+* `zsharp_objective_as_convergence_of_bridge`.
+* `zsharp_robbins_monro_almost_sure_convergence`.
+* `zsharp_robbins_monro_objective_limit`.
+* `zsharp_robbins_monro_objective_limit_of_objective_step`.
+* `zsharp_robbins_monro_objective_limit_of_objective_step_and_l1`.
+* `zsharp_robbins_monro_objective_limit_of_strongest_descent_hypotheses`.
+* `zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses`.
 -/
 
 namespace LeanSharp

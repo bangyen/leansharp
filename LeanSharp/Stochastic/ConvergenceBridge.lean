@@ -15,6 +15,23 @@ This module provides the bridge between expectation-level descent bounds and
 almost-sure convergence statements. It uses Mathlib's martingale convergence
 theorems to establish objective-process limits under submartingale-style
 assumptions.
+
+## Definitions
+
+* `zsharp_objective_as_convergence`.
+* `robbins_monro_stepsize`.
+* `zsharp_supermartingale_as_bridge`.
+
+## Theorems
+
+* `robbins_monro_stepsize_nonneg`.
+* `robbins_monro_stepsize_square_summable`.
+* `robbins_monro_stepsize_tendsto_zero`.
+* `zsharp_neg_objective_submartingale_of_one_step`.
+* `zsharp_neg_objective_uniform_l1_witness`.
+* `zsharp_neg_uniform_l1_of_objective_uniform_l1`.
+* `zsharp_neg_step_mono_of_objective_supermartingale_step`.
+* `zsharp_neg_adapted_of_objective_adapted`.
 -/
 
 namespace LeanSharp

@@ -12,6 +12,12 @@ import LeanSharp.Theory.Dynamics.Convergence
 
 This module exists to sanity-check foundational properties of toy model
 gradients and filtering behavior used throughout proof examples.
+
+## Theorems
+
+* `test_toy_filter_contraction`.
+* `test_toy_filter_identity`.
+* `test_toy_gradient_nonzero`.
 -/
 
 namespace LeanSharp.Tests

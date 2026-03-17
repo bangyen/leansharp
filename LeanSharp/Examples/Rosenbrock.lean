@@ -15,6 +15,16 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 
 This module exists to provide a nonlinear benchmark landscape with explicit
 gradient formulas, enabling end-to-end validation beyond quadratic toy models.
+
+## Definitions
+
+* `L_rosenbrock`.
+* `exact_gradient_rosenbrock`.
+
+## Theorems
+
+* `hasFDerivAt_rosenbrock`.
+* `gradient_rosenbrock_eq`.
 -/
 
 namespace LeanSharp

@@ -17,10 +17,15 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 ### Verification Status
 
 All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**. This status is automatically enforced by strict CI quality guards:
-- `check_axiom.sh`: Fails if any `axiom` declaration is found.
-- `check_sorry.sh`: Fails if any `sorry` proof marker is found.
+- `check_banned.sh`: Fails if banned Lean markers are found (`axiom`, `sorry`, `admit`, `nolint`, file-level `set_option`).
 - `check_import.sh`: Fails if banned or disallowed imports are detected.
 - `check_simp.sh`: Fails if risky simplification patterns are detected.
+
+Run all guards locally with:
+
+```bash
+./scripts/check_all.sh
+```
 
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
 - ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).

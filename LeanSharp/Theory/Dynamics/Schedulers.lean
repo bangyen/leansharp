@@ -17,6 +17,14 @@ starting with the popular Cosine Decay schedule.
 
 * `Schedule`: A type alias for `ℕ → ℝ`, mapping a step index to a learning rate.
 * `cosine_decay_schedule`: Implements the cosine annealing decay.
+
+## Theorems
+
+* `cosine_argument_in_range`.
+* `cosine_argument_mono`.
+* `cosine_decay_zero`.
+* `cosine_decay_at_T`.
+* `cosine_decay_antitone`.
 -/
 
 namespace LeanSharp

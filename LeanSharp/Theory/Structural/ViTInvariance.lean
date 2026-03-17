@@ -14,6 +14,10 @@ import Mathlib.Tactic.Linarith
 
 This module exists to certify the structural equivalence between patch embedding
 and strided convolution, grounding transformer vision components in core lemmas.
+
+## Theorems
+
+* `patch_embedding_eq_strided_conv`.
 -/
 
 namespace LeanSharp

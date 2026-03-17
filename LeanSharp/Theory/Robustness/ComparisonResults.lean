@@ -10,6 +10,11 @@ import LeanSharp.Theory.Robustness.MedianComparison
 
 This module exists to collect high-level comparison theorems that combine core
 median and mean robustness lemmas into user-facing statements.
+
+## Theorems
+
+* `median_bounded_mean_unbounded_one_outlier`.
+* `median_robust_mean_nonrobust`.
 -/
 
 namespace LeanSharp

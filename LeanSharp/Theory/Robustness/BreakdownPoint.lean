@@ -11,6 +11,16 @@ import Mathlib.Tactic.Linarith
 
 This module exists to formalize finite-sample breakdown-point definitions and
 to prove baseline lower/upper bounds for mean and geometric-median estimators.
+
+## Definitions
+
+* `is_bounded_at_outlier_count`.
+* `finite_sample_breakdown_point`.
+
+## Theorems
+
+* `mean_breakdown_point_zero`.
+* `geometric_median_breakdown_point_ge_half`.
 -/
 
 namespace LeanSharp
