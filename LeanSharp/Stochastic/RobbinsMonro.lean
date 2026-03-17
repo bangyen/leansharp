@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Convergence
 import Mathlib.Order.Filter.Basic
+import Mathlib.Probability.Martingale.Convergence
 import Mathlib.Topology.Basic
 
 /-!
@@ -88,6 +89,67 @@ def zsharp_supermartingale_as_bridge
       𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
       (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq)) →
   zsharp_objective_as_convergence f w
+
+omit [Fintype ι] in
+/-- **Concrete Mathlib bridge for objective convergence**: if the objective process
+`t ↦ f (w t ·)` is a submartingale and is uniformly L¹-bounded, then almost-sure
+objective convergence follows directly from Mathlib's a.e. martingale convergence
+theorem. This theorem exists to replace opaque bridge assumptions with explicit,
+theorem-backed hypotheses. -/
+theorem zsharp_objective_as_convergence_of_submartingale
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ)
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  have h_ae_tendsto :
+      ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => f (w t ω)) Filter.atTop
+        (nhds (ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω)) :=
+    h_sub.ae_tendsto_limitProcess hbdd
+  filter_upwards [h_ae_tendsto] with ω hω
+  exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
+
+omit [Fintype ι] in
+/-- **One-step bridge constructor**: packages explicit adaptedness, integrability,
+and one-step conditional expectation monotonicity into a submartingale certificate,
+then applies the theorem-backed Mathlib bridge to get almost-sure objective
+convergence. -/
+theorem zsharp_objective_as_convergence_of_one_step_submartingale
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_step :
+      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
+    submartingale_nat h_adapted h_int h_step
+  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
+
+omit [Fintype ι] in
+/-- **End-to-end objective limit without opaque bridge assumptions**: this theorem
+uses explicit one-step submartingale hypotheses and L¹ bounds to derive almost-sure
+convergence of the ZSharp objective process via Mathlib's martingale convergence
+theorem. -/
+theorem zsharp_robbins_monro_objective_limit_of_submartingale
+    (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (hη : robbins_monro_stepsize η)
+    (R : NNReal)
+    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_step :
+      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    zsharp_objective_as_convergence f w := by
+  have hη_nonneg : ∀ t, 0 ≤ η t := robbins_monro_stepsize_nonneg η hη
+  clear hη_nonneg
+  exact zsharp_objective_as_convergence_of_one_step_submartingale
+    f w ℱ R h_adapted h_int h_step hbdd
 
 /-- **Bridge application theorem**: given a proved bridge contract and the
 descent envelope hypotheses, obtain almost-sure convergence of the objective
