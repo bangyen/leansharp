@@ -147,4 +147,53 @@ theorem z_filtered_empirical_mean_bounded_subset
             simp only [one_div, s_out]
   exact h_base.trans h_sum_bound'
 
+/-- **Max-radius subset bound**: under the same fixed/outlier split assumptions as
+`z_filtered_empirical_mean_bounded_subset`, the filtered mean is bounded by the larger
+radius `max R_fixed R_out`. This provides a simple estimator-safety certificate. -/
+theorem z_filtered_empirical_mean_bounded_subset_max
+    [DecidableEq α]
+    (s : Finset α) (g : α → W ι) (s_fixed : Finset α) (h_sub : s_fixed ⊆ s)
+    (z R_fixed R_out : ℝ) (hs : s.Nonempty)
+    (h_fixed_bound : ∀ i ∈ s_fixed, ‖g i‖ ≤ R_fixed) :
+    ∀ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) →
+      (∀ i ∈ s \ s_fixed, ‖g' i‖ ≤ R_out) →
+      ‖z_filtered_empirical_mean s g' z‖ ≤ max R_fixed R_out := by
+  intro g' hg_fixed hg_out
+  have h_weighted := z_filtered_empirical_mean_bounded_subset
+    s g s_fixed h_sub z R_fixed R_out hs h_fixed_bound g' hg_fixed hg_out
+  have hn_pos : 0 < (s.card : ℝ) := by exact_mod_cast hs.card_pos
+  have h_card :
+      ((s \ s_fixed).card : ℝ) = (s.card : ℝ) - (s_fixed.card : ℝ) := by
+    rw [Finset.card_sdiff, Finset.inter_eq_left.2 h_sub]
+    exact Nat.cast_sub (Finset.card_le_card h_sub)
+  have h_num_le :
+      ((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)
+        ≤ ((s.card : ℝ) * (max R_fixed R_out)) := by
+    have h_fix_le :
+        (s_fixed.card : ℝ) * R_fixed ≤ (s_fixed.card : ℝ) * (max R_fixed R_out) := by
+      exact mul_le_mul_of_nonneg_left (le_max_left _ _) (by positivity)
+    have h_out_le :
+        ((s \ s_fixed).card : ℝ) * R_out
+          ≤ ((s \ s_fixed).card : ℝ) * (max R_fixed R_out) := by
+      exact mul_le_mul_of_nonneg_left (le_max_right _ _) (by positivity)
+    have h_add := add_le_add h_fix_le h_out_le
+    rw [h_card] at h_add ⊢
+    have h_expand :
+        (s_fixed.card : ℝ) * max R_fixed R_out +
+            ((s.card : ℝ) - (s_fixed.card : ℝ)) * max R_fixed R_out
+          = (s.card : ℝ) * max R_fixed R_out := by ring
+    exact h_add.trans_eq h_expand
+  have h_div :
+      (1 / (s.card : ℝ)) *
+          ((((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)))
+        ≤ max R_fixed R_out := by
+    calc
+      (1 / (s.card : ℝ)) *
+          ((((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)))
+        ≤ (1 / (s.card : ℝ)) * ((s.card : ℝ) * (max R_fixed R_out)) := by
+          exact mul_le_mul_of_nonneg_left h_num_le (by positivity)
+      _ = max R_fixed R_out := by
+          field_simp [ne_of_gt hn_pos]
+  exact h_weighted.trans h_div
+
 end LeanSharp
