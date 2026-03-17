@@ -38,7 +38,8 @@ The following items represent the planned evolution of LeanSharp, categorized by
 * Implement automated scripts for finding optimal $z$ based on empirical variance traces. **[Medium]**
 
 #### Convergence Theory Sharpening
-* Formalize the transition from expected descent to almost-sure convergence sequences. **[High]**
+* Formalize the transition from expected descent to almost-sure convergence sequences. **[High, In Progress]**  
+  Current status: reusable one-step/sequence descent envelopes are now exposed in `Stochastic/Convergence.lean` and `Stochastic/RobbinsMonro.lean`; the final supermartingale-to-a.s. bridge theorem is the remaining step.
 
 #### Robustness Theory (`Theory/Robustness.lean`)
 * Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**

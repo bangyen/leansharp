@@ -43,6 +43,7 @@ import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Generalization
 import LeanSharp.Stochastic.Rates
+import LeanSharp.Stochastic.RobbinsMonro
 import LeanSharp.Stochastic.Sam
 
 /- Tactics -/

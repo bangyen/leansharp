@@ -85,6 +85,48 @@ private lemma stochastic_dist_expansion (A : W ι) (B : Ω → W ι) (η : ℝ)
     _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_inner_const h_int_B A]
 
+/-- **One-step expected descent inequality**: converts an almost-everywhere conditional
+descent statement for step `t` into an unconditional expectation inequality. This theorem
+exists to provide a reusable bridge for sequence-level convergence arguments. -/
+theorem stochastic_expected_descent_step
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (t : ℕ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (h_step_t : ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_desc_step_t : ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_int_t : Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad_t : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_meas_t : ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    ∫ ω, f (w (t + 1) ω) ∂ℙ ≤
+      ∫ ω, f (w t ω) ∂ℙ - (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ +
+      (η t ^ 2 * L_smooth / 2) * σsq := by
+  rw [← integral_condExp h_meas_t]
+  have h_step_ae : ∀ᵐ ω ∂ℙ, f (w (t + 1) ω)
+      = f (stochastic_zsharp_step (w t ω) η t z (g_adv t) ω) := by
+    filter_upwards [h_step_t] with ω h
+    rw [h]
+  have h_cond_exp_eq : volume[fun ω' => f (w (t + 1) ω') | ℱ t] =ᵐ[ℙ]
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] := by
+    apply condExp_congr_ae h_step_ae
+  have h_bound_ae : volume[fun ω' => f (w (t + 1) ω') | ℱ t] ≤ᵐ[ℙ]
+      (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
+      + (η t ^ 2 * L_smooth / 2) * σsq) := by
+    apply h_cond_exp_eq.trans_le h_desc_step_t
+  have h_int1 : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
+    h_int_t.sub (h_int_grad_t.const_mul _)
+  have h_int2 : Integrable (fun (_ : Ω) => (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
+    integrable_const _
+  have h_int_rhs : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
+    + (η t ^ 2 * L_smooth / 2) * σsq) ℙ := h_int1.add h_int2
+  have h_integral_le := integral_mono_ae integrable_condExp h_int_rhs h_bound_ae
+  rw [integral_add h_int1 h_int2] at h_integral_le
+  rw [integral_sub h_int_t (h_int_grad_t.const_mul _)] at h_integral_le
+  rw [integral_const (η t ^ 2 * L_smooth / 2 * σsq), probReal_univ, one_smul,
+      integral_const_mul] at h_integral_le
+  exact h_integral_le
+
 /-- **Stochastic ZSharp Convergence Theorem**: Under the stochastic alignment
 condition and standard assumptions, the distance to the optimum decreases in
 expectation under a learning rate schedule. -/
@@ -192,34 +234,11 @@ theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
       have h_sum2 : (∑ k ∈ Finset.range (t + 1), (η k ^ 2 * L_smooth / 2) * σsq) =
           (∑ k ∈ Finset.range t, (η k ^ 2 * L_smooth / 2) * σsq) +
           (η t ^ 2 * L_smooth / 2) * σsq := Finset.sum_range_succ _ _
-      have h_int_next : Integrable (fun ω => f (w (t + 1) ω)) ℙ := h_int (t + 1)
       have h_exp_step : ∫ ω, f (w (t + 1) ω) ∂ℙ ≤
           ∫ ω, f (w t ω) ∂ℙ - (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ +
-          (η t ^ 2 * L_smooth / 2) * σsq := by
-        rw [← integral_condExp (h_meas t)]
-        have h_step_ae : ∀ᵐ ω ∂ℙ, f (w (t + 1) ω)
-          = f (stochastic_zsharp_step (w t ω) η t z (g_adv t) ω) := by
-          filter_upwards [h_step t] with ω h; rw [h]
-        have h_cond_exp_eq : volume[fun ω' => f (w (t + 1) ω') | ℱ t] =ᵐ[ℙ]
-            volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] := by
-          apply condExp_congr_ae h_step_ae
-        have h_bound_ae : volume[fun ω' => f (w (t + 1) ω') | ℱ t] ≤ᵐ[ℙ]
-            (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
-            + (η t ^ 2 * L_smooth / 2) * σsq) := by
-          apply h_cond_exp_eq.trans_le (h_desc_step t)
-        have h_int1 : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
-          h_int t |>.sub (h_int_grad t |>.const_mul _)
-        have h_int2 : Integrable (fun (_ : Ω) => (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
-          integrable_const _
-        have h_int_rhs : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
-          + (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
-          h_int1.add h_int2
-        have h_integral_le := integral_mono_ae integrable_condExp h_int_rhs h_bound_ae
-        rw [integral_add h_int1 h_int2] at h_integral_le
-        rw [integral_sub (h_int t) (h_int_grad t |>.const_mul _)] at h_integral_le
-        rw [integral_const (η t ^ 2 * L_smooth / 2 * σsq), probReal_univ, one_smul,
-            integral_const_mul] at h_integral_le
-        exact h_integral_le
+          (η t ^ 2 * L_smooth / 2) * σsq :=
+        stochastic_expected_descent_step L_smooth f w η z σsq t g_adv ℱ
+          (h_step t) (h_desc_step t) (h_int t) (h_int_grad t) (h_meas t)
       linarith
 
 end LeanSharp
