@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Stochastic.ConvergenceBridge
+import LeanSharp.Stochastic.ConvergenceHypotheses
 
 /-!
 # Robbins-Monro Convergence Interface
@@ -19,27 +19,6 @@ open ProbabilityTheory MeasureTheory
 
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
-
-/-- **Robbins-Monro descent envelope for ZSharp**: under the standard conditional
-descent assumptions, the cumulative weighted gradient energy up to horizon `T`
-is bounded by initial-final objective gap plus variance accumulation. This is
-the expectation-level seed used before almost-sure arguments. -/
-theorem zsharp_robbins_monro_descent_envelope
-    (L_smooth : ℝ) (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
-    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
-    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
-    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
-    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
-    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
-    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
-      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
-      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) :=
-  stochastic_zsharp_sequence_descent L_smooth f w η z σsq T g_adv ℱ
-    h_step h_desc_step h_int h_int_grad h_meas
 
 omit [Fintype ι] in
 /-- **End-to-end objective limit without opaque bridge assumptions**: this theorem
@@ -188,20 +167,16 @@ theorem zsharp_robbins_monro_objective_limit_of_objective_step
     L_smooth f w η z σsq g_adv ℱ hη ℱfil h_adapted_neg h_step_neg R hbdd_neg
     h_step h_desc_step h_int h_int_grad h_meas
 
-/-- Fully objective-coordinate convenience wrapper: callers provide both the
-one-step supermartingale condition and uniform `L¹` bound for `t ↦ f (w t ·)`.
-The transformed-process (`-f`) assumptions are derived internally. -/
+/-- Fully objective-coordinate convenience wrapper: callers provide one bundled
+objective-bridge contract, while transformed-process (`-f`) assumptions are
+derived internally. -/
 theorem zsharp_robbins_monro_objective_limit_of_objective_step_and_l1
     (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_adapted_obj : StronglyAdapted ℱfil (fun t ω => f (w t ω)))
-    (h_step_obj :
-      ∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
-    (R : NNReal)
-    (hbdd_obj : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R)
+    (h_bridge_obj : zsharp_objective_bridge_hypotheses f w ℱfil)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -210,12 +185,103 @@ theorem zsharp_robbins_monro_objective_limit_of_objective_step_and_l1
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
-  rcases zsharp_neg_process_data_of_objective_data
-      f w ℱfil R h_adapted_obj h_int h_step_obj hbdd_obj with
-    ⟨h_adapted_neg, h_int_neg, h_step_neg, hbdd_neg⟩
-  clear h_int_neg
+  rcases zsharp_neg_process_data_of_objective_bridge_hypotheses
+      f w ℱfil h_bridge_obj with
+    ⟨R, h_adapted_neg, h_step_obj, hbdd_neg⟩
   exact zsharp_robbins_monro_objective_limit_of_objective_step
     L_smooth f w η z σsq g_adv ℱ hη ℱfil h_adapted_neg h_step_obj R hbdd_neg
     h_step h_desc_step h_int h_int_grad h_meas
+
+/-- End-to-end objective-limit theorem consuming the strongest currently exposed
+ZSharp descent hypothesis bundle. This theorem derives bridge data and applies
+the objective-coordinate convergence interface without extra assumptions. -/
+theorem zsharp_robbins_monro_objective_limit_of_strongest_descent_hypotheses
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_strong :
+      zsharp_strongest_descent_hypotheses L_smooth f w η z σsq g_adv ℱ ℱfil) :
+    zsharp_objective_as_convergence f w := by
+  rcases h_strong with
+    ⟨hη, h_bridge_obj, h_step, h_desc_step, h_int, h_int_grad, h_meas⟩
+  exact zsharp_robbins_monro_objective_limit_of_objective_step_and_l1
+    L_smooth f w η z σsq g_adv ℱ hη ℱfil h_bridge_obj
+    h_step h_desc_step h_int h_int_grad h_meas
+
+/-- End-to-end objective-limit theorem from concrete model-level ZSharp
+hypotheses. This is the highest-level convergence interface in this module. -/
+theorem zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model :
+      zsharp_model_descent_hypotheses L_smooth f w η z σsq g_adv ℱ ℱfil) :
+    zsharp_objective_as_convergence f w := by
+  have h_strong :
+      zsharp_strongest_descent_hypotheses L_smooth f w η z σsq g_adv ℱ ℱfil :=
+    zsharp_strongest_descent_hypotheses_of_model_descent_hypotheses
+      L_smooth f w η z σsq g_adv ℱ ℱfil h_model
+  exact zsharp_robbins_monro_objective_limit_of_strongest_descent_hypotheses
+    L_smooth f w η z σsq g_adv ℱ ℱfil h_strong
+
+/-- Sequence-descent envelope from concrete model-level ZSharp hypotheses.
+This wrapper discharges envelope-side assumptions (`h_int`, `h_int_grad`,
+`h_meas`) by projection from the bundled model contract. -/
+theorem zsharp_robbins_monro_descent_envelope_of_model_descent_hypotheses
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model :
+      zsharp_model_descent_hypotheses L_smooth f w η z σsq g_adv ℱ ℱfil) :
+    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
+  rcases h_model with
+    ⟨hη, h_bridge_obj, h_step, h_desc_step, h_int, h_int_grad, h_meas⟩
+  clear hη h_bridge_obj
+  exact zsharp_robbins_monro_descent_envelope
+    L_smooth f w η z σsq T g_adv ℱ h_step h_desc_step h_int h_int_grad h_meas
+
+/-- End-to-end objective-limit theorem from a filtration-specialized model
+bundle, with measurability side conditions derived automatically. -/
+theorem zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses_filtration
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model_fil :
+      zsharp_model_descent_hypotheses_filtration L_smooth f w η z σsq g_adv ℱfil) :
+    zsharp_objective_as_convergence f w := by
+  have h_model :
+      zsharp_model_descent_hypotheses
+        L_smooth f w η z σsq g_adv (fun t => ℱfil t) ℱfil :=
+    zsharp_model_descent_hypotheses_of_filtration
+      L_smooth f w η z σsq g_adv ℱfil h_model_fil
+  exact zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
+    L_smooth f w η z σsq g_adv (fun t => ℱfil t) ℱfil h_model
+
+/-- Sequence-descent envelope from filtration-specialized model hypotheses.
+This theorem avoids manual envelope-side conditions at callsites by deriving
+measurability from the filtration and integrability from the model bundle. -/
+theorem zsharp_robbins_monro_descent_envelope_of_model_descent_hypotheses_filtration
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
+    (g_adv : ℕ → Ω → W ι)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model_fil :
+      zsharp_model_descent_hypotheses_filtration L_smooth f w η z σsq g_adv ℱfil) :
+    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
+  have h_model :
+      zsharp_model_descent_hypotheses
+        L_smooth f w η z σsq g_adv (fun t => ℱfil t) ℱfil :=
+    zsharp_model_descent_hypotheses_of_filtration
+      L_smooth f w η z σsq g_adv ℱfil h_model_fil
+  exact zsharp_robbins_monro_descent_envelope_of_model_descent_hypotheses
+    L_smooth f w η z σsq T g_adv (fun t => ℱfil t) ℱfil h_model
 
 end LeanSharp

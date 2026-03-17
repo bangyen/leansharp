@@ -148,6 +148,26 @@ theorem zsharp_neg_process_data_of_objective_data
   · exact zsharp_neg_step_mono_of_objective_supermartingale_step f w ℱ h_step_obj
   · exact zsharp_neg_uniform_l1_of_objective_uniform_l1 f w R hbdd_obj
 
+omit [Fintype ι] [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Packs the transformed-process bridge data needed by objective-coordinate
+wrappers without requiring explicit objective integrability assumptions. This
+captures exactly the adaptedness/one-step/L¹ pieces used before envelope-level
+integrability enters downstream theorems. -/
+theorem zsharp_neg_bridge_data_of_objective_data
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_adapted_obj : StronglyAdapted ℱ (fun t ω => f (w t ω)))
+    (h_step_obj :
+      ∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱ t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+    (hbdd_obj : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    StronglyAdapted ℱ (fun t ω => -f (w t ω))
+      ∧ (∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱ t])
+      ∧ (∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R) := by
+  refine ⟨zsharp_neg_adapted_of_objective_adapted f w ℱ h_adapted_obj, ?_, ?_⟩
+  · exact zsharp_neg_step_mono_of_objective_supermartingale_step f w ℱ h_step_obj
+  · exact zsharp_neg_uniform_l1_of_objective_uniform_l1 f w R hbdd_obj
+
 /-- **Supermartingale-to-a.s. bridge contract for ZSharp objectives**: this
 predicate packages the expected-descent envelope and Robbins-Monro step-size
 assumptions into a single hypothesis that returns almost-sure convergence of the
