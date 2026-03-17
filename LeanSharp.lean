@@ -65,6 +65,10 @@ import LeanSharp.Theory.Structural.ViTInvariance
 
 -- Robustness
 import LeanSharp.Theory.Robustness
+import LeanSharp.Theory.Robustness.BreakdownPoint
+import LeanSharp.Theory.Robustness.ComparisonResults
+import LeanSharp.Theory.Robustness.FilteredMean
+import LeanSharp.Theory.Robustness.MedianComparison
 
 -- Sensitivity
 import LeanSharp.Theory.Sensitivity

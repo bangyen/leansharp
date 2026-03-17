@@ -55,3 +55,13 @@ jobs:
         run: |
           chmod +x scripts/check_description.sh
           ./scripts/check_description.sh
+
+      - name: Guard against oversized Lean files
+        run: |
+          chmod +x scripts/check_long_file.sh
+          ./scripts/check_long_file.sh
+
+      - name: Guard Lean formatting (dry-run)
+        run: |
+          chmod +x scripts/format_lean.sh
+          ./scripts/format_lean.sh --check
