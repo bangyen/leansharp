@@ -40,6 +40,7 @@ import LeanSharp.Layers.Specialized.Quantization
 
 /- Stochastic -/
 import LeanSharp.Stochastic.Convergence
+import LeanSharp.Stochastic.ConvergenceBridge
 import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Generalization
 import LeanSharp.Stochastic.Rates
