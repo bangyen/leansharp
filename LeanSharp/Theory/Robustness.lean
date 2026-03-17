@@ -78,6 +78,65 @@ theorem z_filtered_empirical_mean_norm_le_of_pointwise_bound
     _ = R := by
         field_simp [ne_of_gt hn_pos]
 
+/-- **Subset-robust filtered-mean bound**: if indices in `s_fixed` are unchanged and bounded
+by `R_fixed`, while changed indices in `s \ s_fixed` are bounded by `R_out`, then the
+Z-filtered empirical mean is bounded by the corresponding weighted average radius. -/
+theorem z_filtered_empirical_mean_bounded_subset
+    [DecidableEq α]
+    (s : Finset α) (g : α → W ι) (s_fixed : Finset α) (h_sub : s_fixed ⊆ s)
+    (z R_fixed R_out : ℝ) (hs : s.Nonempty)
+    (h_fixed_bound : ∀ i ∈ s_fixed, ‖g i‖ ≤ R_fixed) :
+    ∀ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) →
+      (∀ i ∈ s \ s_fixed, ‖g' i‖ ≤ R_out) →
+      ‖z_filtered_empirical_mean s g' z‖ ≤
+        (1 / (s.card : ℝ)) *
+          (((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)) := by
+  intro g' hg_fixed hg_out
+  let s_out := s \ s_fixed
+  have h_base := z_filtered_empirical_mean_norm_le s g' z hs
+  have h_sum_split_raw :
+      ∑ i ∈ s, ‖g' i‖ = (∑ i ∈ s_fixed, ‖g' i‖) + (∑ i ∈ s \ s_fixed, ‖g' i‖) := by
+    have h_filter_eq : s.filter (fun i => i ∈ s_fixed) = s_fixed := by
+      ext i
+      constructor
+      · intro hi
+        exact (Finset.mem_filter.mp hi).2
+      · intro hi
+        exact Finset.mem_filter.mpr ⟨h_sub hi, hi⟩
+    have h_filter_not_eq : s.filter (fun i => i ∉ s_fixed) = s \ s_fixed := by
+      ext i
+      simp only [Finset.mem_filter, Finset.mem_sdiff]
+    simpa only [Finset.sum_filter, h_filter_eq, h_filter_not_eq] using
+      (Finset.sum_filter_add_sum_filter_not
+        (s := s) (f := fun i => ‖g' i‖) (p := fun i => i ∈ s_fixed)).symm
+  have h_sum_split : ∑ i ∈ s, ‖g' i‖ = (∑ i ∈ s_fixed, ‖g' i‖) + (∑ i ∈ s_out, ‖g' i‖) := by
+    simpa only [s_out] using h_sum_split_raw
+  have h_fixed_sum : (∑ i ∈ s_fixed, ‖g' i‖) ≤ ∑ i ∈ s_fixed, R_fixed := by
+    refine Finset.sum_le_sum (fun i hi => ?_)
+    calc ‖g' i‖ = ‖g i‖ := by rw [hg_fixed i hi]
+      _ ≤ R_fixed := h_fixed_bound i hi
+  have h_out_sum : (∑ i ∈ s_out, ‖g' i‖) ≤ ∑ i ∈ s_out, R_out := by
+    refine Finset.sum_le_sum (fun i hi => ?_)
+    exact hg_out i (by simpa only [s_out] using hi)
+  have h_sum_bound : (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g' i‖)
+      ≤ (1 / (s.card : ℝ)) * ((∑ i ∈ s_fixed, R_fixed) + (∑ i ∈ s_out, R_out)) := by
+    apply mul_le_mul_of_nonneg_left
+    · rw [h_sum_split]
+      exact add_le_add h_fixed_sum h_out_sum
+    · positivity
+  have h_sum_bound' : (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g' i‖)
+      ≤ (1 / (s.card : ℝ)) *
+          (((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)) := by
+    calc
+      (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g' i‖)
+        ≤ (1 / (s.card : ℝ)) * ((∑ i ∈ s_fixed, R_fixed) + (∑ i ∈ s_out, R_out)) := h_sum_bound
+      _ = (1 / (s.card : ℝ)) * (((s_fixed.card : ℝ) * R_fixed) + ((s_out.card : ℝ) * R_out)) := by
+            rw [Finset.sum_const, nsmul_eq_mul, Finset.sum_const, nsmul_eq_mul]
+      _ = (1 / (s.card : ℝ)) *
+            (((s_fixed.card : ℝ) * R_fixed) + (((s \ s_fixed).card : ℝ) * R_out)) := by
+            simp only [one_div, s_out]
+  exact h_base.trans h_sum_bound'
+
 /-- **Mean Non-Robustness**: A single large outlier can move the mean arbitrarily far. -/
 lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ)
     (hC : -1 ≤ C) :
