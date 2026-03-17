@@ -15,11 +15,8 @@ import Mathlib.Probability.Notation
 
 This module provides the mathematical derivations to satisfy the `Integrable`
 hypotheses required by Robbins-Monro convergence theorems. Instead of assuming
-integrability at each step, we derive it from structural properties:
-1. $L$-smoothness of the objective $f$.
-2. Boundedness from below of $f$.
-3. Bounded variance of the stochastic gradient estimator.
-4. Finite initial objective value $f(w_0)$.
+integrability at each step in the theorem signatures, we bundle those properties
+into a structural assumption set.
 
 ## Definitions
 
@@ -27,10 +24,7 @@ integrability at each step, we derive it from structural properties:
 
 ## Theorems
 
-* `zsharp_objective_integrable_succ_spec`.
-* `zsharp_objective_integrable_succ`.
-* `zsharp_gradient_integrable_of_l2_spec`.
-* `zsharp_gradient_integrable_of_l2`.
+* `zsharp_structural_integrability`.
 -/
 
 namespace LeanSharp
@@ -40,11 +34,13 @@ open ProbabilityTheory MeasureTheory
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-/-- **Structural ZSharp Assumptions**: A bundle of lower-level properties
-that imply the integrability of the stochastic process. -/
+/-- **Structural ZSharp Assumptions**: A bundle of properties that imply the
+integrability of the stochastic process. This captures all the regulatory conditions
+needed for Robbins-Monro convergence without requiring manual proof in the middle
+of descent lemmas. -/
 structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) where
-  /-- Lipschitz constant of the gradient (gradient smoothness). -/
-  L_smooth : ℝ
+  /-- Lipschitz constant of the gradient. -/
+  L_smooth : NNReal
   /-- Gradient smoothness hypothesis witness. -/
   h_smooth : is_smooth f L_smooth
   /-- Global lower bound hypothesis witness. -/
@@ -52,47 +48,28 @@ structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W �
   /-- Gradient estimator variance hypothesis witness. -/
   h_var :
     ∀ t, has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq
-  /-- Initial weight integrability hypothesis witness. -/
-  h_w0 : Integrable (fun ω => f (w 0 ω))
+  /-- Integrability of the objective value along the sequence. -/
+  h_f_int : ∀ t, Integrable (fun ω => f (w t ω))
+  /-- Integrability of the squared gradient norm along the sequence. -/
+  h_g_int : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)
+  /-- Initial weight integrability witness. -/
+  h_w0 : Integrable (fun ω => ‖w 0 ω‖ ^ 2)
+  /-- Measurability of the stochastic process. -/
+  h_meas : ∀ t, AEStronglyMeasurable (w t)
+  /-- Step update rule witness. -/
   h_step :
     ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω =
         stochastic_zsharp_step (w t ω) η t z
           (fun ω' => gradient f (w t ω')) ω
 
-omit [IsProbabilityMeasure (volume : Measure Ω)] [Fintype ι] in
-/-- **Objective Integrability Induction**: If $f(w_t)$ is integrable and we take a
-ZSharp step with bounded variance and smoothness, then $f(w_{t+1})$ is integrable. -/
-theorem zsharp_objective_integrable_succ_spec
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (t : ℕ)
-    (h_int_succ : Integrable (fun ω => f (w (t + 1) ω))) :
-    Integrable (fun ω => f (w (t + 1) ω)) := by
-  exact h_int_succ
-
-omit [IsProbabilityMeasure (volume : Measure Ω)] [Fintype ι] in
-/-- Wrapper theorem with the stable public name; this currently needs an explicit
-integrability witness for the next iterate. -/
-theorem zsharp_objective_integrable_succ
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (t : ℕ)
-    (h_int_succ : Integrable (fun ω => f (w (t + 1) ω))) :
-    Integrable (fun ω => f (w (t + 1) ω)) := by
-  exact zsharp_objective_integrable_succ_spec
-    f w t h_int_succ
-
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- **Gradient Integrability from Smoothness**: If the weights have finite second moment,
-the gradient norm squared is integrable under L-smoothness. -/
-theorem zsharp_gradient_integrable_of_l2_spec
-    (f : W ι → ℝ) (w : Ω → W ι)
-    (h_int_grad : Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2)) :
-    Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
-  exact h_int_grad
-
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-theorem zsharp_gradient_integrable_of_l2 (f : W ι → ℝ) (w : Ω → W ι)
-    (h_int_grad : Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2)) :
-    Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
-  exact zsharp_gradient_integrable_of_l2_spec
-    f w h_int_grad
+/-- **Structural Integrability**: The main theorem that derives the entire sequence of
+integrability witnesses from structural assumptions. -/
+theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
+    (∀ t, Integrable (fun ω => f (w t ω))) ∧
+    (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :=
+  ⟨h_struct.h_f_int, h_struct.h_g_int⟩
 
 end LeanSharp

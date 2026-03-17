@@ -29,7 +29,7 @@ theorem integrability_interface_test
     {Ω : Type*}
     [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
-    (L_smooth : ℝ) (f : W (Fin 2) → ℝ)
+    (L_smooth : NNReal) (f : W (Fin 2) → ℝ)
     (w : ℕ → Ω → W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -39,17 +39,14 @@ theorem integrability_interface_test
       StronglyAdapted ℱfil (fun t ω => f (w t ω))
         ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
         ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
         (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
-    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
-    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
-    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
     zsharp_objective_as_convergence f w := by
   -- This should now be a one-liner call to the structural interface
   exact zsharp_robbins_monro_objective_limit_structural
-    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge
-    h_desc_step h_int h_int_grad h_meas
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas h_desc_step
 
 end LeanSharp
