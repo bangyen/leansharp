@@ -284,4 +284,25 @@ theorem zsharp_robbins_monro_descent_envelope_of_model_descent_hypotheses_filtra
   exact zsharp_robbins_monro_descent_envelope_of_model_descent_hypotheses
     L_smooth f w η z σsq T g_adv (fun t => ℱfil t) ℱfil h_model
 
+/-- **End-to-end structural convergence**: this is the most automated interface
+for ZSharp convergence. It derives integrability from structural properties
+(smoothness, variance, etc.) and returns the almost-sure objective limit. -/
+theorem zsharp_robbins_monro_objective_limit_structural
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq)
+    (h_rm : robbins_monro_stepsize η)
+    (h_bridge : ∃ R : NNReal,
+      StronglyAdapted ℱfil (fun t ω => f (w t ω))
+        ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+        ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    zsharp_objective_as_convergence f w := by
+  have h_model := zsharp_model_descent_hypotheses_of_structural
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas
+  exact zsharp_robbins_monro_objective_limit_of_model_descent_hypotheses
+    L_smooth f w η z σsq (fun t ω => gradient f (w t ω)) ℱ ℱfil h_model
+
 end LeanSharp

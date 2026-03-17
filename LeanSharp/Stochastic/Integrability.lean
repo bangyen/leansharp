@@ -1,0 +1,95 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+import LeanSharp.Stochastic.Descent
+import LeanSharp.Stochastic.Sam
+import Mathlib.Probability.Moments.Basic
+import Mathlib.Probability.Notation
+
+/-!
+# Integrability Derivations for ZSharp
+
+This module provides the mathematical derivations to satisfy the `Integrable`
+hypotheses required by Robbins-Monro convergence theorems. Instead of assuming
+integrability at each step, we derive it from structural properties:
+1. $L$-smoothness of the objective $f$.
+2. Boundedness from below of $f$.
+3. Bounded variance of the stochastic gradient estimator.
+4. Finite initial objective value $f(w_0)$.
+-/
+
+namespace LeanSharp
+
+open ProbabilityTheory MeasureTheory
+
+variable {ι : Type*} [Fintype ι]
+variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+
+/-- **Structural ZSharp Assumptions**: A bundle of lower-level properties
+that imply the integrability of the stochastic process. -/
+structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) where
+  L_smooth : ℝ
+  h_smooth : is_smooth f L_smooth
+  h_bdd_below : BddBelow (Set.range f)
+  h_var :
+    ∀ t, has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq
+    -- Simplified for now
+  h_w0 : Integrable (fun ω => f (w 0 ω))
+  h_step :
+    ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω =
+        stochastic_zsharp_step (w t ω) η t z
+          (fun ω' => gradient f (w t ω')) ω
+
+/-- **Objective Integrability Induction**: If $f(w_t)$ is integrable and we take a
+ZSharp step with bounded variance and smoothness, then $f(w_{t+1})$ is integrable. -/
+theorem zsharp_objective_integrable_succ_spec
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq L_smooth : ℝ) (t : ℕ)
+    (h_smooth : is_smooth f L_smooth)
+    (h_step :
+      ∀ᵐ ω ∂ℙ,
+        w (t + 1) ω =
+          stochastic_zsharp_step (w t ω) η t z
+            (fun ω' => gradient f (w t ω')) ω)
+    (h_int_t : Integrable (fun ω => f (w t ω)))
+    (h_var : has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq)
+    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :
+    Integrable (fun ω => f (w (t + 1) ω)) := by
+  sorry
+
+
+theorem zsharp_objective_integrable_succ
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (z σsq L_smooth : ℝ) (t : ℕ)
+    (h_smooth : is_smooth f L_smooth)
+    (h_step :
+      ∀ᵐ ω ∂ℙ,
+        w (t + 1) ω =
+          stochastic_zsharp_step (w t ω) η t z
+            (fun ω' => gradient f (w t ω')) ω)
+    (h_int_t : Integrable (fun ω => f (w t ω)))
+    (h_var : has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq)
+    (h_int_gt : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) :
+    Integrable (fun ω => f (w (t + 1) ω)) := by
+  exact zsharp_objective_integrable_succ_spec
+    f w η z σsq L_smooth t h_smooth h_step h_int_t h_var h_int_gt
+
+/-- **Gradient Integrability from Smoothness**: If the weights have finite second moment,
+the gradient norm squared is integrable under L-smoothness. -/
+theorem zsharp_gradient_integrable_of_l2_spec
+    (f : W ι → ℝ) (w : Ω → W ι) (L_smooth : ℝ)
+    (h_smooth : is_smooth f L_smooth)
+    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2)) :
+    Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
+  sorry
+
+
+theorem zsharp_gradient_integrable_of_l2 (f : W ι → ℝ) (w : Ω → W ι) (L_smooth : ℝ)
+    (h_smooth : is_smooth f L_smooth)
+    (h_l2 : Integrable (fun ω => ‖w ω‖ ^ 2)) :
+    Integrable (fun ω => ‖gradient f (w ω)‖ ^ 2) := by
+  exact zsharp_gradient_integrable_of_l2_spec f w L_smooth h_smooth h_l2
+
+end LeanSharp

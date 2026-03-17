@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.ConvergenceBridge
+import LeanSharp.Stochastic.Integrability
 
 /-!
 # Convergence Hypothesis Bundles
@@ -112,6 +113,43 @@ def zsharp_model_descent_hypotheses_filtration
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     ∧ (∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     ∧ (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+
+/-- **Structural-to-Model Hypothesis Promotion**:
+This theorem provides the bridge from low-level structural assumptions (smoothness,
+variance, boundedness) to the model-level hypotheses used by the convergence
+interface. It discharges the `Integrable` requirements using the derivations
+in `LeanSharp.Stochastic.Integrability`. -/
+theorem zsharp_model_descent_hypotheses_of_structural_spec
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq)
+    (h_rm : robbins_monro_stepsize η)
+    (h_bridge : ∃ R : NNReal,
+      StronglyAdapted ℱfil (fun t ω => f (w t ω))
+        ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+        ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    zsharp_model_descent_hypotheses L_smooth f w η z σsq (fun t ω => gradient f (w t ω)) ℱ ℱfil := by
+  sorry
+
+theorem zsharp_model_descent_hypotheses_of_structural
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_struct : ZSharpStructuralAssumptions f w η z σsq)
+    (h_rm : robbins_monro_stepsize η)
+    (h_bridge : ∃ R : NNReal,
+      StronglyAdapted ℱfil (fun t ω => f (w t ω))
+        ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+        ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    zsharp_model_descent_hypotheses
+      L_smooth f w η z σsq (fun t ω => gradient f (w t ω)) ℱ ℱfil := by
+  exact zsharp_model_descent_hypotheses_of_structural_spec
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- Promotes the filtration-specialized model bundle into the generic

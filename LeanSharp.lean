@@ -44,6 +44,7 @@ import LeanSharp.Stochastic.ConvergenceBridge
 import LeanSharp.Stochastic.ConvergenceHypotheses
 import LeanSharp.Stochastic.Descent
 import LeanSharp.Stochastic.Generalization
+import LeanSharp.Stochastic.Integrability
 import LeanSharp.Stochastic.Rates
 import LeanSharp.Stochastic.RobbinsMonro
 import LeanSharp.Stochastic.Sam
