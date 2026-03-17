@@ -3,8 +3,16 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Theory.Dynamics.Convergence
+
+/-!
+# Example Model Tests
+
+This module exists to sanity-check foundational properties of toy model
+gradients and filtering behavior used throughout proof examples.
+-/
 
 namespace LeanSharp.Tests
 

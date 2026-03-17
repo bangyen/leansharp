@@ -68,3 +68,11 @@ import LeanSharp.Theory.Robustness
 
 -- Sensitivity
 import LeanSharp.Theory.Sensitivity
+
+/-!
+# LeanSharp Aggregator
+
+This root module exists to provide one import that pulls in the full LeanSharp
+library, so downstream users can depend on a stable entrypoint instead of
+managing per-submodule imports manually.
+-/

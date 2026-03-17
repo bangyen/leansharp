@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Core.Sam
 import Mathlib.Algebra.Order.Ring.Abs
 import Mathlib.Analysis.Calculus.FDeriv.Basic
@@ -13,6 +14,13 @@ import Mathlib.Data.Finset.Sum
 import Mathlib.Data.Real.Basic
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.Order.Basic
+
+/-!
+# Statistical Primitives
+
+This module exists to define means, variances, z-scores, and masking lemmas for
+gradient vectors so filtering proofs can share a common statistical foundation.
+-/
 
 namespace LeanSharp
 

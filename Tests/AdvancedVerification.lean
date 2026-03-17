@@ -1,6 +1,19 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+
 import LeanSharp.Examples.IllConditioned
 import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Schedulers
+
+/-!
+# Advanced Verification Tests
+
+This module exists to validate that convergence theorems instantiate correctly
+on harder example landscapes and schedule assumptions.
+-/
 
 namespace LeanSharp
 

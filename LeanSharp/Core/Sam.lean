@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Core.Landscape
 import Mathlib.Algebra.Group.Pointwise.Set.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Add
@@ -11,6 +12,13 @@ import Mathlib.Analysis.Calculus.FDeriv.Norm
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Topology.MetricSpace.Basic
+
+/-!
+# SAM Objective Core
+
+This module exists to formalize the mathematical SAM objective, perturbation
+set, and first-order update identities that the rest of LeanSharp builds on.
+-/
 
 open Topology
 

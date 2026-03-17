@@ -3,11 +3,19 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Core.Landscape
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.WithLp
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.InnerProductSpace.PiL2
+
+/-!
+# Rosenbrock Example
+
+This module exists to provide a nonlinear benchmark landscape with explicit
+gradient formulas, enabling end-to-end validation beyond quadratic toy models.
+-/
 
 namespace LeanSharp
 

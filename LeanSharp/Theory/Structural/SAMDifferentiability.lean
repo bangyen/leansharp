@@ -1,9 +1,22 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Sam
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
+
+/-!
+# SAM Differentiability
+
+This module exists to prove differentiability conditions for SAM and z-sharp
+update maps, which are required for higher-order structural analyses.
+-/
 
 open Set Filter
 open scoped Topology
@@ -31,12 +44,10 @@ theorem differentiable_at_sam_zsharp_update
       ∘L ((ContinuousLinearMap.pi fun i =>
         (ContinuousLinearMap.proj i : (ι → ℝ) →L[ℝ] ℝ).smulRight (WithLp.equiv 2 (ι → ℝ) mask i))
       ∘L (WithLp.linearEquiv 2 ℝ (ι → ℝ)).toContinuousLinearEquiv.toContinuousLinearMap)
-    
     have hg : DifferentiableAt ℝ (fun p => gradient L (p + sam_perturbation L p ρ)) w := by
       have hg' : DifferentiableAt ℝ (fun p => p + sam_perturbation L p ρ) w :=
         differentiableAt_id.add h_sam_diff
       convert DifferentiableAt.comp w h_grad_diff_at_sam hg' using 1
-    
     apply DifferentiableAt.congr_of_eventuallyEq (f_hadam.differentiableAt.comp w hg)
     · filter_upwards [h_mask_stable] with p hp
       unfold filtered_gradient hadamard

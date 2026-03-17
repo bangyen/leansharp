@@ -8,9 +8,6 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Probability.Moments.Basic
 import Mathlib.Probability.Notation
 
-set_option linter.unusedSimpArgs false
-set_option linter.style.longLine false
-
 /-!
 # Z-Score Sensitivity Analysis
 
@@ -117,15 +114,23 @@ lemma vector_mean_observed_expected (m : SignalNoiseModel ι Ω) [Nonempty ι] :
     intro i _
     have h_int_noise_i : Integrable (fun a => (WithLp.equiv 2 _ (m.noise a)) i) :=
       (EuclideanSpace.proj i : (W ι) →L[ℝ] ℝ).integrable_comp m.h_int
-    rw [show ∫ a, (WithLp.equiv 2 _ (m.g_true + m.noise a)) i = ∫ a, (m.g_true i + (WithLp.equiv 2 _ (m.noise a)) i) by rfl]
+    rw [
+      show ∫ a, (WithLp.equiv 2 _ (m.g_true + m.noise a)) i = ∫ a,
+      (m.g_true i + (WithLp.equiv 2 _ (m.noise a)) i) by rfl
+    ]
     rw [MeasureTheory.integral_add (integrable_const _) h_int_noise_i]
     rw [integral_const]
     have h_zero : ∫ a, (WithLp.equiv 2 _ (m.noise a)) i = 0 := by
       change ∫ a, (EuclideanSpace.proj i : W ι →L[ℝ] ℝ) (m.noise a) = 0
-      rw [ContinuousLinearMap.integral_comp_comm (EuclideanSpace.proj i) m.h_int, m.h_mean, ContinuousLinearMap.map_zero]
+      rw [
+        ContinuousLinearMap.integral_comp_comm
+          (EuclideanSpace.proj i) m.h_int, m.h_mean,
+        ContinuousLinearMap.map_zero
+      ]
     simp only [Measure.real, measure_univ, ENNReal.toReal_one, one_smul, h_zero, add_zero]
     rfl
-  · intro i _; exact (integrable_const _).add ((EuclideanSpace.proj i : (W ι) →L[ℝ] ℝ).integrable_comp m.h_int)
+  · intro i _; exact (integrable_const _).add
+      ((EuclideanSpace.proj i : (W ι) →L[ℝ] ℝ).integrable_comp m.h_int)
 
 /-- **Z-Score Sensitivity Bound**:
 If the noise energy is bounded, the component is preserved with high probability
@@ -137,10 +142,13 @@ theorem preservation_prob_lower_bound (m : SignalNoiseModel ι Ω) (z : ℝ) (i 
     (h_impl : ∀ ω, ‖m.noise ω‖ ^ 2 < threshold → ω ∈ preservation_event m z i) :
     preservation_prob m z i ≥ 1 - (Fintype.card ι * σ_sq / threshold) := by
   simp only [preservation_prob]
-  have h_mono : (ℙ {ω | ‖m.noise ω‖ ^ 2 < threshold}).toReal ≤ (ℙ (preservation_event m z i)).toReal :=
-    (ENNReal.toReal_le_toReal (measure_ne_top _ _) (measure_ne_top _ _)).mpr (measure_mono h_impl)
+  have h_mono : (ℙ {ω | ‖m.noise ω‖ ^ 2 < threshold}).toReal
+    ≤ (ℙ (preservation_event m z i)).toReal :=
+    (ENNReal.toReal_le_toReal (measure_ne_top _ _)
+    (measure_ne_top _ _)).mpr (measure_mono h_impl)
   have h_tail := noise_norm_sq_tail_prob m σ_sq threshold h_t h_noise h_int_sq
-  have h_sum : (ℙ {ω | ‖m.noise ω‖ ^ 2 < threshold}).toReal + (ℙ {ω | ‖m.noise ω‖ ^ 2 ≥ threshold}).toReal = 1 := by
+  have h_sum : (ℙ {ω | ‖m.noise ω‖ ^ 2 < threshold}).toReal
+      + (ℙ {ω | ‖m.noise ω‖ ^ 2 ≥ threshold}).toReal = 1 := by
     rw [← ENNReal.toReal_add (measure_ne_top ℙ _) (measure_ne_top ℙ _)]
     · have h_int_norm_sq : Integrable (fun ω : Ω => ‖m.noise ω‖ ^ 2) ℙ := by
         simp_rw [EuclideanSpace.norm_sq_eq, Real.norm_eq_abs, sq_abs]
@@ -152,8 +160,10 @@ theorem preservation_prob_lower_bound (m : SignalNoiseModel ι Ω) (z : ℝ) (i 
         measure_congr (hf_eq.mono (fun _ h => congr_arg (· ≥ threshold) h))
       rw [hm1, hm2]
       have h_disj : Disjoint {ω : Ω | f ω < threshold} {ω : Ω | f ω ≥ threshold} :=
-        Set.disjoint_left.mpr (fun ω h1 h2 => by simp only [ge_iff_le, Set.mem_setOf_eq] at h1 h2; linarith)
-      have ht : MeasurableSet {ω : Ω | f ω ≥ threshold} := measurableSet_le (measurable_const (a := threshold)) hf_meas
+        Set.disjoint_left.mpr (fun ω h1 h2 => by simp only
+          [ge_iff_le, Set.mem_setOf_eq] at h1 h2; linarith)
+      have ht : MeasurableSet {ω : Ω | f ω ≥ threshold} :=
+        measurableSet_le (measurable_const (a := threshold)) hf_meas
       rw [← measure_union h_disj ht]
       have h_univ : {ω | f ω < threshold} ∪ {ω | f ω ≥ threshold} = Set.univ := by
         ext ω; simp only [ge_iff_le, Set.mem_union, Set.mem_setOf_eq, Set.mem_univ, iff_true]

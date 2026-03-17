@@ -40,3 +40,18 @@ jobs:
         run: |
           chmod +x scripts/check_sorry.sh
           ./scripts/check_sorry.sh
+
+      - name: Guard against `set_option` directives
+        run: |
+          chmod +x scripts/check_set_option.sh
+          ./scripts/check_set_option.sh
+
+      - name: Guard copyright header blocks
+        run: |
+          chmod +x scripts/check_copyright.sh
+          ./scripts/check_copyright.sh
+
+      - name: Guard module description blocks
+        run: |
+          chmod +x scripts/check_description.sh
+          ./scripts/check_description.sh

@@ -1,6 +1,19 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+
 import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Schedulers
+
+/-!
+# Schedule Convergence Tests
+
+This module exists to verify that scheduler-specific assumptions integrate with
+the generic convergence theorem in representative toy settings.
+-/
 
 namespace LeanSharp
 

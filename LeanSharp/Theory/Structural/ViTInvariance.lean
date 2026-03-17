@@ -3,10 +3,18 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Layers.Architectures.ViT
 import LeanSharp.Layers.Specialized.Convolution
 import Mathlib.Data.Nat.ModEq
 import Mathlib.Tactic.Linarith
+
+/-!
+# ViT Structural Invariance
+
+This module exists to certify the structural equivalence between patch embedding
+and strided convolution, grounding transformer vision components in core lemmas.
+-/
 
 namespace LeanSharp
 

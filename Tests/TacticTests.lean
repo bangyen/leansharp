@@ -3,10 +3,18 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+
 import LeanSharp.Core.Filters
 import LeanSharp.Tactic.ZSolve
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Tactic.Linarith
+
+/-!
+# Tactic Regression Tests
+
+This module exists to exercise `zsharp_solve` on representative goals, ensuring
+proof automation remains stable as core lemmas evolve.
+-/
 
 namespace LeanSharp.Tests
 
