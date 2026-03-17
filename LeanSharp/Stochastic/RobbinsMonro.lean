@@ -22,6 +22,13 @@ open ProbabilityTheory MeasureTheory
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
+/-- Predicate capturing almost-sure objective convergence for a stochastic
+iterate process. This exists so bridge assumptions can target a single reusable
+contract rather than repeating the same event signature across theorems. -/
+def zsharp_objective_as_convergence (f : W ι → ℝ) (w : ℕ → Ω → W ι) : Prop :=
+  ∀ᵐ ω ∂ℙ, ∃ ℓ : ℝ,
+    Filter.Tendsto (fun t => f (w t ω)) Filter.atTop (nhds ℓ)
+
 /-- Robbins-Monro step-size assumptions for stochastic approximation:
 nonnegativity, square-summability, and vanishing step sizes. -/
 def robbins_monro_stepsize (η : ℕ → ℝ) : Prop :=
@@ -67,35 +74,96 @@ theorem zsharp_robbins_monro_descent_envelope
   stochastic_zsharp_sequence_descent L_smooth f w η z σsq T g_adv ℱ
     h_step h_desc_step h_int h_int_grad h_meas
 
-/-- **Almost-sure convergence interface for ZSharp**: this theorem packages the
-Robbins-Monro assumptions with the sequence-descent envelope and an almost-sure
-convergence seed (typically supplied by a supermartingale theorem) into one
-specialized result for the Z-score filtered objective process. -/
-theorem zsharp_robbins_monro_almost_sure_convergence
+/-- **Supermartingale-to-a.s. bridge contract for ZSharp objectives**: this
+predicate packages the expected-descent envelope and Robbins-Monro step-size
+assumptions into a single hypothesis that returns almost-sure convergence of the
+objective sequence. It isolates the exact theorem gap needed to connect
+expectation-level control to pathwise convergence. -/
+def zsharp_supermartingale_as_bridge
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (σsq : ℝ) : Prop :=
+  robbins_monro_stepsize η →
+  (∀ T : ℕ,
+    (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq)) →
+  zsharp_objective_as_convergence f w
+
+/-- **Bridge application theorem**: given a proved bridge contract and the
+descent envelope hypotheses, obtain almost-sure convergence of the objective
+sequence for ZSharp. -/
+theorem zsharp_objective_as_convergence_of_bridge
     (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : robbins_monro_stepsize η)
+    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
-    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_as_seed : ∀ᵐ ω ∂ℙ, ∃ ℓ : ℝ,
-      Filter.Tendsto (fun t => f (w t ω)) Filter.atTop (nhds ℓ)) :
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    zsharp_objective_as_convergence f w := by
+  have h_env : ∀ T : ℕ,
+      (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+        𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
+    intro T
+    exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T g_adv ℱ
+      h_step h_desc_step h_int h_int_grad h_meas
+  exact h_bridge hη h_env
+
+/-- **Almost-sure convergence interface for ZSharp**: this theorem packages the
+Robbins-Monro assumptions with the sequence-descent envelope and an almost-sure
+convergence bridge (typically supplied by a supermartingale theorem) into one
+specialized result for the Z-score filtered objective process. -/
+theorem zsharp_robbins_monro_almost_sure_convergence
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (hη : robbins_monro_stepsize η)
+    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     (∀ T : ℕ,
       (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
-      ∧ (∀ᵐ ω ∂ℙ, ∃ ℓ : ℝ,
-        Filter.Tendsto (fun t => f (w t ω)) Filter.atTop (nhds ℓ)) := by
+      ∧ zsharp_objective_as_convergence f w := by
   have hη_nonneg : ∀ t, 0 ≤ η t := robbins_monro_stepsize_nonneg η hη
   clear hη_nonneg
-  refine ⟨?_, h_as_seed⟩
-  intro T
-  exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T g_adv ℱ
-    h_step h_desc_step h_int h_int_grad h_meas
+  refine ⟨?_, ?_⟩
+  · intro T
+    exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T g_adv ℱ
+      h_step h_desc_step h_int h_int_grad h_meas
+  · exact zsharp_objective_as_convergence_of_bridge L_smooth f w η z σsq g_adv ℱ
+      hη h_bridge h_step h_desc_step h_int h_int_grad h_meas
+
+/-- **End-to-end Robbins-Monro objective convergence**: convenience projection of
+`zsharp_robbins_monro_almost_sure_convergence` that returns only the almost-sure
+objective limit statement after all envelope assumptions are supplied. -/
+theorem zsharp_robbins_monro_objective_limit
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (hη : robbins_monro_stepsize η)
+    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    zsharp_objective_as_convergence f w := by
+  exact (zsharp_robbins_monro_almost_sure_convergence
+    L_smooth f w η z σsq g_adv ℱ hη h_bridge h_step h_desc_step h_int h_int_grad h_meas).2
 
 end LeanSharp
