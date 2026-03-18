@@ -39,9 +39,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-#### Robustness Theory (`Theory/Robustness.lean`)
-* Optionally integrate robustness bounds with Z-score filtering (e.g., when to prefer median over mean). **[Low-Medium]**
-
 ---
 
 ### Core Foundation (Required for Completeness)

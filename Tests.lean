@@ -9,6 +9,7 @@ import Tests.ExampleModels
 import Tests.IntegrabilityTests
 import Tests.LayerTests
 import Tests.RobbinsMonroMartingaleTests
+import Tests.RobustnessTests
 import Tests.ScheduleConvergence
 import Tests.SchedulerTests
 import Tests.TacticTests
