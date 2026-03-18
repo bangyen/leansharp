@@ -39,14 +39,14 @@ import LeanSharp.Layers.Specialized.Convolution
 import LeanSharp.Layers.Specialized.Quantization
 
 /- Stochastic -/
-import LeanSharp.Stochastic.Convergence.ProcessLimits
-import LeanSharp.Stochastic.Convergence.LimitBridges
-import LeanSharp.Stochastic.Convergence.LimitAssumes
+import LeanSharp.Stochastic.Convergence.Process
+import LeanSharp.Stochastic.Convergence.Bridges
+import LeanSharp.Stochastic.Convergence.Assumptions
 import LeanSharp.Stochastic.Mechanics.DescentSteps
 import LeanSharp.Stochastic.Mechanics.SampleErrors
 import LeanSharp.Stochastic.Foundations.Integrability
-import LeanSharp.Stochastic.Foundations.MartingaleOps
-import LeanSharp.Stochastic.Foundations.DecaySchedules
+import LeanSharp.Stochastic.Foundations.Martingale
+import LeanSharp.Stochastic.Foundations.Schedules
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 import LeanSharp.Stochastic.Mechanics.SharpnessMap
 
@@ -68,7 +68,7 @@ import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
 import LeanSharp.Theory.Structural.StabilityProperties
 import LeanSharp.Theory.Structural.ViTInvariance
-import LeanSharp.Stochastic.Convergence.StaticLimits
+import LeanSharp.Stochastic.Convergence.Static
 
 -- Robustness
 import LeanSharp.Theory.Robustness.BreakdownPoint

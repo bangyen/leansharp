@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Stochastic.Convergence.ProcessLimits
+import LeanSharp.Stochastic.Convergence.Process
 import Mathlib.Order.Filter.Basic
 import Mathlib.Probability.Martingale.Convergence
 import Mathlib.Topology.Basic

@@ -3,9 +3,9 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Stochastic.Convergence.LimitAssumes
+import LeanSharp.Stochastic.Convergence.Assumptions
 import LeanSharp.Stochastic.Foundations.Integrability
-import LeanSharp.Stochastic.Foundations.MartingaleOps
+import LeanSharp.Stochastic.Foundations.Martingale
 
 /-!
 # Robbins-Monro Convergence Interface
@@ -29,6 +29,7 @@ open ProbabilityTheory MeasureTheory
 
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+
 omit [Fintype ι] in
 /-- **End-to-end objective limit without opaque bridge assumptions** -/
 theorem zsharp_robbins_monro_objective_limit_of_submartingale

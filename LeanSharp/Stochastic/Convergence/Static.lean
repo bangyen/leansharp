@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Stochastic.Convergence.LimitAssumes
+import LeanSharp.Stochastic.Convergence.Assumptions
 import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 
