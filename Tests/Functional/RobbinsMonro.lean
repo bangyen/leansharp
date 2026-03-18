@@ -99,6 +99,7 @@ theorem objective_martingale_convergence_interface_test
     (R : NNReal)
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
     zsharp_objective_as_convergence f w := by
-  exact zsharp_objective_as_convergence_of_martingale f w ℱ R h_mart hbdd
+  exact zsharp_objective_as_convergence_of_submartingale
+    f w ℱ R h_mart.submartingale hbdd
 
 end LeanSharp

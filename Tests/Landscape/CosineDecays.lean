@@ -41,14 +41,6 @@ theorem toy_cosine_convergence (T : ℕ) (hT : T > 0) (η0 ρ z μ L_smooth : �
     calc cosine_decay_schedule η0 0 T t * L_smooth ^ 2
       _ ≤ η0 * L_smooth ^ 2 := mul_le_mul_of_nonneg_right h_mono (sq_nonneg _)
       _ ≤ μ := h_bounds.2.1
-  · intro t; rw [cosine_decay_schedule]
-    -- Proof that η_t ≤ 1 / L_smooth
-    have h_mono : cosine_decay_schedule η0 0 T t ≤ cosine_decay_schedule η0 0 T 0 :=
-      cosine_decay_antitone η0 0 T (by linarith) (Nat.zero_le t)
-    have h_eta0 : η0 = cosine_decay_schedule η0 0 T 0 := by
-      rw [cosine_decay_zero η0 0 T hT]
-    rw [← h_eta0] at h_mono
-    exact h_mono.trans h_bounds.2.2.1
   · exact h_bounds.2.2.2
   · exact h_align
 

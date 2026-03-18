@@ -25,7 +25,6 @@ theorems.
 ## Theorems
 
 * `cauchy_probability_oracle_is_non_gaussian`.
-* `cauchy_probability_oracle_process_is_non_gaussian`.
 -/
 
 namespace LeanSharp
@@ -80,15 +79,5 @@ theorem cauchy_probability_oracle_is_non_gaussian
   refine ⟨1, γ, le_rfl, hγ_pos, ?_⟩
   intro r hr
   simpa only [pow_one] using h_tail r hr
-
-/-- Process-level lifting of `cauchy_probability_oracle_is_non_gaussian`.
-This theorem exists so time-indexed Cauchy-tail assumptions can be consumed by
-interfaces that only require non-Gaussian polynomial-tail control. -/
-theorem cauchy_probability_oracle_process_is_non_gaussian
-    (ξ : ℕ → Ω → W ι)
-    (h_cauchy : cauchy_probability_oracle_process ξ) :
-    non_gaussian_probability_oracle_process ξ := by
-  intro t
-  exact cauchy_probability_oracle_is_non_gaussian (ξ t) (h_cauchy t)
 
 end LeanSharp

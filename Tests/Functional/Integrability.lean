@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import LeanSharp.Stochastic.Convergence.Static
 import LeanSharp.Stochastic.Foundations.Integrability
+import LeanSharp.Stochastic.Foundations.RobbinsMonro
 
 /-!
 # Integrability Interface Tests
@@ -87,8 +87,9 @@ theorem integrability_interface_test
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
     zsharp_objective_as_convergence f w := by
   -- This should now be a one-liner call to the structural interface
-  exact (zsharp_robbins_monro_almost_sure_convergence_structural
-    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas h_desc_step).2
+  exact (zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    L_smooth f w η z σsq ℱ ℱfil
+    ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩).2
 
 /-- **Structural Almost-Sure Interface Verification**: this test verifies that
 the structural Robbins-Monro interface can produce the full envelope-plus-a.s.
@@ -117,7 +118,8 @@ theorem structural_almost_sure_interface_test
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
       ∧ zsharp_objective_as_convergence f w := by
-  exact zsharp_robbins_monro_almost_sure_convergence_structural
-    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas h_desc_step
+  exact zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    L_smooth f w η z σsq ℱ ℱfil
+    ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
 
 end LeanSharp

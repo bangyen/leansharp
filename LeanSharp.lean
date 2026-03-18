@@ -39,17 +39,22 @@ import LeanSharp.Layers.Specialized.Convolution
 import LeanSharp.Layers.Specialized.Quantization
 
 /- Stochastic -/
+-- Convergence
 import LeanSharp.Stochastic.Convergence.Process
 import LeanSharp.Stochastic.Convergence.Bridges
 import LeanSharp.Stochastic.Convergence.Assumptions
+
+-- Mechanics
 import LeanSharp.Stochastic.Mechanics.DescentSteps
 import LeanSharp.Stochastic.Mechanics.SampleErrors
+import LeanSharp.Stochastic.Mechanics.SharpnessMap
+
+-- Foundations
 import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.Martingale
 import LeanSharp.Stochastic.Foundations.Oracles
 import LeanSharp.Stochastic.Foundations.Schedules
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
-import LeanSharp.Stochastic.Mechanics.SharpnessMap
 
 /- Tactics -/
 import LeanSharp.Tactic.ZSolve
@@ -69,16 +74,13 @@ import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
 import LeanSharp.Theory.Structural.StabilityProperties
 import LeanSharp.Theory.Structural.ViTInvariance
-import LeanSharp.Stochastic.Convergence.Static
+import LeanSharp.Theory.Structural.SobolevRegularity
 
 -- Robustness
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilteredMeanProps
 import LeanSharp.Theory.Robustness.MedianComparison
-
--- Sensitivity
-import LeanSharp.Theory.Structural.SobolevRegularity
 import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!

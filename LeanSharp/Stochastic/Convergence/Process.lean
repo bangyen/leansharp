@@ -150,19 +150,6 @@ theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w :
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
 
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- **ZSharp Stochastic Convergence**: The main convergence result for ZSharp. It shows
-that the algorithm converges to a neighborhood of the optimum under a schedule. -/
-theorem zsharp_stochastic_convergence (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ)
-    (z σsq : ℝ) (M : ℝ≥0)
-    (g_adv : Ω → W ι)
-    (h_descent : 𝔼[fun ω => L (stochastic_zsharp_step w η t z g_adv ω)] ≤
-      L w - (η t) * ‖gradient L w‖ ^ 2 +
-        (M : ℝ) * (η t) ^ 2 / 2 * (σsq + ‖gradient L w‖ ^ 2)) :
-    𝔼[fun ω => L (stochastic_zsharp_step w η t z g_adv ω)] ≤
-      L w - (η t) * (1 - (M : ℝ) * (η t) / 2) * ‖gradient L w‖ ^ 2 +
-        (M : ℝ) * (η t) ^ 2 * σsq / 2 := by
-  linarith
 theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η z : ℝ)
     (σsq : ℝ)
     (h_smooth : is_smooth f L_smooth)

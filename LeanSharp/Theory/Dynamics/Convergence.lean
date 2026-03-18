@@ -79,7 +79,6 @@ def alignment_condition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι) (z μ L
 strong convexity, and the alignment condition, supporting any valid learning rate schedule. -/
 theorem zsharp_convergence (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ) (ρ z L_smooth μ : ℝ)
     (hη_tight : ∀ t, η t * L_smooth ^ 2 ≤ μ)
-    (hη_bound : ∀ t, η t ≤ 1 / L_smooth)
     (hμL : μ < L_smooth)
     (h_align : ∀ w : W ι, let ε := sam_perturbation L w ρ
                           alignment_condition L w w_star ε z μ L_smooth) :
@@ -90,11 +89,29 @@ theorem zsharp_convergence (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
   have h_c_valid : ∀ t, 0 < c t ∧ c t < 1 := by
     intro t
     constructor
-    · have : η t * μ < 1 := calc
-        η t * μ < η t * L_smooth := mul_lt_mul_of_pos_left hμL (hη t)
-        _     ≤ (1 / L_smooth) * L_smooth := mul_le_mul_of_nonneg_right (hη_bound t) h_smooth.1.le
-        _     = 1 := div_mul_cancel₀ 1 h_smooth.1.ne'
-      exact sub_pos.mpr this
+    · have hη_nonneg : 0 ≤ η t := (le_of_lt (hη t))
+      have hLsq_pos : 0 < L_smooth ^ 2 := by
+        have hL_pos : 0 < L_smooth := h_smooth.1
+        nlinarith [sq_pos_of_ne_zero hL_pos.ne']
+      have hη_le : η t ≤ μ / (L_smooth ^ 2) := by
+        rw [le_div_iff₀ hLsq_pos]
+        exact hη_tight t
+      have hμ_nonneg : 0 ≤ μ := h_convex.1.le
+      have h_eta_mul_mu_le : η t * μ ≤ (μ / (L_smooth ^ 2)) * μ :=
+        mul_le_mul_of_nonneg_right hη_le hμ_nonneg
+      have h_mu_ratio_lt_one : (μ / (L_smooth ^ 2)) * μ < 1 := by
+        have hL_pos : 0 < L_smooth := h_smooth.1
+        have hμ_sq_lt_L_sq : μ ^ 2 < L_smooth ^ 2 := by
+          have hμ_abs_lt_L : |μ| < L_smooth := by
+            have hμ_pos : 0 < μ := h_convex.1
+            rw [abs_of_pos hμ_pos]
+            exact hμL
+          nlinarith [hμ_abs_lt_L, h_smooth.1]
+        have hdiv : μ / (L_smooth ^ 2) * μ = μ ^ 2 / (L_smooth ^ 2) := by
+          field_simp [hL_pos.ne']
+        rw [hdiv]
+        exact (div_lt_one (pow_pos hL_pos 2)).2 hμ_sq_lt_L_sq
+      exact sub_pos.mpr (lt_of_le_of_lt h_eta_mul_mu_le h_mu_ratio_lt_one)
     · exact sub_lt_self 1 (mul_pos (hη t) h_convex.1)
   refine ⟨c, h_c_valid, fun w t => ?_⟩
   rw [zsharp_step]

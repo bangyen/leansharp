@@ -24,9 +24,7 @@ assumptions.
 
 ## Theorems
 
-* `zsharp_neg_objective_submartingale_of_one_step`.
 * `zsharp_objective_as_convergence_of_submartingale`.
-* `zsharp_objective_as_convergence_of_martingale`.
 * `zsharp_objective_as_convergence_of_one_step_submartingale`.
 * `zsharp_objective_as_convergence_of_neg_submartingale`.
 -/
@@ -50,19 +48,6 @@ nonnegativity, square-summability, and vanishing step sizes. -/
 def robbins_monro_stepsize (η : ℕ → ℝ) : Prop :=
   (∀ t, 0 ≤ η t) ∧ Summable (fun t => (η t) ^ 2) ∧
     Filter.Tendsto η Filter.atTop (nhds 0)
-
-omit [Fintype ι] in
-/-- Constructor theorem that turns one-step transformed-objective assumptions into
-a `Submartingale` certificate for `t ↦ -f (w t ·)`. -/
-theorem zsharp_neg_objective_submartingale_of_one_step
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_adapted_neg : StronglyAdapted ℱ (fun t ω => -f (w t ω)))
-    (h_int_neg : ∀ t, Integrable (fun ω => -f (w t ω)) ℙ)
-    (h_step_neg :
-      ∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱ t]) :
-    Submartingale (fun t ω => -f (w t ω)) ℱ ℙ := by
-  exact submartingale_nat h_adapted_neg h_int_neg h_step_neg
 
 /-- **Supermartingale-to-a.s. bridge contract for ZSharp objectives**: this
 predicate packages the expected-descent envelope and Robbins-Monro step-size
@@ -98,20 +83,6 @@ theorem zsharp_objective_as_convergence_of_submartingale
     h_sub.ae_tendsto_limitProcess hbdd
   filter_upwards [h_ae_tendsto] with ω hω
   exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
-
-omit [Fintype ι] in
-/-- **Martingale-to-a.s. objective convergence**: if the objective process is a
-martingale and uniformly `L¹` bounded, almost-sure objective convergence follows
-by reducing to the submartingale convergence interface theorem. -/
-theorem zsharp_objective_as_convergence_of_martingale
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_mart : Martingale (fun t ω => f (w t ω)) ℱ ℙ)
-    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    zsharp_objective_as_convergence f w := by
-  exact zsharp_objective_as_convergence_of_submartingale
-    f w ℱ R h_mart.submartingale hbdd
 
 omit [Fintype ι] in
 /-- **One-step bridge constructor**: packages explicit adaptedness, integrability,

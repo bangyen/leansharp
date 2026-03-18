@@ -16,7 +16,6 @@ exposes almost-sure convergence statements for the stochastic objective process.
 
 ## Theorems
 
-* `zsharp_robbins_monro_objective_limit_of_submartingale`.
 * `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
@@ -29,22 +28,6 @@ open ProbabilityTheory MeasureTheory
 
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
-
-omit [Fintype ι] in
-/-- **End-to-end objective limit without opaque bridge assumptions** -/
-theorem zsharp_robbins_monro_objective_limit_of_submartingale
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
-    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
-    (h_step :
-      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
-    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    zsharp_objective_as_convergence f w := by
-  exact zsharp_objective_as_convergence_of_one_step_submartingale
-    f w ℱ R h_adapted h_int h_step hbdd
 
 /-- **Objective limit with explicit martingale-update model**: combines the
 Robbins-Monro objective-limit interface with an explicit update decomposition
@@ -68,7 +51,7 @@ theorem zsharp_robbins_monro_objective_limit_with_martingale_model
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
       ∧ zsharp_objective_as_convergence f w := by
   refine ⟨h_model.h_update, ?_⟩
-  exact zsharp_robbins_monro_objective_limit_of_submartingale
+  exact zsharp_objective_as_convergence_of_one_step_submartingale
     f w ℱ R h_adapted h_int h_step hbdd
 
 /-- **Bridge application theorem** -/
@@ -86,7 +69,6 @@ theorem zsharp_objective_as_convergence_of_bridge
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     zsharp_objective_as_convergence f w := by
-  let _ := hη
   have h_env : ∀ T : ℕ,
       (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
