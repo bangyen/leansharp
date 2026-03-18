@@ -105,7 +105,22 @@ theorem zsharp_robbins_monro_almost_sure_convergence
       · exact h_adapted_neg
       · intro t; exact (h_int t).neg
       · exact h_step_neg
-    exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
+    have h_ae_tendsto_neg :
+        ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => -f (w t ω)) Filter.atTop
+          (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)) :=
+      h_sub_neg.ae_tendsto_limitProcess hbdd_neg
+    filter_upwards [h_ae_tendsto_neg] with ω hω
+    refine ⟨-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω), ?_⟩
+    have h_neg_cont :
+        Filter.Tendsto (fun x : ℝ => -x)
+          (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))
+          (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+      continuous_neg.tendsto (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)
+    have h_tendsto_obj :
+        Filter.Tendsto (fun t => -(-f (w t ω))) Filter.atTop
+          (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+      h_neg_cont.comp hω
+    simpa only [neg_neg] using h_tendsto_obj
 
 /-- **End-to-end almost-sure convergence theorem from concrete model-level ZSharp
 hypotheses**: returns both the descent-envelope inequality family and the

@@ -89,17 +89,16 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
     (h_align0 : stochastic_alignment_condition w_star w0 η 0 z μ (g_adv 0))
     (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
-    ∃ C : ℝ, ∀ T : ℕ, T > 0 →
-      𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖ ^ 2] ≤ C / T := by
-  let C := ‖w0 - w_star‖ ^ 2 + 1
-  use C
+    ∀ T : ℕ, T > 0 →
+      𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖ ^ 2]
+        ≤ (‖w0 - w_star‖ ^ 2 + 1) / T := by
   intro T hT
+  let C := ‖w0 - w_star‖ ^ 2 + 1
   induction T with
   | zero => contradiction
   | succ t ih =>
     by_cases ht : t = 0
-    · -- Base case T = 1
-      rw [ht, Nat.cast_one, div_one]
+    · rw [ht, Nat.cast_one, div_one]
       have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
         stochastic_zsharp_convergence w_star w0 η 0 z μ h_align0
@@ -107,8 +106,7 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
         rw [h_step 0]; field_simp [hμ.ne']; ring
       rw [h_zero, zero_mul] at h_bound
       exact h_bound.trans (by linarith [pow_two_nonneg ‖w0 - w_star‖])
-    · -- Inductive step T = t + 1
-      have hval : C / ↑(t + 1) = C / (↑t + 1) := by norm_cast
+    · have hval : C / ↑(t + 1) = C / (↑t + 1) := by norm_cast
       rw [hval]
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) hμ (Nat.pos_of_ne_zero ht)
@@ -178,20 +176,15 @@ norm squared decreases at a rate of $1/\sqrt{T}$ given $\eta = 1/\sqrt{T}$. -/
 theorem zsharp_nonconvex_rate (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq : ℝ)
     (η : ℕ → ℝ) (g_adv : ℕ → Ω → W ι) (T : ℕ) (hT : T > 0)
     (h_step : ∀ t, η t = 1 / Real.sqrt T)
-    -- Objective function properties
     (h_bdd : BddBelow (Set.range L))
     (h_int_L : ∀ t, Integrable (fun ω => L (weight_sequence w0 η z g_adv t ω)))
-    -- Landscape descent property (standard for L-smooth functions)
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weight_sequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weight_sequence w0 η z g_adv t ω)] -
         (η t / 2) * 𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2] +
         ((η t) ^ 2 * L_smooth / 2) * σsq) :
-    ∃ C : ℝ,
-      (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
-        𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
-      ≤ C / Real.sqrt (T : ℝ) := by
-  let C := 2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq
-  use C
+    (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
+      𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
+      ≤ (2 * (L w0 - sInf (Set.range L)) + L_smooth * σsq) / Real.sqrt (T : ℝ) := by
   let S := ∑ t ∈ Finset.range T,
       𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2]
   let η0 := η 0
@@ -225,10 +218,9 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
         ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2 +
       ((η t) ^ 2 * L_smooth / 2) * σsq)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
-    ∃ C : ℝ,
-      (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
-        𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
-      ≤ C / Real.sqrt (T : ℝ) := by
+    (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
+      𝔼[fun ω => ‖gradient L (weight_sequence w0 η z g_adv t ω)‖ ^ 2])
+      ≤ (8 * L_smooth * (L w0 - sInf (Set.range L)) + σsq) / Real.sqrt (T : ℝ) := by
   let W_seq (t : ℕ) (ω : Ω) := weight_sequence w0 η z g_adv t ω
   have h_step_seq (t : ℕ) : ∀ᵐ ω ∂ℙ, W_seq (t + 1) ω =
       stochastic_zsharp_step (W_seq t ω) η t z (g_adv t) ω := by
@@ -245,8 +237,6 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
         (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) := by
       apply Finset.sum_congr rfl; intro t _; rw [h_eta_iden t]
     rw [h_eq]; exact h_sequence_desc
-  let C := 8 * L_smooth * (L w0 - sInf (Set.range L)) + σsq
-  use C
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (W_seq T ω)] := by
     have h_le := integral_mono (integrable_const (sInf (Set.range L))) (h_int_L T)
         (fun ω => csInf_le h_bdd (Set.mem_range_self (W_seq T ω)))
@@ -259,7 +249,7 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
     (L w0 - 𝔼[fun ω => L (W_seq T ω)]) h_L_pos (h_step 0)
   apply (h_rearrange ?_).trans
   · apply div_le_div_of_nonneg_right _ (Real.sqrt_pos.mpr hT_pos).le
-    dsimp only [C]; nlinarith [h_inf, csInf_le h_bdd (Set.mem_range_self w0)]
+    nlinarith [h_inf, csInf_le h_bdd (Set.mem_range_self w0)]
   · calc (η 0 / 4) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2])
       _ ≤ 𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
           (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := h_sequence_desc_fixed

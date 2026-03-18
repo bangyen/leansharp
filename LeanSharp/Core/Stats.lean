@@ -67,10 +67,10 @@ lemma vector_mean_smul (k : ℝ) (g : W ι) :
   simp only [h_smul, ← Finset.mul_sum]
   rw [mul_div_assoc]
 
-/-- The standard deviation scales linearly with a non-negative scalar. -/
+/-- The standard deviation scales with the absolute value of the scalar. -/
 @[simp]
-lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W ι) :
-    vector_std (k • g) = k * vector_std g := by
+lemma vector_std_smul (k : ℝ) (g : W ι) :
+    vector_std (k • g) = |k| * vector_std g := by
   unfold vector_std
   have h_var_smul : vector_variance (k • g) = k^2 * vector_variance g := by
     unfold vector_variance; rw [vector_mean_smul]
@@ -83,7 +83,7 @@ lemma vector_std_smul {k : ℝ} (hk : 0 ≤ k) (g : W ι) :
   have h_nonneg : 0 ≤ vector_variance g := by
     unfold vector_variance
     positivity
-  rw [Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq hk]
+  rw [Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq_eq_abs]
 
 /-- The sum of Euclidean distances from `m` to a set of vectors `g_i` is continuous. -/
 lemma continuous_sum_distances {α : Type*} (s : Finset α) (g : α → W ι) :

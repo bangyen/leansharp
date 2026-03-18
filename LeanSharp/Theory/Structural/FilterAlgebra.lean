@@ -75,8 +75,9 @@ theorem single_outlier_extraction (g : W ι) (z : ℝ) (i : ι)
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/
-theorem z_score_mask_scale_invariance (g : W ι) (z : ℝ) {k : ℝ} (hk : 0 < k) :
+theorem z_score_mask_scale_invariance (g : W ι) (z : ℝ) {k : ℝ} (hk : k ≠ 0) :
     z_score_mask (k • g) z = z_score_mask g z := by
+  have hk_abs : 0 < |k| := abs_pos.mpr hk
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext i
   unfold z_score_mask
@@ -84,11 +85,11 @@ theorem z_score_mask_scale_invariance (g : W ι) (z : ℝ) {k : ℝ} (hk : 0 < k
     WithLp.equiv_apply,
     Equiv.apply_symm_apply,
     vector_mean_smul,
-    vector_std_smul hk.le
+    vector_std_smul
   ]
   congr! 1
   have h_pt : (k • g).ofLp i = k * g.ofLp i := rfl
-  rw [h_pt, ← mul_sub, abs_mul, abs_of_pos hk, mul_left_comm]
+  rw [h_pt, ← mul_sub, abs_mul]
   constructor <;> intro <;> nlinarith
 
 end LeanSharp
