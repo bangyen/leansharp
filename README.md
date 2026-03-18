@@ -40,7 +40,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Verification & Refinement)
 
 #### Sobolev Regularity
-* Prove equivalence or transition mappings between standard derivatives and weak derivatives. **[Medium-High]**
 * Refactor existing core Taylor descent lemmas to hold in $H^k$ spaces. **[Medium-High]**
 
 #### Deterministic Stability
