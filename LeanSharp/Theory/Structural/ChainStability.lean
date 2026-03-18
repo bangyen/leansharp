@@ -27,16 +27,16 @@ filtering layer-wise results in a total parameter update whose norm is bounded
 by the norm of the raw (unfiltered) backpropagation gradients. -/
 theorem zsharp_chain_stability {In Out : Type} (c : Chain In Out)
     (z : ℝ) (p : ChainData c) (x : In) (g_out : Out) :
-    chain_data_norm_sq (backprop_chain z p x g_out).1 ≤
-    chain_data_norm_sq (raw_backprop_chain p x g_out).1 := by
+    chainDataNormSq (backpropChain z p x g_out).1 ≤
+    chainDataNormSq (rawBackpropChain p x g_out).1 := by
   induction c generalizing x with
   | single L =>
       cases p
-      unfold backprop_chain raw_backprop_chain chain_data_norm_sq
+      unfold backpropChain rawBackpropChain chainDataNormSq
       simp only [norm_sq_filteredGradient_le]
   | append prev L ih =>
     cases p with | append p_prev w =>
-    unfold backprop_chain raw_backprop_chain chain_data_norm_sq
+    unfold backpropChain rawBackpropChain chainDataNormSq
     apply add_le_add (ih p_prev _ _) (norm_sq_filteredGradient_le _ _)
 
 end LeanSharp

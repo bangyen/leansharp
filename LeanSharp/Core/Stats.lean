@@ -76,7 +76,8 @@ lemma vectorStd_smul (k : ℝ) (g : W ι) :
     unfold vectorVariance; rw [vectorMean_smul]
     have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vectorMean g)^2 =
       k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 := by
-      have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i = k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
+      have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i =
+          k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
       rw [this, ← mul_sub, mul_pow]
     simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
   rw [h_var_smul]
@@ -94,8 +95,10 @@ lemma continuous_sum_distances {α : Type*} (s : Finset α) (g : α → W ι) :
   apply continuous_const.sub continuous_id
 
 /-- The sum of distances is coercive: it tends to infinity as `m` grows. -/
-lemma tendsto_sum_distances_cocompact {α : Type*} (s : Finset α) (g : α → W ι) (hs : s.Nonempty) :
-    Filter.Tendsto (fun m : W ι => ∑ i ∈ s, ‖g i - m‖) (Filter.cocompact (W ι)) Filter.atTop := by
+lemma tendsto_sum_distances_cocompact {α : Type*} (s : Finset α)
+    (g : α → W ι) (hs : s.Nonempty) :
+    Filter.Tendsto (fun m : W ι => ∑ i ∈ s, ‖g i - m‖)
+      (Filter.cocompact (W ι)) Filter.atTop := by
   let i0 := hs.choose
   have hi0 : i0 ∈ s := hs.choose_spec
   apply Filter.tendsto_atTop_mono (α := W ι) (f := fun m => ‖g i0 - m‖)

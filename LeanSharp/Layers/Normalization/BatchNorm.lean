@@ -17,23 +17,24 @@ Normalization is performed across the batch dimension.
 
 ## Main definitions
 
-* `batch_norm_layer`: The Batch Normalization operation.
+* `batchNormLayer`: The Batch Normalization operation.
 -/
 
 /-- Batch mean for a specific feature dimension `d`. -/
-noncomputable def batch_mean {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : ℝ :=
+noncomputable def batchMean {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : ℝ :=
   (∑ n : Fin N, (WithLp.equiv 2 _ x) (n, d)) / N
 
 /-- Batch variance for a specific feature dimension `d`. -/
-noncomputable def batch_var {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) (μ : Fin D → ℝ) : ℝ :=
+noncomputable def batchVar {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D)
+    (μ : Fin D → ℝ) : ℝ :=
   (∑ n : Fin N, ((WithLp.equiv 2 _ x) (n, d) - μ d)^2) / N
 
 /-- Batch Normalization forward pass. -/
-noncomputable def batchnorm_forward {N D : ℕ}
+noncomputable def batchnormForward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
     W (Fin N × Fin D) :=
-  let μ := fun d => batch_mean x d
-  let σ := fun d => Real.sqrt (batch_var x d μ + 0.00001)
+  let μ := fun d => batchMean x d
+  let σ := fun d => Real.sqrt (batchVar x d μ + 0.00001)
   WithLp.equiv 2 (Fin N × Fin D → ℝ) |>.symm fun p =>
     let (n, d) := p
     let x_nd := (WithLp.equiv 2 _ x) (n, d)
@@ -42,11 +43,11 @@ noncomputable def batchnorm_forward {N D : ℕ}
     γ_d * ((x_nd - μ d) / σ d) + β_d
 
 /-- Batch Normalization backward pass. -/
-noncomputable def batchnorm_backward {N D : ℕ}
+noncomputable def batchnormBackward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D))
     (g_out : W (Fin N × Fin D)) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
-  let μ := fun d => batch_mean x d
-  let σ := fun d => Real.sqrt (batch_var x d μ + 0.00001)
+  let μ := fun d => batchMean x d
+  let σ := fun d => Real.sqrt (batchVar x d μ + 0.00001)
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl d => ∑ n : Fin N, (WithLp.equiv 2 _ g_out) (n, d) *
         (((WithLp.equiv 2 _ x) (n, d) - μ d) / σ d)
@@ -58,11 +59,11 @@ noncomputable def batchnorm_backward {N D : ℕ}
   (g_w, g_x)
 
 /-- Batch Normalization Layer instance. -/
-noncomputable def batch_norm_layer (N D : ℕ) :
+noncomputable def batchNormLayer (N D : ℕ) :
     Layer (W (Fin N × Fin D)) (W (Fin N × Fin D)) where
   ParamDim := NormParam (Fin D)
   fintypeParamDim := inferInstance
-  forward := batchnorm_forward
-  backward := batchnorm_backward
+  forward := batchnormForward
+  backward := batchnormBackward
 
 end LeanSharp

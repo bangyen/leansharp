@@ -28,7 +28,8 @@ variable {α : Type*}
 open BigOperators
 
 /-- **Mean Non-Robustness**: A single large outlier can move the mean arbitrarily far. -/
-lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ) :
+lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α)
+    (hi0 : i0 ∈ s) (C : ℝ) :
     ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empiricalMean s g'‖ > C := by
   classical
   let other_sum := ∑ i ∈ s.erase i0, g i
@@ -61,10 +62,13 @@ lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (
       * (n * (|C| + 1) + ‖other_sum‖ - ‖other_sum‖) := by rw [h_norm_v]
     have hring : (1 / n) * (n * (|C| + 1) + ‖other_sum‖ - ‖other_sum‖)
       = (1 / n) * (n * (|C| + 1)) := by ring
-    have hlast : (1 / n) * (n * (|C| + 1)) = |C| + 1 := by field_simp [hn_pos.ne.symm]
+    have hlast : (1 / n) * (n * (|C| + 1)) = |C| + 1 :=
+      by field_simp [hn_pos.ne.symm]
     have hineq : ‖v + other_sum‖ ≥ ‖v‖ - ‖other_sum‖ := by
-      have H := (norm_sub_norm_le v (-other_sum)).trans_eq (by rw [sub_neg_eq_add])
-      have hneg : ‖v‖ - ‖-other_sum‖ = ‖v‖ - ‖other_sum‖ := by rw [norm_neg other_sum]
+      have H :=
+        (norm_sub_norm_le v (-other_sum)).trans_eq (by rw [sub_neg_eq_add])
+      have hneg : ‖v‖ - ‖-other_sum‖ = ‖v‖ - ‖other_sum‖ :=
+        by rw [norm_neg other_sum]
       exact (ge_of_eq hneg).trans H
     have hchain := heq.trans (hring.trans hlast)
     have hge := ge_trans (mul_le_mul_of_nonneg_left hineq (one_div_pos.mpr hn_pos).le)
@@ -128,7 +132,8 @@ theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finse
     -- ‖g i - m‖ ≥ ‖m - g i0‖ - ‖g i - g i0‖
     have h1 : ∑ i ∈ s_fixed, ‖g i - m‖ ≥
         nf * ‖m - g i0‖ - (∑ i ∈ s_fixed, ‖g i - g i0‖) := by
-      calc (∑ i ∈ s_fixed, ‖g i - m‖) ≥ ∑ i ∈ s_fixed, (‖m - g i0‖ - ‖g i - g i0‖) :=
+      calc (∑ i ∈ s_fixed, ‖g i - m‖) ≥
+          ∑ i ∈ s_fixed, (‖m - g i0‖ - ‖g i - g i0‖) :=
             Finset.sum_le_sum (fun i _ => by
               have H := norm_sub_norm_le (m - g i0) (g i - g i0)
               rw [show (m - g i0) - (g i - g i0) = m - g i from by abel] at H
@@ -244,9 +249,11 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
           have hR_C : R - C ≤ R - ‖m‖ := sub_le_sub_left h_norm_le R
           exact hR_C.trans H
         rw [Finset.sum_const, nsmul_eq_mul, Finset.sum_const, nsmul_eq_mul] at h1'
-        rw [Finset.sum_const, nsmul_eq_mul, show (s_out.card : ℝ) = n_out from rfl]
+        rw [Finset.sum_const, nsmul_eq_mul,
+          show (s_out.card : ℝ) = n_out from rfl]
         exact h1'
-      have h2 : 0 ≤ ∑ i ∈ s_fixed, ‖g i - m‖ := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+      have h2 : 0 ≤ ∑ i ∈ s_fixed, ‖g i - m‖ :=
+        Finset.sum_nonneg (fun _ _ => norm_nonneg _)
       exact (zero_add (n_out * (R - C))).symm.le.trans (add_le_add h2 h1)
     have h_upper : ∑ i ∈ s, ‖g' i - v‖ ≤ B + n_fixed * R := by
       rw [← Finset.sdiff_union_of_subset h_sub,

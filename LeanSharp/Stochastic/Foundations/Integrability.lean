@@ -59,13 +59,15 @@ structure ZSharpIntegrabilityAssumptions (f : W ι → ℝ) (w : ℕ → Ω → 
   /-- Almost-everywhere domination for the objective value. -/
   h_f_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖f (w t ω)‖ ≤ ‖f_dom t ω‖
   /-- Almost-everywhere domination for the squared gradient norm. -/
-  h_g_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖‖gradient f (w t ω)‖ ^ 2‖ ≤ ‖g_dom t ω‖
+  h_g_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ,
+    ‖‖gradient f (w t ω)‖ ^ 2‖ ≤ ‖g_dom t ω‖
 
 /-- **Structural ZSharp Assumptions**: A bundle of properties that imply the
 integrability of the stochastic process. This captures all the regulatory conditions
 needed for Robbins-Monro convergence without requiring manual proof in the middle
 of descent lemmas. -/
-structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+structure ZSharpStructuralAssumptions
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (z σsq : ℝ) where
   /-- Lipschitz constant of the gradient. -/
   L_smooth : NNReal
@@ -146,7 +148,8 @@ integrability witnesses from structural assumptions. This theorem is intentional
 retained as a compatibility wrapper for callers that already package assumptions in
 `ZSharpStructuralAssumptions`; minimal new results should prefer
 `zsharp_integrability_of_assumptions`. -/
-theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (η : ℕ → ℝ)
     (z σsq : ℝ)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
     (∀ t, Integrable (fun ω => f (w t ω))) ∧

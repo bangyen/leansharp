@@ -17,20 +17,20 @@ non-learnable execution state.
 
 ## Main definitions
 
-* `dropout_layer`: Regularization by zeroing out elements.
+* `dropoutLayer`: Regularization by zeroing out elements.
 -/
 
 variable {ι : Type*} [Fintype ι]
 
 /-- Dropout forward pass: y = x ⊙ mask / (1 - p).
     For formal consistency, we take the mask as an input vector. -/
-noncomputable def dropout_forward (p : ℝ) (mask : W ι) (x : W ι) : W ι :=
+noncomputable def dropoutForward (p : ℝ) (mask : W ι) (x : W ι) : W ι :=
   let scale := 1 / (1 - p)
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     (WithLp.equiv 2 _ x) i * (WithLp.equiv 2 _ mask) i * scale
 
 /-- Dropout backward pass. -/
-noncomputable def dropout_backward (p : ℝ) (mask : W ι) (g_out : W ι) : W ι :=
+noncomputable def dropoutBackward (p : ℝ) (mask : W ι) (g_out : W ι) : W ι :=
   let scale := 1 / (1 - p)
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     (WithLp.equiv 2 _ g_out) i * (WithLp.equiv 2 _ mask) i * scale
@@ -38,13 +38,13 @@ noncomputable def dropout_backward (p : ℝ) (mask : W ι) (g_out : W ι) : W ι
 /-- Dropout Layer instance.
     The "parameters" here represent the dropout mask (which would be
     sampled stochastically in a runtime setting). -/
-noncomputable def dropout_layer (ι : Type) [Fintype ι] (p : ℝ) :
+noncomputable def dropoutLayer (ι : Type) [Fintype ι] (p : ℝ) :
     Layer (W ι) (W ι) where
   ParamDim := ι
   fintypeParamDim := inferInstance
-  forward mask x := dropout_forward p mask x
+  forward mask x := dropoutForward p mask x
   backward mask x g_out :=
     let _ := x;
-    (0, dropout_backward p mask g_out)
+    (0, dropoutBackward p mask g_out)
 
 end LeanSharp

@@ -66,10 +66,12 @@ This uses the exact `samObjective` we formalized previously. -/
 theorem sam_concrete_generalization (L_D : W ι → ℝ) (L_S : SmoothObjective ι) (w : W ι)
     (ρ : ℝ) (C : ℝ) (hρ : 0 ≤ ρ)
     (h_gen : L_D w ≤ samObjective L_S.toFun w ρ + C) :
-    L_D w ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ + (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
+    L_D w ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ +
+      (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
   calc L_D w
     _ ≤ samObjective L_S.toFun w ρ + C := h_gen
-    _ ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ + (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
+    _ ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ +
+        (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
       linarith [sam_taylor_bound L_S w ρ hρ]
 
 /-!
@@ -79,7 +81,8 @@ Uniform stability $\beta$ measures the sensitivity of the algorithm to the data.
 -/
 
 /-- The uniform stability of a learning algorithm `A` on a dataset. -/
-def UniformStability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W ι) (β : ℝ) : Prop :=
+def UniformStability {DataPoint : Type*} {n : ℕ}
+    (A : Dataset DataPoint n → W ι) (β : ℝ) : Prop :=
   ∀ (S S' : Dataset DataPoint n), DatasetNeighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
 

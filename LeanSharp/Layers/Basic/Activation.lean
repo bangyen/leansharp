@@ -12,7 +12,7 @@ This module formalizes activation functions as neural network layers.
 
 ## Main definitions
 
-* `relu_layer`: The Rectified Linear Unit (ReLU) activation function.
+* `reluLayer`: The Rectified Linear Unit (ReLU) activation function.
 * `softmax`: The Softmax activation function.
 -/
 
@@ -26,16 +26,16 @@ noncomputable def relu (x : W ι) : W ι :=
     Max.max 0 ((WithLp.equiv 2 (ι → ℝ) x) i)
 
 /-- ReLU backward pass. Since ReLU is not differentiable at 0, we use a subgradient (0). -/
-noncomputable def relu_backward (x : W ι) (g_out : W ι) : W ι :=
+noncomputable def reluBackward (x : W ι) (g_out : W ι) : W ι :=
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     if (WithLp.equiv 2 (ι → ℝ) x) i > 0 then (WithLp.equiv 2 (ι → ℝ) g_out) i else 0
 
 /-- ReLU Layer instance. Activation functions have no parameters. -/
-noncomputable def relu_layer (ι : Type) : Layer (W ι) (W ι) where
+noncomputable def reluLayer (ι : Type) : Layer (W ι) (W ι) where
   ParamDim := Empty
   fintypeParamDim := inferInstance
   forward := fun _ x => relu x
-  backward := fun _ x g_out => (0, relu_backward x g_out)
+  backward := fun _ x g_out => (0, reluBackward x g_out)
 
 /-- Softmax activation for a vector x. -/
 noncomputable def softmax [Fintype ι] (x : W ι) : W ι :=
@@ -47,7 +47,7 @@ noncomputable def softmax [Fintype ι] (x : W ι) : W ι :=
 
 /-- Softmax backward pass.
     The Jacobian is J_ij = s_i (δ_ij - s_j). -/
-noncomputable def softmax_backward [Fintype ι] (x : W ι) (g_out : W ι) : W ι :=
+noncomputable def softmaxBackward [Fintype ι] (x : W ι) (g_out : W ι) : W ι :=
   let s := softmax x
   let s_f := WithLp.equiv 2 _ s
   let g_out_f := WithLp.equiv 2 _ g_out
@@ -56,10 +56,10 @@ noncomputable def softmax_backward [Fintype ι] (x : W ι) (g_out : W ι) : W ι
     s_f i * (g_out_f i - sum_sg)
 
 /-- Softmax Layer instance. -/
-noncomputable def softmax_layer (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
+noncomputable def softmaxLayer (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
   ParamDim := Empty
   fintypeParamDim := inferInstance
   forward := fun _ x => softmax x
-  backward := fun _ x g_out => (0, softmax_backward x g_out)
+  backward := fun _ x g_out => (0, softmaxBackward x g_out)
 
 end LeanSharp

@@ -16,12 +16,12 @@ gradient vanishing.
 
 ## Main definitions
 
-* `residual_layer`: A wrapper that adds a skip connection to an existing layer.
+* `residualLayer`: A wrapper that adds a skip connection to an existing layer.
 -/
 
 /-- A Residual Block is a wrapper that adds a skip connection: $y = x + f(x)$.
     The input and output spaces must be the same Euclidean space. -/
-noncomputable def residual_layer {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) :
+noncomputable def residualLayer {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) :
     Layer (W ι) (W ι) where
   ParamDim := f.ParamDim
   fintypeParamDim := f.fintypeParamDim

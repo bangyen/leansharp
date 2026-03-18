@@ -41,20 +41,23 @@ If a stochastic gradient $g$ has variance bounded by $\sigma^2$, then its
 Z-score filtered version also has variance bounded by $\sigma^2$
 (plus the squared norm of the true gradient).
 This holds because the filter is a component-wise contraction toward zero. -/
-theorem filtered_variance_bound (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) (z : ℝ)
+theorem filtered_variance_bound (L : W ι → ℝ) (g : Ω → W ι) (w : W ι)
+    (σsq : ℝ) (z : ℝ)
     (h_stoch : IsStochasticGradient L g w)
     (h_var : HasBoundedVariance L g w σsq)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z))
     (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2)) :
-    𝔼[fun ω => ‖filteredGradient (g ω) z - 𝔼[fun ω' => filteredGradient (g ω') z]‖ ^ 2] ≤
+    𝔼[fun ω => ‖filteredGradient (g ω) z -
+      𝔼[fun ω' => filteredGradient (g ω') z]‖ ^ 2] ≤
       σsq + ‖gradient L w‖ ^ 2 := by
   let g_f (ω : Ω) := filteredGradient (g ω) z
   have h_int_g : Integrable g := h_stoch.1
   -- Step 1: Integrability of g_f
   -- Since g_f is bounded by g and is measurable, it is integrable.
   have h_int_gf : Integrable g_f :=
-    h_int_g.mono h_meas_f (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
+    h_int_g.mono h_meas_f
+      (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
   -- Step 2: Use the L2 Bias-Variance Decomposition for g_f
   have h_gf_decomp := l2_bias_variance_decomposition g_f h_int_f h_int_gf
   -- Step 3: Bound 𝔼[‖g_f‖^2] by 𝔼[‖g‖^2]
@@ -86,7 +89,8 @@ The fundamental descent lemma for a smooth function under stochastic gradients.
 For an $L$-smooth function $f$, a single step of SGD with step size $\eta \le 1/L$
 satisfies an expected decrease proportional to the gradient norm, scaled by the
 variance of the estimator. -/
-theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η : ℝ)
+theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι)
+    (w : W ι) (η : ℝ)
     (h_smooth : IsSmooth f L_smooth)
     (h_stoch : IsStochasticGradient f g w)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
@@ -96,7 +100,8 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
       f w - (η / 2) * ‖gradient f w‖ ^ 2 +
       (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g ω - gradient f w‖ ^ 2] := by
   -- Step 1: Apply the L-smoothness Taylor bound point-wise
-  have h_taylor_loc (ω : Ω) : f (w - η • g ω) ≤ f w + inner ℝ (gradient f w) (w - η • g ω - w) +
+  have h_taylor_loc (ω : Ω) :
+      f (w - η • g ω) ≤ f w + inner ℝ (gradient f w) (w - η • g ω - w) +
       (L_smooth / 2) * ‖w - η • g ω - w‖ ^ 2 :=
     h_smooth w (w - η • g ω)
   -- Step 2: Simplify point-wise bound
@@ -105,13 +110,16 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
     have h_diff : w - η • g ω - w = -η • g ω := by simp only [sub_sub_cancel_left, neg_smul]
     have h_point := h_taylor_loc ω
     rw [h_diff] at h_point
-    have h_term1 : inner ℝ (gradient f w) (-η • g ω) = -η * inner ℝ (gradient f w) (g ω) := by
+    have h_term1 : inner ℝ (gradient f w) (-η • g ω) =
+        -η * inner ℝ (gradient f w) (g ω) := by
       rw [inner_smul_right, real_inner_comm]
     have h_term2 : ‖-η • g ω‖ ^ 2 = η ^ 2 * ‖g ω‖ ^ 2 := by
       simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
     calc f (w - η • g ω)
-      _ ≤ f w + inner ℝ (gradient f w) (-η • g ω) + (L_smooth / 2) * ‖-η • g ω‖ ^ 2 := h_point
-      _ = f w - η * inner ℝ (gradient f w) (g ω) + (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 := by
+      _ ≤ f w + inner ℝ (gradient f w) (-η • g ω) +
+          (L_smooth / 2) * ‖-η • g ω‖ ^ 2 := h_point
+      _ = f w - η * inner ℝ (gradient f w) (g ω) +
+          (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 := by
           rw [h_term1, h_term2]
           ring
   -- Step 3: Integrate inequality
@@ -126,7 +134,8 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
         exact (Filter.Eventually.of_forall fun ω => real_inner_comm _ _)
     · exact Integrable.const_mul h_int (η ^ 2 * L_smooth / 2)
   have h_int_le : 𝔼[fun ω => f (w - η • g ω)] ≤
-      𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω) + (η^2 * L_smooth / 2) * ‖g ω‖ ^ 2] :=
+      𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω) +
+        (η^2 * L_smooth / 2) * ‖g ω‖ ^ 2] :=
     integral_mono h_int_f h_int_rhs h_simp
   -- Step 4: Linearity of expectation
   have h_exp_rhs : 𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω)
@@ -134,8 +143,10 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
       = f w - η * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2)
       * 𝔼[fun ω => ‖g ω‖ ^ 2] := by
     -- Use linearity of integral
-    have h1 : ∫ (ω : Ω), f w ∂ℙ = f w := by simp only [integral_const, probReal_univ, one_smul]
-    have h2 : ∫ (ω : Ω), η * inner ℝ (gradient f w) (g ω) ∂ℙ = η * ‖gradient f w‖ ^ 2 := by
+    have h1 : ∫ (ω : Ω), f w ∂ℙ = f w := by
+      simp only [integral_const, probReal_univ, one_smul]
+    have h2 : ∫ (ω : Ω), η * inner ℝ (gradient f w) (g ω) ∂ℙ =
+        η * ‖gradient f w‖ ^ 2 := by
       calc ∫ ω, η * inner ℝ (gradient f w) (g ω) ∂ℙ
         _ = η * ∫ ω, inner ℝ (gradient f w) (g ω) ∂ℙ := integral_const_mul η _
         _ = η * inner ℝ (gradient f w) (∫ ω, g ω ∂ℙ) := by
@@ -160,8 +171,10 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
           ∫ ω, (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ :=
           integral_add (h_int1.sub h_int2) (Integrable.const_mul h_int _)
       _ = ∫ ω, f w ∂ℙ - ∫ ω, η * inner ℝ (gradient f w) (g ω) ∂ℙ +
-          ∫ ω, (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ := by rw [integral_sub h_int1 h_int2]
-      _ = f w - η * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g ω‖ ^ 2] :=
+          ∫ ω, (η ^ 2 * L_smooth / 2) * ‖g ω‖ ^ 2 ∂ℙ :=
+          by rw [integral_sub h_int1 h_int2]
+      _ = f w - η * ‖gradient f w‖ ^ 2 +
+          (η ^ 2 * L_smooth / 2) * 𝔼[fun ω => ‖g ω‖ ^ 2] :=
           by rw [h1, h2, h3]
   rw [h_exp_rhs] at h_int_le
   -- Step 5: Use bias-variance decomposition of 𝔼[‖g‖^2]
@@ -173,7 +186,8 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
   calc 𝔼[fun ω => f (w - η • g ω)]
     _ ≤ f w - η * term_grad + (η ^ 2 * L_smooth / 2) * (term_var + term_grad) := by
         convert h_int_le using 1; rw [h_decomp]
-    _ = f w - (η - η ^ 2 * L_smooth / 2) * term_grad + (η ^ 2 * L_smooth / 2) * term_var := by ring
+    _ = f w - (η - η ^ 2 * L_smooth / 2) * term_grad +
+        (η ^ 2 * L_smooth / 2) * term_var := by ring
     _ ≤ f w - (η / 2) * term_grad + (η ^ 2 * L_smooth / 2) * term_var := by
         -- Step size condition η ≤ 1/L_smooth implies η * L_smooth ≤ 1
         have h_L_pos : 0 < L_smooth := by
@@ -225,7 +239,8 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
     (integrable_const (f w) |>.sub h_int_inner).add (h_int_f.const_mul _)
   -- Final combined bound: Filtering preserves the descent property on average.
   -- Step 4: Integrate the point-wise bound
-  have h_simp_f (ω : Ω) : f (w - η • g_f_loc ω) ≤ f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
+  have h_simp_f (ω : Ω) :
+      f (w - η • g_f_loc ω) ≤ f w - η * inner ℝ (gradient f w) (g_f_loc ω) +
       (η ^ 2 * L_smooth / 2) * ‖g_f_loc ω‖ ^ 2 := by
     have h_taylor := h_smooth w (w - η • g_f_loc ω)
     have h_diff : w - η • g_f_loc ω - w = -η • g_f_loc ω :=

@@ -25,7 +25,7 @@ It includes:
 
 ## Main definitions
 
-* `pos_encoding`: Sinusoidal positional embeddings.
+* `posEncoding`: Sinusoidal positional embeddings.
 * `feature_norm`: Normalization across the feature dimension.
 * `transformer_encoder`: A full encoder block composition.
 -/
@@ -33,7 +33,7 @@ It includes:
 variable {S D : ℕ} [NeZero S] [NeZero D]
 
 /-- Sinusoidal Positional Encoding. -/
-noncomputable def pos_encoding (S D : ℕ) : W (Fin S × Fin D) :=
+noncomputable def posEncoding (S D : ℕ) : W (Fin S × Fin D) :=
   WithLp.equiv 2 _ |>.symm fun (s, d) =>
     let pos := (s : ℝ)
     let dim := (d : ℝ)
@@ -44,7 +44,7 @@ noncomputable def pos_encoding (S D : ℕ) : W (Fin S × Fin D) :=
       Real.cos (pos / (10000 ^ ((dim - 1) / model_dim)))
 
 /-- Feature-wise Layer Normalization. -/
-noncomputable def feature_norm_forward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D)) :
+noncomputable def featureNormForward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D)) :
     W (Fin S × Fin D) :=
   WithLp.equiv 2 _ |>.symm fun (s, d) =>
     let x_f := WithLp.equiv 2 _ x
@@ -88,15 +88,15 @@ noncomputable def transformerAttnBlock (S D : ℕ) :
     let w_f := WithLp.equiv 2 _ w
     let w_ln := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inl i))
     let w_mha := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr i))
-    let ln := feature_norm_forward w_ln x
-    let attn := (mha_layer S D).forward w_mha ln
+    let ln := featureNormForward w_ln x
+    let attn := (mhaLayer S D).forward w_mha ln
     x + attn
   backward w x g_out :=
     let w_f := WithLp.equiv 2 _ w
     let w_ln := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inl i))
     let w_mha := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr i))
-    let ln := feature_norm_forward w_ln x
-    let (g_w_mha, g_ln) := (mha_layer S D).backward w_mha ln g_out
+    let ln := featureNormForward w_ln x
+    let (g_w_mha, g_ln) := (mhaLayer S D).backward w_mha ln g_out
     let (g_w_ln, g_x_ln) := featureNormBackward w_ln x g_ln
     let g_w := WithLp.equiv 2 _ |>.symm fun
       | Sum.inl i => (WithLp.equiv 2 _ g_w_ln) i
@@ -113,7 +113,7 @@ noncomputable def transformerMlpBlock (S D D_ff : ℕ) :
     let w_ln := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inl i))
     let w_l1_vec := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr (Sum.inl i)))
     let w_l2_vec := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr (Sum.inr i)))
-    let ln := feature_norm_forward w_ln x
+    let ln := featureNormForward w_ln x
     let x_ln_f := WithLp.equiv 2 _ ln
     let w1_f := WithLp.equiv 2 _ w_l1_vec
     let w2_f := WithLp.equiv 2 _ w_l2_vec
@@ -131,7 +131,7 @@ noncomputable def transformerMlpBlock (S D D_ff : ℕ) :
     let w2_f := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr (Sum.inr i)))
     let w_ln := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inl i))
     -- Recompute intermediate activations
-    let ln := feature_norm_forward w_ln x
+    let ln := featureNormForward w_ln x
     let x_ln_f := WithLp.equiv 2 _ ln
     let w1_vec_f := WithLp.equiv 2 _ w1_f
     let w2_vec_f := WithLp.equiv 2 _ w2_f

@@ -108,7 +108,8 @@ theorem smooth_descent_on_segment (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     (h_diff_path : ∀ t ∈ Ico (0 : ℝ) 1, DifferentiableAt ℝ L (w + t • ε))
     (h_smooth : LipschitzWith M (gradient L)) :
     L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
-  -- Step 1: Define the auxiliary path function φ(t) = L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²
+  -- Step 1: Define the auxiliary path function
+  -- φ(t) = L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²
   let c := inner ℝ (gradient L w) ε
   let m := (M : ℝ) / 2 * ‖ε‖ ^ 2
   let φ : ℝ → ℝ := fun t => L (w + t • ε) - t * c - t ^ 2 * m
@@ -247,7 +248,8 @@ theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
     rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
   calc L.toFun (w - η • g)
     _ = L.toFun (w + -(η • g)) := by rw [h_step]
-    _ ≤ L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 :=
+    _ ≤ L.toFun w + inner ℝ g (-(η • g)) +
+        (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 :=
       h_descent
     _ ≤ L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
       have hquad : (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by

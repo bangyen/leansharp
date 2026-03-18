@@ -38,7 +38,8 @@ theorem zsharp_second_order_descent
     (h_diff : Differentiable ℝ f)
     (h_smooth : IsLSmooth f L_smooth)
     (h_curv : (L_smooth / 2) * ‖g_f‖ ^ 2 ≤ (κ / 2) * ‖g_base‖ ^ 2) :
-    f (w - η • g_f) ≤ f w - η * inner ℝ (gradient f w) g_f + (η^2 / 2) * κ * ‖g_base‖ ^ 2 := by
+    f (w - η • g_f) ≤
+      f w - η * inner ℝ (gradient f w) g_f + (η^2 / 2) * κ * ‖g_base‖ ^ 2 := by
   have h_L_nonneg : 0 ≤ L_smooth := h_smooth.1.le
   let L_nnreal : ℝ≥0 := ⟨L_smooth, h_L_nonneg⟩
   have h_lip : LipschitzWith L_nnreal (gradient f) := by
@@ -61,7 +62,8 @@ theorem zsharp_second_order_descent
   -- Step 3: Substitute the generalized filter condition for the quadratic term
   calc f (w - η • g_f)
     _ = f (w + -(η • g_f)) := by rw [sub_eq_add_neg]
-    _ ≤ f w + inner ℝ (gradient f w) (-(η • g_f)) + (L_smooth / 2) * ‖-(η • g_f)‖ ^ 2 := by
+    _ ≤ f w + inner ℝ (gradient f w) (-(η • g_f)) +
+        (L_smooth / 2) * ‖-(η • g_f)‖ ^ 2 := by
         simpa only [NNReal.coe_mk] using h_desc
     _ = f w - η * inner ℝ (gradient f w) g_f + (η^2 / 2) * (L_smooth * ‖g_f‖ ^ 2) := by
         rw [h_inner, h_norm]

@@ -68,7 +68,8 @@ theorem hasFDerivAt_rosenbrock (x : W (Fin 2)) :
   -- (1 - x₀)
   have h1x0 : HasFDerivAt (fun x => (1 : ℝ) - x.ofLp 0) (-proj0) x := by
     have h_const :
-      HasFDerivAt (fun _ => (1 : ℝ)) (0 : W (Fin 2) →L[ℝ] ℝ) x := hasFDerivAt_const (1 : ℝ) x
+      HasFDerivAt (fun _ => (1 : ℝ)) (0 : W (Fin 2) →L[ℝ] ℝ) x :=
+        hasFDerivAt_const (1 : ℝ) x
     have h_sub := h_const.sub h0
     rw [zero_sub] at h_sub; exact h_sub
   -- (1 - x₀)^2

@@ -76,11 +76,13 @@ def ZSharpConvergenceHolds (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
   IsStronglyConvex L μ →
   (∀ t, η t > 0) ∧ ρ > 0 →
   ∃ c : ℕ → ℝ, (∀ t, 0 < c t ∧ c t < 1) ∧
-    ∀ w : W ι, ∀ t : ℕ, ‖zsharpStep L w η t ρ z - w_star‖^2 ≤ c t * ‖w - w_star‖^2
+    ∀ w : W ι, ∀ t : ℕ,
+      ‖zsharpStep L w η t ρ z - w_star‖^2 ≤ c t * ‖w - w_star‖^2
 
 /-- **Alignment Condition**: A statistical assumption that the filtered gradient
 maintains sufficient alignment with the true descent direction. -/
-def AlignmentCondition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι) (z μ L_smooth : ℝ) : Prop :=
+def AlignmentCondition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
+    (z μ L_smooth : ℝ) : Prop :=
   let g_adv := gradient L (w + ε)
   let g_f := filteredGradient g_adv z
   μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧

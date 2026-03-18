@@ -55,7 +55,7 @@ theorem patch_embedding_eq_strided_conv (nc nh nw np ns nd : ℕ)
         rw [Nat.mul_sub_right_distrib, h1, Nat.one_mul]
       rw [← h2, Nat.mul_div_cancel _ h_pos]
       exact Nat.sub_add_cancel h_nw_pos
-    let out_conv := conv2d_strided_forward nc nh nw nd np np np
+    let out_conv := conv2dStridedForward nc nh nw nd np np np
       h_nh_le h_nw_le h_pos w_conv x
     WithLp.equiv 2 _ |>.symm fun (s, d) =>
       let i_idx : ℕ := (s : ℕ) / (nw / np)
@@ -74,7 +74,7 @@ theorem patch_embedding_eq_strided_conv (nc nh nw np ns nd : ℕ)
   ext p
   obtain ⟨s, d⟩ := p
   simp only [WithLp.equiv_symm_apply, WithLp.equiv_apply]
-  unfold patchEmbedding conv2d_strided_forward
+  unfold patchEmbedding conv2dStridedForward
   dsimp only [Layer.forward]
   simp only [WithLp.equiv_symm_apply, WithLp.equiv_apply]
   rw [add_zero]

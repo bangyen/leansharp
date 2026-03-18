@@ -118,9 +118,11 @@ theorem geometric_median_breakdown_point_ge_half
             · exact hright.1
           · intro his
             by_cases hEq : g' i = g i
-            · have hmem' : i ∈ s ∧ g' i = g i ∨ i ∈ s ∧ ¬ g' i = g i := Or.inl ⟨his, hEq⟩
+            · have hmem' : i ∈ s ∧ g' i = g i ∨ i ∈ s ∧ ¬ g' i = g i :=
+                Or.inl ⟨his, hEq⟩
               simpa only [sf, Finset.mem_union, Finset.mem_filter] using hmem'
-            · have hmem' : i ∈ s ∧ g' i = g i ∨ i ∈ s ∧ ¬ g' i = g i := Or.inr ⟨his, hEq⟩
+            · have hmem' : i ∈ s ∧ g' i = g i ∨ i ∈ s ∧ ¬ g' i = g i :=
+                Or.inr ⟨his, hEq⟩
               simpa only [sf, Finset.mem_union, Finset.mem_filter] using hmem'
         omega
       let R_sf := Classical.choose (median_bounded_subset s g sf hsf_sub hsf_maj)

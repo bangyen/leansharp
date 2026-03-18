@@ -32,7 +32,7 @@ This module collects regression tests for core layer and architecture behavior.
 
 /-- Test: Dropout Layer Parameter Dimensions. -/
 example (ι : Type) [Fintype ι] (p : ℝ) :
-    (dropout_layer ι p).ParamDim = ι := by
+    (dropoutLayer ι p).ParamDim = ι := by
   rfl
 
 /-- Test: Transformer MLP Block Parameter Dimensions. -/
@@ -51,8 +51,8 @@ example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns
 
 /-- Test: Linear layer output is zero when weights and biases are zero. -/
 theorem test_linear_zero {ι_in ι_out : Type} [Fintype ι_in] (x : W ι_in) :
-    linear_forward (0 : W (LinearParam ι_in ι_out)) x = 0 := by
-  unfold linear_forward
+    linearForward (0 : W (LinearParam ι_in ι_out)) x = 0 := by
+  unfold linearForward
   ext i
   simp only [
     WithLp.equiv_apply,
@@ -65,8 +65,8 @@ theorem test_linear_zero {ι_in ι_out : Type} [Fintype ι_in] (x : W ι_in) :
 
 /-- Test: BatchNorm output is zero when γ=0 and β=0. -/
 theorem test_batchnorm_zero {N D : ℕ} (x : W (Fin N × Fin D)) :
-    batchnorm_forward (0 : W (NormParam (Fin D))) x = 0 := by
-  unfold batchnorm_forward
+    batchnormForward (0 : W (NormParam (Fin D))) x = 0 := by
+  unfold batchnormForward
   ext p
   simp only [
     WithLp.equiv_apply,
@@ -78,9 +78,10 @@ theorem test_batchnorm_zero {N D : ℕ} (x : W (Fin N × Fin D)) :
   ]
 
 /-- Test: Conv2D output is zero when weights and bias are zero. -/
-theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w} (x : W (Fin h × Fin w)) :
-    conv2d_forward h w kh kw h_h h_w (0 : W (ConvParam kh kw)) x = 0 := by
-  unfold conv2d_forward
+theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w}
+    (x : W (Fin h × Fin w)) :
+    conv2dForward h w kh kw h_h h_w (0 : W (ConvParam kh kw)) x = 0 := by
+  unfold conv2dForward
   ext p
   simp only [
     WithLp.equiv_apply,
@@ -93,7 +94,7 @@ theorem test_conv2d_zero {h w kh kw : ℕ} {h_h : kh ≤ h} {h_w : kw ≤ w} (x 
 
 /-- Test: Residual skip connection y = x + f(x). -/
 theorem test_residual_forward {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) (w : W f.ParamDim)
-    (x : W ι) : (residual_layer f).forward w x = x + f.forward w x := by
+    (x : W ι) : (residualLayer f).forward w x = x + f.forward w x := by
   rfl
 
 /-- Test: ReLU forward pass is max(0, x). -/
@@ -107,8 +108,8 @@ theorem test_relu_forward {ι : Type} (x : W ι) (i : ι) :
 
 /-- Test: LayerNorm output is zero when γ=0 and β=0. -/
 theorem test_layernorm_zero {ι : Type} [Fintype ι] (x : W ι) :
-    layernorm_forward (0 : W (NormParam ι)) x = 0 := by
-  unfold layernorm_forward
+    layernormForward (0 : W (NormParam ι)) x = 0 := by
+  unfold layernormForward
   ext i
   simp only [
     WithLp.equiv_apply,
@@ -120,15 +121,15 @@ theorem test_layernorm_zero {ι : Type} [Fintype ι] (x : W ι) :
 
 /-- Test: MHA output is zero when all projections are zero. -/
 theorem test_mha_zero {S D : ℕ} (x : W (Fin S × Fin D)) :
-    (mha_layer S D).forward 0 x = 0 := by
-  unfold mha_layer
+    (mhaLayer S D).forward 0 x = 0 := by
+  unfold mhaLayer
   dsimp only [
     WithLp.equiv_apply,
     WithLp.equiv_symm_apply,
     Lean.Elab.WF.paramLet,
     PiLp.zero_apply
   ]
-  unfold attention_forward
+  unfold attentionForward
   ext p
   simp only [
     mul_zero,
@@ -142,8 +143,8 @@ theorem test_mha_zero {S D : ℕ} (x : W (Fin S × Fin D)) :
 /-- Test: Linear backward pass returns zero gradients when output gradient is zero. -/
 theorem test_linear_backward_zero {ι_in ι_out : Type} [Fintype ι_out]
     (w : W (LinearParam ι_in ι_out)) (x : W ι_in) :
-    linear_backward w x 0 = (0, 0) := by
-  unfold linear_backward
+    linearBackward w x 0 = (0, 0) := by
+  unfold linearBackward
   apply Prod.ext
   · ext p; cases p <;> simp only [
       WithLp.equiv_apply,
@@ -160,9 +161,10 @@ theorem test_linear_backward_zero {ι_in ι_out : Type} [Fintype ι_out]
     ]
 
 /-- Test: BatchNorm backward pass returns zero gradients when output gradient is zero. -/
-theorem test_batchnorm_backward_zero {N D : ℕ} (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
-    batchnorm_backward w x 0 = (0, 0) := by
-  unfold batchnorm_backward
+theorem test_batchnorm_backward_zero {N D : ℕ} (w : W (NormParam (Fin D)))
+    (x : W (Fin N × Fin D)) :
+    batchnormBackward w x 0 = (0, 0) := by
+  unfold batchnormBackward
   apply Prod.ext
   · ext p; cases p <;> simp only [
       WithLp.equiv_apply,
@@ -182,14 +184,14 @@ theorem test_batchnorm_backward_zero {N D : ℕ} (w : W (NormParam (Fin D))) (x 
 /-- Test: Chain composition forward pass for a 2-layer sequence (Linear + ReLU). -/
 theorem test_chain_composition_forward {ι_in ι_out : Type} [Fintype ι_in] [Fintype ι_out]
     (w_l : W (LinearParam ι_in ι_out)) (x : W ι_in) :
-    let l1 := linear_layer ι_in ι_out
-    let l2 := relu_layer ι_out
+    let l1 := linearLayer ι_in ι_out
+    let l2 := reluLayer ι_out
     let p := ChainData.append (ChainData.single l1 w_l) (0 : W l2.ParamDim)
-    forward_chain p x = relu (linear_forward w_l x) := by
+    forwardChain p x = relu (linearForward w_l x) := by
   dsimp only [
-    linear_layer,
-    relu_layer,
-    forward_chain,
+    linearLayer,
+    reluLayer,
+    forwardChain,
     Lean.Elab.WF.paramLet
   ]
   rfl

@@ -87,7 +87,8 @@ the classical mean and therefore inherits its robustness profile. -/
   apply filtered_gradient_coord_preservation
   unfold zScoreMask
   rw [Equiv.apply_symm_apply]
-  have h_keep : |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vectorMean (g i)| ≥ z * vectorStd (g i) := by
+  have h_keep :
+      |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vectorMean (g i)| ≥ z * vectorStd (g i) := by
     have hzσ : z * vectorStd (g i) ≤ 0 :=
       mul_nonpos_of_nonpos_of_nonneg hz (Real.sqrt_nonneg _)
     exact le_trans hzσ (abs_nonneg _)

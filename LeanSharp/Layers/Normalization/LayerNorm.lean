@@ -13,7 +13,7 @@ This module formalizes normalization layers, specifically Layer Normalization.
 
 ## Main definitions
 
-* `layer_norm`: The Layer Normalization operation.
+* `layerNorm`: The Layer Normalization operation.
 * `NormParam`: Parameter index type for scale (gamma) and shift (beta).
 -/
 
@@ -26,7 +26,7 @@ abbrev NormParam (ι : Type) := ι ⊕ ι
 
 /-- Layer Normalization forward pass: y = γ * (x - μ) / σ + β.
     Note: We assume σ > 0 for the formal definition. -/
-noncomputable def layernorm_forward (w : W (NormParam ι)) (x : W ι) : W ι :=
+noncomputable def layernormForward (w : W (NormParam ι)) (x : W ι) : W ι :=
   let μ := vectorMean x
   let σ := vectorStd x
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
@@ -36,7 +36,7 @@ noncomputable def layernorm_forward (w : W (NormParam ι)) (x : W ι) : W ι :=
     γ_i * ((x_i - μ) / σ) + β_i
 
 /-- Layer Normalization backward pass. -/
-noncomputable def layernorm_backward (w : W (NormParam ι)) (x : W ι) (g_out : W ι) :
+noncomputable def layernormBackward (w : W (NormParam ι)) (x : W ι) (g_out : W ι) :
     W (NormParam ι) × W ι :=
   let μ := vectorMean x
   let σ := vectorStd x
@@ -49,10 +49,10 @@ noncomputable def layernorm_backward (w : W (NormParam ι)) (x : W ι) (g_out : 
   (g_w, g_x)
 
 /-- Layer Normalization Layer instance. -/
-noncomputable def layer_norm (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
+noncomputable def layerNorm (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
   ParamDim := NormParam ι
   fintypeParamDim := inferInstance
-  forward := layernorm_forward
-  backward := layernorm_backward
+  forward := layernormForward
+  backward := layernormBackward
 
 end LeanSharp

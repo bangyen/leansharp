@@ -12,7 +12,7 @@ This module formalizes 2D Convolution and Pooling layers.
 
 ## Main definitions
 
-* `conv2d_layer`: A 2D Convolutional layer.
+* `conv2dLayer`: A 2D Convolutional layer.
 * `maxPoolingLayer`: A Max Pooling layer.
 * `ConvParam`: Parameter index type for convolution kernels and biases.
 -/
@@ -26,8 +26,10 @@ abbrev ConvParam (kH kW : ℕ) := (Fin kH × Fin kW) ⊕ Unit
 
 /-- Simplified Conv2D forward pass.
     Maps a flattened input to a flattened output using a sliding window. -/
-noncomputable def conv2d_forward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w)
-    (Wp : W (ConvParam kh kw)) (x : W (Fin h × Fin w)) : W (Fin (h - kh + 1) × Fin (w - kw + 1)) :=
+noncomputable def conv2dForward
+    (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w)
+    (Wp : W (ConvParam kh kw)) (x : W (Fin h × Fin w)) :
+    W (Fin (h - kh + 1) × Fin (w - kw + 1)) :=
   let h' := h - kh + 1
   let w' := w - kw + 1
   WithLp.equiv 2 (Fin h' × Fin w' → ℝ) |>.symm fun p =>
@@ -44,7 +46,7 @@ noncomputable def conv2d_forward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw �
     kernel_sum + bias
 
 /-- Simplified Conv2D backward pass. -/
-noncomputable def conv2d_backward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w)
+noncomputable def conv2dBackward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w)
     (Wp : W (ConvParam kh kw)) (x : W (Fin h × Fin w))
     (g_out : W (Fin (h - kh + 1) × Fin (w - kw + 1))) :
     W (ConvParam kh kw) × W (Fin h × Fin w) :=
@@ -69,7 +71,7 @@ noncomputable def conv2d_backward (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw �
 abbrev ConvMultiParam (kC kH kW nC : ℕ) := (Fin nC × Fin kC × Fin kH × Fin kW) ⊕ Fin nC
 
 /-- Strided 2D Convolution forward pass with multiple channels. -/
-noncomputable def conv2d_strided_forward (nc nh nw nC kh kw s : ℕ)
+noncomputable def conv2dStridedForward (nc nh nw nC kh kw s : ℕ)
     (h_h : kh ≤ nh) (h_w : kw ≤ nw) (h_s : 0 < s)
     (Wp : W (ConvMultiParam nc kh kw nC)) (x : W (Fin nc × Fin nh × Fin nw)) :
     W (Fin ((nh - kh) / s + 1) × Fin ((nw - kw) / s + 1) × Fin nC) :=
@@ -96,12 +98,12 @@ noncomputable def conv2d_strided_forward (nc nh nw nC kh kw s : ℕ)
     kernel_sum + bias
 
 /-- Conv2D Layer instance. -/
-noncomputable def conv2d_layer (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w) :
+noncomputable def conv2dLayer (h w kh kw : ℕ) (h_h : kh ≤ h) (h_w : kw ≤ w) :
     Layer (W (Fin h × Fin w)) (W (Fin (h - kh + 1) × Fin (w - kw + 1))) where
   ParamDim := ConvParam kh kw
   fintypeParamDim := inferInstance
-  forward := fun w_p x_p => conv2d_forward h w kh kw h_h h_w w_p x_p
-  backward := fun w_p x_p g_p => conv2d_backward h w kh kw h_h h_w w_p x_p g_p
+  forward := fun w_p x_p => conv2dForward h w kh kw h_h h_w w_p x_p
+  backward := fun w_p x_p g_p => conv2dBackward h w kh kw h_h h_w w_p x_p g_p
 
 /-- Max Pooling (2x2) forward pass. -/
 noncomputable def maxPoolForward (h_dim w_dim : ℕ) (x : W (Fin (2 * h_dim) × Fin (2 * w_dim))) :

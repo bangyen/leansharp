@@ -150,10 +150,12 @@ theorem z_filtered_empirical_mean_bounded_subset [DecidableEq α]
     simpa only [Finset.sum_filter, h_filter_eq, h_filter_not_eq] using
       (Finset.sum_filter_add_sum_filter_not
         (s := S.s) (f := fun i => ‖g' i‖) (p := fun i => i ∈ S.s_fixed)).symm
-  have h_sum_split : ∑ i ∈ S.s, ‖g' i‖ = (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ s_out, ‖g' i‖) :=
-    by
+  have h_sum_split :
+      ∑ i ∈ S.s, ‖g' i‖ =
+      (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ s_out, ‖g' i‖) := by
     simpa only [s_out] using h_sum_split_raw
-  have h_fixed_sum : (∑ i ∈ S.s_fixed, ‖g' i‖) ≤ ∑ i ∈ S.s_fixed, S.R_fixed := by
+  have h_fixed_sum : (∑ i ∈ S.s_fixed, ‖g' i‖) ≤
+      ∑ i ∈ S.s_fixed, S.R_fixed := by
     refine Finset.sum_le_sum (fun i hi => ?_)
     calc ‖g' i‖ = ‖S.g i‖ := by rw [hg_fixed i hi]
       _ ≤ S.R_fixed := S.h_fixed_bound i hi
@@ -203,7 +205,8 @@ theorem z_filtered_empirical_mean_bounded_subset_max [DecidableEq α]
       ((S.s_fixed.card : ℝ) * S.R_fixed) + (((S.s \ S.s_fixed).card : ℝ) * S.R_out)
         ≤ ((S.s.card : ℝ) * (max S.R_fixed S.R_out)) := by
     have h_fix_le :
-        (S.s_fixed.card : ℝ) * S.R_fixed ≤ (S.s_fixed.card : ℝ) * (max S.R_fixed S.R_out) := by
+        (S.s_fixed.card : ℝ) * S.R_fixed ≤ (S.s_fixed.card : ℝ) *
+          (max S.R_fixed S.R_out) := by
       exact mul_le_mul_of_nonneg_left (le_max_left _ _) (by positivity)
     have h_out_le :
         ((S.s \ S.s_fixed).card : ℝ) * S.R_out

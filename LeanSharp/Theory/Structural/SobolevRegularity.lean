@@ -109,7 +109,8 @@ theorem has_weak_hessian_of_gradient_fderiv
 theorem is_h1_with_gradient_iff
     (μ : Measure (W ι)) (u : W ι → ℝ) :
     (HasWeakGradient u (gradient u) ∧ IsL2Scalar μ u ∧ IsL2Vector μ (gradient u))
-      ↔ (∀ x, HasFDerivAt u (fderiv ℝ u x) x) ∧ IsL2Scalar μ u ∧ IsL2Vector μ (gradient u) := by
+      ↔ ((∀ x, HasFDerivAt u (fderiv ℝ u x) x) ∧
+        IsL2Scalar μ u ∧ IsL2Vector μ (gradient u)) := by
   constructor
   · intro h
     refine ⟨fun x => ?_, h.2.1, h.2.2⟩

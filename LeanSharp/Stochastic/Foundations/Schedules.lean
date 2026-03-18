@@ -99,7 +99,8 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
   | succ t ih =>
     by_cases ht : t = 0
     · rw [ht, Nat.cast_one, div_one]
-      have h_bound : 𝔼[fun ω => ‖stochasticZSharpStep w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
+      have h_bound :
+          𝔼[fun ω => ‖stochasticZSharpStep w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
         stochastic_zsharp_convergence w_star w0 η 0 z μ h_align0
       have h_zero : 1 - (η 0) * μ = 0 := by
@@ -111,7 +112,8 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) hμ (Nat.pos_of_ne_zero ht)
 
-private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq η0 : ℝ)
+private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι)
+    (z L_smooth σsq η0 : ℝ)
     (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W ι) (T : ℕ)
     (h_L_descent : ∀ t, 𝔼[fun ω => L (weightSequence w0 η z g_adv (t + 1) ω)] ≤
         𝔼[fun ω => L (weightSequence w0 η z g_adv t ω)] -
@@ -121,10 +123,11 @@ private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_
       𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2])
       ≤ (L w0 - 𝔼[fun ω => L (weightSequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0^2 * L_smooth / 2) * σsq := by
-  calc (η0 / 2) *
-      (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2])
+  calc (η0 / 2) * (∑ t ∈ Finset.range T,
+      𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2])
     _ = ∑ t ∈ Finset.range T, (η0 / 2) *
-        𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2] := by rw [Finset.mul_sum]
+        𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2] :=
+          by rw [Finset.mul_sum]
     _ ≤ ∑ t ∈ Finset.range T, (𝔼[fun ω => L (weightSequence w0 η z g_adv t ω)] -
         𝔼[fun ω => L (weightSequence w0 η z g_adv (t + 1) ω)] +
         (η0 ^ 2 * L_smooth / 2) * σsq) :=
@@ -210,7 +213,8 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
     (h_L_pos : L_smooth > 0)
     (h_bdd : BddBelow (Set.range L))
     (h_int_L : ∀ t, Integrable (fun ω => L (weightSequence w0 η z g_adv t ω)))
-    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2) ℙ)
+    (h_int_grad : ∀ t, Integrable
+      (fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2) ℙ)
     (h_desc : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => L (stochasticZSharpStep
         (weightSequence w0 η z g_adv t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
@@ -233,8 +237,10 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
       𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
       (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := by
     rw [Finset.mul_sum]
-    have h_eq : (∑ t ∈ Finset.range T, (η 0 / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) =
-        (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) := by
+    have h_eq : (∑ t ∈ Finset.range T,
+          (η 0 / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) =
+        (∑ t ∈ Finset.range T,
+          (η t / 4) * 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2]) := by
       apply Finset.sum_congr rfl; intro t _; rw [h_eta_iden t]
     rw [h_eq]; exact h_sequence_desc
   have h_inf : sInf (Set.range L) ≤ 𝔼[fun ω => L (W_seq T ω)] := by
@@ -253,7 +259,8 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
   · calc (η 0 / 4) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2])
       _ ≤ 𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
           (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := h_sequence_desc_fixed
-      _ = (L w0 - 𝔼[fun ω => L (W_seq T ω)]) + (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
+      _ = (L w0 - 𝔼[fun ω => L (W_seq T ω)]) +
+          (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
           have h0 : (fun ω => L (W_seq 0 ω)) = fun _ => L w0 := by
             ext ω; dsimp only [W_seq]; rw [weightSequence]
           rw [h0, integral_const, probReal_univ, one_smul]

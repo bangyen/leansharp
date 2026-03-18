@@ -60,7 +60,8 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
     (g : Ω → W ι) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
     (h_int_g : Integrable g) :
-    𝔼[fun ω => ‖g ω‖ ^ 2] = 𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
+    𝔼[fun ω => ‖g ω‖ ^ 2] =
+      𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
   let c := 𝔼[g]
   have h_int_c : Integrable (fun _ : Ω => c) := integrable_const c
   have h_int_c2 : Integrable (fun _ : Ω => ‖c‖ ^ 2) := integrable_const _
@@ -69,11 +70,21 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     have h1 : (fun ω => ‖g ω - c‖ ^ 2) =
               (fun ω => ‖g ω‖ ^ 2 + ‖c‖ ^ 2 - 2 * inner ℝ (g ω) c) := by
       ext ω; rw [norm_sub_sq_real]; ring
-    rw [h1]; apply Integrable.sub (h_int.add h_int_c2)
+    rw [h1]
+    apply Integrable.sub (h_int.add h_int_c2)
     exact Integrable.const_mul (h_int_g.inner_const c) 2
   calc 𝔼[fun ω => ‖g ω‖ ^ 2]
       = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c] := by
-        congr; ext ω; dsimp only; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
+        congr; ext ω; dsimp only
+        have hsplit : (g ω - c) + c = g ω := sub_add_cancel (g ω) c
+        have hnorm :
+            ‖(g ω - c) + c‖ ^ 2
+              = ‖g ω - c‖ ^ 2 + 2 * inner ℝ (g ω - c) c + ‖c‖ ^ 2 :=
+          norm_add_sq_real (g ω - c) c
+        calc
+          ‖g ω‖ ^ 2 = ‖(g ω - c) + c‖ ^ 2 := by simp only [hsplit]
+          _ = ‖g ω - c‖ ^ 2 + 2 * inner ℝ (g ω - c) c + ‖c‖ ^ 2 := hnorm
+          _ = ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c := by ring
     _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by
         have h_int_inner : Integrable (fun ω => 2 * inner ℝ (g ω - c) c) :=
           Integrable.const_mul (h_int_mc.inner_const c) 2

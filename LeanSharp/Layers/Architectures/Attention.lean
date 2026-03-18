@@ -18,8 +18,8 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 
 ## Main definitions
 
-* `attention_forward`: Scaled dot-product attention.
-* `mha_layer`: A full Multi-Head Attention layer.
+* `attentionForward`: Scaled dot-product attention.
+* `mhaLayer`: A full Multi-Head Attention layer.
 -/
 
 variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]
@@ -30,7 +30,7 @@ abbrev ATTParam (D : Type*) := (D × D) ⊕ (D × D) ⊕ (D × D) ⊕ (D × D)
 
 /-- Scaled Dot-Product Attention (with row-wise Softmax).
     y = Softmax((Q Kᵀ) / √d) V -/
-noncomputable def attention_forward (S D : ℕ) (Q K V : W (Fin S × Fin D)) : W (Fin S × Fin D) :=
+noncomputable def attentionForward (S D : ℕ) (Q K V : W (Fin S × Fin D)) : W (Fin S × Fin D) :=
   let scale := Real.sqrt (D : ℝ)
   let Q_f := WithLp.equiv 2 _ Q
   let K_f := WithLp.equiv 2 _ K
@@ -46,7 +46,7 @@ noncomputable def attention_forward (S D : ℕ) (Q K V : W (Fin S × Fin D)) : W
     ∑ j, S_mat i j * V_f (j, d)
 
 /-- Scaled Dot-Product Attention backward pass. -/
-noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
+noncomputable def attentionBackward (S D : ℕ) (Q K V : W (Fin S × Fin D))
     (g_out : W (Fin S × Fin D)) : W (Fin S × Fin D) × W (Fin S × Fin D) × W (Fin S × Fin D) :=
   let scale := Real.sqrt (D : ℝ)
   let Q_f := WithLp.equiv 2 _ Q
@@ -66,7 +66,7 @@ noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
   let gA := fun (i j : Fin S) =>
     let row := WithLp.equiv 2 _ |>.symm fun j' => A i j'
     let g_row_out := WithLp.equiv 2 _ |>.symm fun j' => gSM i j'
-    (WithLp.equiv 2 _ (softmax_backward row g_row_out)) j
+    (WithLp.equiv 2 _ (softmaxBackward row g_row_out)) j
   -- gQ_ik = ∑_j gA_ij * K_jk / scale
   let gQ := WithLp.equiv 2 _ |>.symm fun (i, k) => (∑ j, gA i j * K_f (j, k)) / scale
   -- gK_jk = ∑_i gA_ij * Q_ik / scale
@@ -75,7 +75,7 @@ noncomputable def attention_backward (S D : ℕ) (Q K V : W (Fin S × Fin D))
 
 /-- Multi-Head Attention Layer instance.
     For simplicity, we formalize a single-head projection that maintains dimension. -/
-noncomputable def mha_layer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
+noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   ParamDim := ATTParam (Fin D)
   fintypeParamDim := inferInstance
   forward w x :=
@@ -92,7 +92,7 @@ noncomputable def mha_layer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S �
       ∑ k, (WithLp.equiv 2 _ x) (p.1, k) * K_p (k, p.2)
     let V := WithLp.equiv 2 (Fin S × Fin D → ℝ) |>.symm fun p =>
       ∑ k, (WithLp.equiv 2 _ x) (p.1, k) * V_p (k, p.2)
-    attention_forward S D Q K V
+    attentionForward S D Q K V
   backward w x g_out :=
     let Q_p_f := WithLp.equiv 2 _ (WithLp.equiv 2 (Fin D × Fin D → ℝ) |>.symm fun p =>
       (WithLp.equiv 2 _ w) (Sum.inl p))
@@ -105,7 +105,7 @@ noncomputable def mha_layer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S �
     let Q := WithLp.equiv 2 _ |>.symm fun p => ∑ k, x_f (p.1, k) * Q_p_f (k, p.2)
     let K := WithLp.equiv 2 _ |>.symm fun p => ∑ k, x_f (p.1, k) * K_p_f (k, p.2)
     let V := WithLp.equiv 2 _ |>.symm fun p => ∑ k, x_f (p.1, k) * V_p_f (k, p.2)
-    let (gQ, gK, gV) := attention_backward S D Q K V g_out
+    let (gQ, gK, gV) := attentionBackward S D Q K V g_out
     let gQ_f := WithLp.equiv 2 _ gQ
     let gK_f := WithLp.equiv 2 _ gK
     let gV_f := WithLp.equiv 2 _ gV

@@ -56,7 +56,8 @@ theorem zsharp_objective_as_convergence_of_bridge
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (hη : RobbinsMonroStepsize η)
     (h_bridge : ZSharpSupermartingaleAsBridge L_smooth f w η σsq)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
@@ -84,7 +85,8 @@ theorem zsharp_robbins_monro_almost_sure_convergence
       ∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱfil t])
     (R : NNReal)
     (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
       volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
@@ -149,7 +151,8 @@ theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
         (fun ω => -ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ω) := by
       filter_upwards [h_step_obj t] with ω hω
       linarith
-    have hcond_neg := (condExp_neg (μ := ℙ) (m := ℱfil t) (f := fun ω => f (w (t + 1) ω))).symm
+    have hcond_neg :=
+      (condExp_neg (μ := ℙ) (m := ℱfil t) (f := fun ω => f (w (t + 1) ω))).symm
     exact h_neg_obj.trans_eq hcond_neg
   have hbdd_neg (t : ℕ) : eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R_neg := by
     have hfun : (fun ω => -f (w t ω)) = -(fun ω => f (w t ω)) := rfl

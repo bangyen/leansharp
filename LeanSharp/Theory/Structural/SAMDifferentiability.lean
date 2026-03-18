@@ -47,8 +47,9 @@ theorem differentiable_at_sam_zsharp_update
     let mask := zScoreMask (gradient L (w + samPerturbation L w ρ)) z
     let f_hadam : W ι →L[ℝ] W ι :=
       (WithLp.linearEquiv 2 ℝ (ι → ℝ)).symm.toContinuousLinearEquiv.toContinuousLinearMap
-      ∘L ((ContinuousLinearMap.pi fun i =>
-        (ContinuousLinearMap.proj i : (ι → ℝ) →L[ℝ] ℝ).smulRight (WithLp.equiv 2 (ι → ℝ) mask i))
+       ∘L ((ContinuousLinearMap.pi fun i =>
+        (ContinuousLinearMap.proj i : (ι → ℝ) →L[ℝ] ℝ).smulRight
+          (WithLp.equiv 2 (ι → ℝ) mask i))
       ∘L (WithLp.linearEquiv 2 ℝ (ι → ℝ)).toContinuousLinearEquiv.toContinuousLinearMap)
     have hg : DifferentiableAt ℝ (fun p => gradient L (p + samPerturbation L p ρ)) w := by
       have hg' : DifferentiableAt ℝ (fun p => p + samPerturbation L p ρ) w :=

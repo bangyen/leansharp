@@ -116,7 +116,8 @@ theorem stochastic_expected_descent_step
       (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
       + (η t ^ 2 * L_smooth / 2) * σsq) := by
     apply h_cond_exp_eq.trans_le h_desc_step_t
-  have h_int1 : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
+  have h_int1 : Integrable
+    (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
     h_int_t.sub
       (h_int_grad_t.const_mul _)
   have h_int2 : Integrable (fun (_ : Ω) => (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
@@ -220,7 +221,8 @@ theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
       exact le_refl _
   | succ t ih =>
       have h_sum1 :
-          (∑ k ∈ Finset.range (t + 1), (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) =
+          (∑ k ∈ Finset.range (t + 1),
+            (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) =
           (∑ k ∈ Finset.range t, (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) +
           (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ := Finset.sum_range_succ _ _
       have h_sum2 : (∑ k ∈ Finset.range (t + 1), (η k ^ 2 * L_smooth / 2) * σsq) =
