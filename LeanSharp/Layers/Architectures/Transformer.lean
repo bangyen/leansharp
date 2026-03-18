@@ -8,7 +8,7 @@ import LeanSharp.Layers.Architectures.Attention
 import LeanSharp.Layers.Basic.Activation
 import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Layers.Basic.Residual
-import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Normalization.LayerNorm
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace LeanSharp

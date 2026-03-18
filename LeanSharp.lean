@@ -8,13 +8,13 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
-import LeanSharp.Core.Sam
+import LeanSharp.Core.Objective
 import LeanSharp.Core.Stats
 import LeanSharp.Core.Taylor
 
 /- Examples -/
 import LeanSharp.Examples.IllConditioned
-import LeanSharp.Examples.MLP
+import LeanSharp.Examples.PerceptronNetwork
 import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Examples.Rosenbrock
 
@@ -22,7 +22,7 @@ import LeanSharp.Examples.Rosenbrock
 -- Architectures
 import LeanSharp.Layers.Architectures.Attention
 import LeanSharp.Layers.Architectures.Transformer
-import LeanSharp.Layers.Architectures.ViT
+import LeanSharp.Layers.Architectures.VisionTransformer
 
 -- Basic
 import LeanSharp.Layers.Basic.Activation
@@ -31,24 +31,24 @@ import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Layers.Basic.Residual
 
 -- Normalization
-import LeanSharp.Layers.Normalization.BatchNormalization
-import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Normalization.BatchNorm
+import LeanSharp.Layers.Normalization.LayerNorm
 
 -- Specialized
 import LeanSharp.Layers.Specialized.Convolution
 import LeanSharp.Layers.Specialized.Quantization
 
 /- Stochastic -/
-import LeanSharp.Stochastic.Convergence
-import LeanSharp.Stochastic.ConvergenceBridge
-import LeanSharp.Stochastic.ConvergenceHypotheses
-import LeanSharp.Stochastic.Descent
-import LeanSharp.Stochastic.Generalization
-import LeanSharp.Stochastic.Integrability
-import LeanSharp.Stochastic.MartingaleModel
-import LeanSharp.Stochastic.Rates
-import LeanSharp.Stochastic.RobbinsMonro
-import LeanSharp.Stochastic.Sam
+import LeanSharp.Stochastic.Convergence.ProcessLimits
+import LeanSharp.Stochastic.Convergence.LimitBridges
+import LeanSharp.Stochastic.Convergence.LimitAssumes
+import LeanSharp.Stochastic.Mechanics.DescentSteps
+import LeanSharp.Stochastic.Mechanics.SampleErrors
+import LeanSharp.Stochastic.Foundations.Integrability
+import LeanSharp.Stochastic.Foundations.MartingaleOps
+import LeanSharp.Stochastic.Foundations.DecaySchedules
+import LeanSharp.Stochastic.Foundations.RobbinsMonro
+import LeanSharp.Stochastic.Mechanics.SharpnessMap
 
 /- Tactics -/
 import LeanSharp.Tactic.ZSolve
@@ -66,19 +66,19 @@ import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HardThresholding
 import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
-import LeanSharp.Theory.Structural.Stability
+import LeanSharp.Theory.Structural.StabilityProperties
 import LeanSharp.Theory.Structural.ViTInvariance
-import LeanSharp.Stochastic.StructuralConvergence
+import LeanSharp.Stochastic.Convergence.StaticLimits
 
 -- Robustness
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
-import LeanSharp.Theory.Robustness.FilteredMean
+import LeanSharp.Theory.Robustness.FilteredMeanProps
 import LeanSharp.Theory.Robustness.MedianComparison
 
 -- Sensitivity
-import LeanSharp.Theory.SobolevRegularity
-import LeanSharp.Theory.Sensitivity
+import LeanSharp.Theory.Structural.SobolevRegularity
+import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!
 # LeanSharp Aggregator

@@ -4,18 +4,18 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import Tests.AdvancedVerification
-import Tests.ExampleModels
-import Tests.HardThresholdingTests
-import Tests.IntegrabilityTests
-import Tests.LayerTests
-import Tests.RobbinsMonroMartingaleTests
-import Tests.RobustnessTests
-import Tests.ScheduleConvergence
-import Tests.SchedulerTests
-import Tests.SobolevRegularityTests
-import Tests.StabilityTests
-import Tests.TacticTests
+import Tests.Functional.Integrability
+import Tests.Functional.RobbinsMonro
+import Tests.Functional.RobustMethods
+import Tests.Functional.SobolevSpace
+import Tests.Landscape.CosineDecays
+import Tests.Landscape.HardThresholds
+import Tests.Landscape.IllConditioned
+import Tests.Landscape.QuadraticBowl
+import Tests.Structural.LearningRates
+import Tests.Structural.NetworkLayers
+import Tests.Structural.StabilityProps
+import Tests.Structural.TacticSystems
 
 /-!
 # Test Suite Aggregator

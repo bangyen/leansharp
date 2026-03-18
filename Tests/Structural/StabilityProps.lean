@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import LeanSharp.Theory.Structural.Stability
+import LeanSharp.Theory.Structural.StabilityProperties
 
 /-!
 # Stability Interface Tests

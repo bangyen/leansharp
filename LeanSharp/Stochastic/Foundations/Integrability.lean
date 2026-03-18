@@ -3,8 +3,8 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Stochastic.Descent
-import LeanSharp.Stochastic.Sam
+import LeanSharp.Stochastic.Mechanics.DescentSteps
+import LeanSharp.Stochastic.Mechanics.SharpnessMap
 import Mathlib.Algebra.Order.Ring.Pow
 import Mathlib.MeasureTheory.Function.L1Space.Integrable
 import Mathlib.Probability.Moments.Basic

@@ -6,7 +6,7 @@ Authors: Bangyen Pham
 
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
-import LeanSharp.Core.Sam
+import LeanSharp.Core.Objective
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2

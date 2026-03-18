@@ -6,13 +6,13 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Models
 import LeanSharp.Layers.Architectures.Attention
 import LeanSharp.Layers.Architectures.Transformer
-import LeanSharp.Layers.Architectures.ViT
+import LeanSharp.Layers.Architectures.VisionTransformer
 import LeanSharp.Layers.Basic.Activation
 import LeanSharp.Layers.Basic.Dropout
 import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Layers.Basic.Residual
-import LeanSharp.Layers.Normalization.BatchNormalization
-import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Normalization.BatchNorm
+import LeanSharp.Layers.Normalization.LayerNorm
 import LeanSharp.Layers.Specialized.Convolution
 import LeanSharp.Layers.Specialized.Quantization
 import Mathlib.Analysis.InnerProductSpace.PiL2

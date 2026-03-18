@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import LeanSharp.Stochastic.MartingaleModel
-import LeanSharp.Stochastic.RobbinsMonro
+import LeanSharp.Stochastic.Foundations.MartingaleOps
+import LeanSharp.Stochastic.Foundations.RobbinsMonro
 
 /-!
 # Robbins-Monro Martingale Interface Tests

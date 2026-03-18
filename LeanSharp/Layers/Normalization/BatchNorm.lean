@@ -5,7 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
-import LeanSharp.Layers.Normalization.Normalization
+import LeanSharp.Layers.Normalization.LayerNorm
 
 namespace LeanSharp
 

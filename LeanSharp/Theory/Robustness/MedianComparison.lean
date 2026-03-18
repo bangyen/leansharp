@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Theory.Robustness.FilteredMean
+import LeanSharp.Theory.Robustness.FilteredMeanProps
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Tactic.Linarith
 

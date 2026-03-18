@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import LeanSharp.Layers.Architectures.ViT
+import LeanSharp.Layers.Architectures.VisionTransformer
 import LeanSharp.Layers.Specialized.Convolution
 import Mathlib.Data.Nat.ModEq
 import Mathlib.Tactic.Linarith

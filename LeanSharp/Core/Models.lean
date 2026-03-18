@@ -5,7 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
-import LeanSharp.Stochastic.Generalization
+import LeanSharp.Stochastic.Mechanics.SampleErrors
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
