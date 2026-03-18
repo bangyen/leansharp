@@ -30,16 +30,9 @@ generalization.
 
 * `has_weak_gradient_of_fderiv`.
 * `has_weak_hessian_of_gradient_fderiv`.
-* `has_weak_gradient_with_gradient_iff_fderiv`.
-* `has_weak_hessian_with_hessian_iff_gradient_fderiv`.
 * `is_h1_with_gradient_iff`.
 * `is_h2_with_gradient_hessian_iff`.
-* `is_h1_of_strong_data`.
-* `is_h2_of_strong_data`.
 * `is_h2_implies_is_h1`.
-* `smooth_descent_of_h2`.
-* `sam_taylor_bound_of_h2`.
-* `smooth_one_step_descent_of_h2`.
 -/
 
 namespace LeanSharp
@@ -110,34 +103,6 @@ theorem has_weak_hessian_of_gradient_fderiv
   intro x
   simpa only [hessian] using h_grad_fderiv x
 
-omit [MeasurableSpace (W ι)] in
-/-- Transition equivalence between the weak-gradient contract instantiated with
-`gradient u` and standard Fréchet derivative data for `u`. -/
-theorem has_weak_gradient_with_gradient_iff_fderiv
-    (u : W ι → ℝ) :
-    has_weak_gradient u (gradient u) ↔
-      (∀ x, HasFDerivAt u (fderiv ℝ u x) x) := by
-  constructor
-  · intro h x
-    have hx := h x
-    simpa only [gradient, LinearIsometryEquiv.apply_symm_apply] using hx
-  · intro h
-    exact has_weak_gradient_of_fderiv u h
-
-omit [MeasurableSpace (W ι)] in
-/-- Transition equivalence between the weak-Hessian contract instantiated with
-`hessian u` and standard derivative data for `gradient u`. -/
-theorem has_weak_hessian_with_hessian_iff_gradient_fderiv
-    (u : W ι → ℝ) :
-    has_weak_hessian (gradient u) (hessian u) ↔
-      (∀ x, HasFDerivAt (gradient u) (fderiv ℝ (gradient u) x) x) := by
-  constructor
-  · intro h x
-    have hx := h x
-    simpa only [hessian] using hx
-  · intro h
-    exact has_weak_hessian_of_gradient_fderiv u h
-
 /-- Explicit `H¹` transition mapping when the weak field is chosen as `gradient u`.
 This theorem gives a direct equivalence between the bundled `H¹` contract and
 the corresponding standard-derivative plus `L²` data. -/
@@ -147,9 +112,11 @@ theorem is_h1_with_gradient_iff
       ↔ (∀ x, HasFDerivAt u (fderiv ℝ u x) x) ∧ is_l2_scalar μ u ∧ is_l2_vector μ (gradient u) := by
   constructor
   · intro h
-    refine ⟨(has_weak_gradient_with_gradient_iff_fderiv u).1 h.1, h.2.1, h.2.2⟩
+    refine ⟨fun x => ?_, h.2.1, h.2.2⟩
+    have hx := h.1 x
+    simpa only [gradient, LinearIsometryEquiv.apply_symm_apply] using hx
   · intro h
-    refine ⟨(has_weak_gradient_with_gradient_iff_fderiv u).2 h.1, h.2.1, h.2.2⟩
+    refine ⟨has_weak_gradient_of_fderiv u h.1, h.2.1, h.2.2⟩
 
 /-- Explicit `H²` transition mapping when weak fields are chosen as
 `gradient u` and `hessian u`. This theorem bridges bundled weak contracts and
@@ -169,43 +136,21 @@ theorem is_h2_with_gradient_hessian_iff
       is_l2_hessian μ (hessian u) := by
   constructor
   · intro h
-    refine ⟨
-      (has_weak_gradient_with_gradient_iff_fderiv u).1 h.1,
-      (has_weak_hessian_with_hessian_iff_gradient_fderiv u).1 h.2.1,
-      h.2.2.1,
-      h.2.2.2.1,
-      h.2.2.2.2
-    ⟩
+    refine ⟨?_, ?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
+    · intro x
+      have hx := h.1 x
+      simpa only [gradient, LinearIsometryEquiv.apply_symm_apply] using hx
+    · intro x
+      have hx := h.2.1 x
+      simpa only [hessian] using hx
   · intro h
     refine ⟨
-      (has_weak_gradient_with_gradient_iff_fderiv u).2 h.1,
-      (has_weak_hessian_with_hessian_iff_gradient_fderiv u).2 h.2.1,
+      has_weak_gradient_of_fderiv u h.1,
+      has_weak_hessian_of_gradient_fderiv u h.2.1,
       h.2.2.1,
       h.2.2.2.1,
       h.2.2.2.2
     ⟩
-
-/-- Bundles strong differentiability and `L²` assumptions into an `H¹` witness. -/
-theorem is_h1_of_strong_data
-    (μ : Measure (W ι)) (u : W ι → ℝ)
-    (h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x)
-    (h_l2_u : is_l2_scalar μ u)
-    (h_l2_grad : is_l2_vector μ (gradient u)) :
-    is_h1 μ u := by
-  refine ⟨gradient u, has_weak_gradient_of_fderiv u h_fderiv, h_l2_u, h_l2_grad⟩
-
-/-- Bundles strong differentiability and `L²` assumptions into an `H²` witness. -/
-theorem is_h2_of_strong_data
-    (μ : Measure (W ι)) (u : W ι → ℝ)
-    (h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x)
-    (h_grad_fderiv : ∀ x, HasFDerivAt (gradient u) (fderiv ℝ (gradient u) x) x)
-    (h_l2_u : is_l2_scalar μ u)
-    (h_l2_grad : is_l2_vector μ (gradient u))
-    (h_l2_hess : is_l2_hessian μ (hessian u)) :
-    is_h2 μ u := by
-  refine ⟨gradient u, hessian u, ?_, ?_, h_l2_u, h_l2_grad, h_l2_hess⟩
-  · exact has_weak_gradient_of_fderiv u h_fderiv
-  · exact has_weak_hessian_of_gradient_fderiv u h_grad_fderiv
 
 /-- `H²` regularity implies `H¹` regularity by forgetting the Hessian field. -/
 theorem is_h2_implies_is_h1
@@ -214,72 +159,5 @@ theorem is_h2_implies_is_h1
     is_h1 μ u := by
   rcases h_h2 with ⟨grad_u, hess_u, h_weak_grad, h_weak_hess, h_l2_u, h_l2_grad, h_l2_hess⟩
   exact ⟨grad_u, h_weak_grad, h_l2_u, h_l2_grad⟩
-
-/-- `H²`-interface wrapper for `smooth_descent`: if `u` is supplied with canonical
-weak-gradient and weak-Hessian contracts (in the current finite-dimensional Sobolev
-interface) and the gradient is Lipschitz, then the standard Taylor descent bound
-holds. -/
-theorem smooth_descent_of_h2
-    (μ : Measure (W ι)) (u : W ι → ℝ)
-    (w ε : W ι) (M : NNReal)
-    (h_h2_canonical :
-      has_weak_gradient u (gradient u) ∧
-        has_weak_hessian (gradient u) (hessian u) ∧
-        is_l2_scalar μ u ∧
-        is_l2_vector μ (gradient u) ∧
-        is_l2_hessian μ (hessian u))
-    (h_smooth : LipschitzWith M (gradient u)) :
-    u (w + ε) ≤ u w + inner ℝ (gradient u w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
-  let _ := μ
-  let _ := h_h2_canonical
-  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
-    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
-  have h_diff : Differentiable ℝ u := by
-    intro x
-    exact (h_fderiv x).differentiableAt
-  exact smooth_descent u w ε M h_diff h_smooth
-
-/-- `H²`-interface wrapper for `sam_taylor_bound`. -/
-theorem sam_taylor_bound_of_h2
-    (μ : Measure (W ι)) (u : W ι → ℝ)
-    (w : W ι) (ρ : ℝ) (M : NNReal)
-    (h_h2_canonical :
-      has_weak_gradient u (gradient u) ∧
-        has_weak_hessian (gradient u) (hessian u) ∧
-        is_l2_scalar μ u ∧
-        is_l2_vector μ (gradient u) ∧
-        is_l2_hessian μ (hessian u))
-    (h_smooth : LipschitzWith M (gradient u))
-    (hρ : 0 ≤ ρ) :
-    sam_objective u w ρ ≤ u w + ‖gradient u w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
-  let _ := h_h2_canonical
-  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
-    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
-  have h_diff : Differentiable ℝ u := by
-    intro x
-    exact (h_fderiv x).differentiableAt
-  exact sam_taylor_bound u w ρ M h_smooth h_diff hρ
-
-/-- `H²`-interface wrapper for `smooth_one_step_descent`. -/
-theorem smooth_one_step_descent_of_h2
-    (μ : Measure (W ι)) (u : W ι → ℝ)
-    (w : W ι) (M : NNReal) (η : ℝ)
-    (h_h2_canonical :
-      has_weak_gradient u (gradient u) ∧
-        has_weak_hessian (gradient u) (hessian u) ∧
-        is_l2_scalar μ u ∧
-        is_l2_vector μ (gradient u) ∧
-        is_l2_hessian μ (hessian u))
-    (h_smooth : LipschitzWith M (gradient u))
-    (h_eta : 0 < η)
-    (h_eta_bound : η ≤ 1 / (M : ℝ)) :
-    u (w - η • gradient u w) ≤ u w - (η / 2) * ‖gradient u w‖ ^ 2 := by
-  let _ := h_h2_canonical
-  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
-    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
-  have h_diff : Differentiable ℝ u := by
-    intro x
-    exact (h_fderiv x).differentiableAt
-  exact smooth_one_step_descent u w M η h_diff h_smooth h_eta h_eta_bound
 
 end LeanSharp

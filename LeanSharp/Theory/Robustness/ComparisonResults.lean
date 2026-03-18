@@ -16,7 +16,6 @@ median and mean robustness lemmas into user-facing statements.
 * `median_bounded_mean_unbounded_one_outlier`.
 * `median_robust_mean_nonrobust`.
 * `median_and_zfiltered_mean_bounded_subset`.
-* `prefer_median_for_unbounded_one_outlier`.
 -/
 
 namespace LeanSharp
@@ -77,17 +76,5 @@ theorem median_and_zfiltered_mean_bounded_subset
   refine ⟨h_med g' hg_fixed, ?_⟩
   exact z_filtered_empirical_mean_bounded_subset_max
     s g s_fixed h_sub z R_fixed R_out hs h_fixed_bound g' hg_fixed hg_out
-
-/-- **Unbounded-outlier preference rule**: with one unrestricted outlier, the empirical
-mean can be driven arbitrarily far while the geometric median remains bounded, so median
-aggregation is the robust choice in this threat model. -/
-theorem prefer_median_for_unbounded_one_outlier
-    [Nonempty ι]
-    (s : Finset α) (g : α → W ι)
-    (i0 : α) (hi0 : i0 ∈ s) (h_card : 3 ≤ s.card) (C : ℝ) (hC : -1 ≤ C) :
-    (∃ R : ℝ, ∀ g' : α → W ι, (∀ i ≠ i0, g' i = g i) →
-        ‖geometric_median s g'‖ ≤ R) ∧
-      (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C) :=
-  median_bounded_mean_unbounded_one_outlier s g i0 hi0 h_card C hC
 
 end LeanSharp
