@@ -40,7 +40,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-* Formalize the probability distribution of filtered gradients as a reusable object for downstream universality results. **[High]**
 * Establish the statistical optimality lower bound. **[Extreme]**
 
 ---

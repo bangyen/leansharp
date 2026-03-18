@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import Tests.Functional.HeavyTail
 import Tests.Functional.Integrability
 import Tests.Functional.RobbinsMonro
 import Tests.Functional.SobolevSpace
@@ -13,6 +14,7 @@ import Tests.Landscape.IllConditioned
 import Tests.Landscape.QuadraticBowl
 import Tests.Structural.LearningRates
 import Tests.Structural.NetworkLayers
+import Tests.Structural.SecondOrder
 import Tests.Structural.StabilityProps
 import Tests.Structural.TacticSystems
 
