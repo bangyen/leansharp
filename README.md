@@ -36,32 +36,32 @@ Run all guards locally with:
 
 ## Roadmap & Future Work
 
-The following items represent the planned evolution of LeanSharp, categorized by their necessity for project completeness and implementation complexity.
+The following items represent the planned evolution of LeanSharp. While the project is **functionally complete** (core convergence results are verified), the roadmap aims for **theoretical completeness** and foundational rigor.
 
-### Immediate Roadmap (Verification & Refinement)
 
-* Formalize second-order Fréchet derivatives in Mathlib. **[High]**
-* Formalize third-order Fréchet derivatives. **[High]**
-* Prove the multilinear Taylor remainder theorem. **[High]**
-* Extend oracle-based infinite-variance guarantees to explicit $\alpha$-stable families. **[High]**
-* Define the analytical limit as layer width $D \to \infty$. **[High]**
+### Immediate Roadmap (Hard Complexity)
+
+These items represent foundational tasks necessary for project completeness and Mathlib alignment.
+
+| Task | Necessity | Justification |
+| :--- | :--- | :--- |
+| **Higher-Order Fréchet** | Low | Core results use custom `hessian`; needs Mathlib alignment. |
+| **Multilinear Taylor** | Medium | General version of the current project-specific Taylor bounds. |
+| **$\alpha$-stable families** | High | Explicit proof that heavy-tailed laws satisfy the oracle. |
+| **Analytical Limit $D \to \infty$** | Medium | Foundation for analyzing generalization in infinite-width layers. |
 
 ---
 
-### Extensions & Grand Challenges
+### Extensions & Grand Challenges (Extreme Complexity)
 
-These items represent specialized research directions or are currently limited by foundational gaps in Mathlib.
+These items represent specialized research directions currently limited by foundational gaps in Mathlib.
 
-#### Z-Score Universality
-* Prove a custom Central Limit Theorem (CLT) applicable to this specific filtered distribution. **[Extreme]**
-* Establish the statistical optimality lower bound. **[Extreme]**
-
-#### Neural Tangent Kernels
-* Prove network initialization bounds. **[Extreme]**
-
-#### Denoising Diffusion
-* Formalize Forward/Reverse SDE definitions governing DDPMs. **[Extreme]**
-* Prove the score-matching stability objective. **[Extreme]**
+| Task | Necessity | Justification |
+| :--- | :--- | :--- |
+| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
+| **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
+| **NTK Dynamics** | Low | Proving network initialization and NTK-regime bounds. |
+| **Diffusion Stability**| Low | Formalizing SDE objectives and stability for DDPMs. |
 
 ## Installation & Building
 
