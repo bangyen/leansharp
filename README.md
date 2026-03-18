@@ -40,7 +40,7 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-* Establish the statistical optimality lower bound. **[Extreme]**
+* Formalize second-order Fréchet derivatives in Mathlib. **[High]**
 
 ---
 
