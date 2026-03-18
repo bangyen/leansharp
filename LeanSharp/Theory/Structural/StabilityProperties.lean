@@ -29,12 +29,11 @@ variable {ι : Type*} [Fintype ι]
 /-- **Z-score Update Stability**:
     The norm of the update with a filtered gradient is always less than or equal
     to the norm of the update with the original gradient. -/
-theorem filtered_update_stability (w g : W ι) (η z : ℝ) (hη : 0 ≤ η) :
+theorem filtered_update_stability (w g : W ι) (η z : ℝ) :
     ‖(w - η • filtered_gradient g z) - w‖ ≤ ‖(w - η • g) - w‖ := by
   simp only [sub_sub_cancel_left, norm_neg, norm_smul]
-  have h_norm : ‖η‖ = η := by rw [Real.norm_eq_abs, abs_of_nonneg hη]
-  rw [h_norm]
-  apply mul_le_mul_of_nonneg_left (filtered_norm_bound g z) hη
+  apply mul_le_mul_of_nonneg_left (filtered_norm_bound g z)
+  positivity
 
 /-- **Localized One-Step Stability Bound**: if the gradient norm at a step is
 bounded by `R`, then the Z-filtered parameter update has norm at most `η * R`.
@@ -44,7 +43,7 @@ theorem localized_filtered_update_norm_bound
     (w g : W ι) (η z R : ℝ)
     (hη : 0 ≤ η) (hR : ‖g‖ ≤ R) :
     ‖(w - η • filtered_gradient g z) - w‖ ≤ η * R := by
-  have h_step := filtered_update_stability w g η z hη
+  have h_step := filtered_update_stability w g η z
   calc
     ‖(w - η • filtered_gradient g z) - w‖
       ≤ ‖(w - η • g) - w‖ := h_step

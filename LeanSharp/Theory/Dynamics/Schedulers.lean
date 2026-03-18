@@ -24,7 +24,6 @@ starting with the popular Cosine Decay schedule.
 * `cosine_argument_mono`.
 * `cosine_decay_zero`.
 * `cosine_decay_schedule_of_ge`.
-* `cosine_decay_at_T`.
 * `cosine_decay_antitone`.
 -/
 
@@ -88,11 +87,6 @@ post-horizon schedule evaluations. -/
     cosine_decay_schedule η_max η_min T t = η_min := by
   unfold cosine_decay_schedule
   rw [if_neg (Nat.not_lt.mpr ht)]
-
-/-- The Cosine Decay schedule reaches `η_min` at `t = T`. -/
-theorem cosine_decay_at_T (η_max η_min : ℝ) (T : ℕ) :
-    cosine_decay_schedule η_max η_min T T = η_min := by
-  exact cosine_decay_schedule_of_ge η_max η_min T T le_rfl
 
 /-- **Monotonicity of Cosine Decay**: The schedule is non-increasing for `η_min ≤ η_max`. -/
 theorem cosine_decay_antitone (η_max η_min : ℝ) (T : ℕ) (h_le : η_min ≤ η_max) :

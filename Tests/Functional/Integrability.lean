@@ -15,29 +15,13 @@ Robbins-Monro convergence theorems.
 
 ## Theorems
 
-* `structural_integrability_derivation_test`.
 * `structural_descent_envelope_test`.
-* `structural_almost_sure_interface_test`.
 * `integrability_interface_test`.
 -/
 
 namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
-
-/-- **Structural Integrability Derivation Verification**: This test checks that
-structural assumptions provide objective and gradient-square integrability via
-`zsharp_structural_integrability`, without taking those integrability witnesses
-as direct bundle fields. -/
-theorem structural_integrability_derivation_test
-    {Ω : Type*}
-    [MeasureSpace Ω]
-    (f : W (Fin 2) → ℝ)
-    (w : ℕ → Ω → W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
-    (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
-    (∀ t, Integrable (fun ω => f (w t ω))) ∧
-      (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) := by
-  exact zsharp_structural_integrability f w η z σsq h_struct
 
 /-- **Structural Envelope Wiring Verification**: This test ensures the sequence
 descent envelope can be instantiated from structural assumptions by deriving
@@ -90,36 +74,5 @@ theorem integrability_interface_test
   exact (zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
     L_smooth f w η z σsq ℱ ℱfil
     ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩).2
-
-/-- **Structural Almost-Sure Interface Verification**: this test verifies that
-the structural Robbins-Monro interface can produce the full envelope-plus-a.s.
-convergence pair directly from structural assumptions and bridge data. -/
-theorem structural_almost_sure_interface_test
-    {Ω : Type*}
-    [MeasureSpace Ω]
-    [IsProbabilityMeasure (volume : Measure Ω)]
-    (L_smooth : NNReal) (f : W (Fin 2) → ℝ)
-    (w : ℕ → Ω → W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
-    (ℱ : ℕ → MeasurableSpace Ω)
-    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_struct : ZSharpStructuralAssumptions f w η z σsq)
-    (h_rm : robbins_monro_stepsize η)
-    (h_bridge : ∃ R : NNReal,
-      StronglyAdapted ℱfil (fun t ω => f (w t ω))
-        ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
-        ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
-    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
-        (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
-    (∀ T : ℕ,
-      (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
-        𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
-        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
-      ∧ zsharp_objective_as_convergence f w := by
-  exact zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
-    L_smooth f w η z σsq ℱ ℱfil
-    ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
 
 end LeanSharp

@@ -32,7 +32,7 @@ theorem test_cosine_decay_start :
 /-- Unit test: Verify ending learning rate is η_min. -/
 theorem test_cosine_decay_end :
     cosine_decay_schedule 0.1 0.01 100 100 = 0.01 := by
-  apply cosine_decay_at_T
+  exact cosine_decay_schedule_of_ge 0.1 0.01 100 100 le_rfl
 
 /-- Unit test: Verify monotonicity for a specific range. -/
 theorem test_cosine_decay_mono :

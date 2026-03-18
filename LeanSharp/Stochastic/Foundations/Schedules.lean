@@ -73,10 +73,11 @@ private lemma strongly_convex_induction_step (t : ℕ) (μ C : ℝ) (η : ℕ �
     _ ≤ ((t : ℝ) / (t + 1)) * (C / t) := mul_le_mul_of_nonneg_left h_ih (by positivity)
     _ = C / (t + 1) := by field_simp [ht.ne']
 
-/-- **Strongly Convex Rate ($O(1/T)$)**:
-Under strong convexity and appropriate step size decay $\eta_t = 1 / (\mu t)$,
-the expected squared distance to the optimum decreases at a rate of $1/T$. -/
-theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
+/-- **$O(1/T)$ recursion rate under contraction assumptions**:
+if each step satisfies the stated conditional contraction and the canonical
+step-size schedule $\eta_t = 1 / (\mu (t+1))$ with `μ > 0`, then the expected
+squared distance to `w_star` decays at rate `1/T`. -/
+theorem zsharp_strongly_convex_rate (w_star : W ι) w0
     (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W ι) [Nonempty Ω]
     (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -84,10 +85,10 @@ theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
       volume[fun ω' =>
         ‖weight_sequence w0 η z g_adv (t + 1) ω' - w_star‖ ^ 2 | ℱ t] ω ≤
       (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)
-    (h_convex : is_strongly_convex L μ)
+    (hμ : 0 < μ)
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
-    (h_align : ∀ t ω, stochastic_alignment_condition w_star
-      (weight_sequence w0 η z g_adv t ω) η t z μ (g_adv t))
+    (h_align0 : ∀ ω, stochastic_alignment_condition w_star
+      (weight_sequence w0 η z g_adv 0 ω) η 0 z μ (g_adv 0))
     (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
     ∃ C : ℝ, ∀ T : ℕ, T > 0 →
       𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖ ^ 2] ≤ C / T := by
@@ -102,16 +103,16 @@ theorem zsharp_strongly_convex_rate (L : W ι → ℝ) (w_star : W ι) w0
       rw [ht, Nat.cast_one, div_one]
       have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
-        stochastic_zsharp_convergence w_star w0 η 0 z μ (h_align 0 (Classical.arbitrary Ω))
+        stochastic_zsharp_convergence w_star w0 η 0 z μ (h_align0 (Classical.arbitrary Ω))
       have h_zero : 1 - (η 0) * μ = 0 := by
-        rw [h_step 0]; field_simp [h_convex.1.ne']; ring
+        rw [h_step 0]; field_simp [hμ.ne']; ring
       rw [h_zero, zero_mul] at h_bound
       exact h_bound.trans (by linarith [pow_two_nonneg ‖w0 - w_star‖])
     · -- Inductive step T = t + 1
       have hval : C / ↑(t + 1) = C / (↑t + 1) := by norm_cast
       rw [hval]
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
-        (ih (Nat.pos_of_ne_zero ht)) (h_step t) h_convex.1 (Nat.pos_of_ne_zero ht)
+        (ih (Nat.pos_of_ne_zero ht)) (h_step t) hμ (Nat.pos_of_ne_zero ht)
 
 private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq η0 : ℝ)
     (η : ℕ → ℝ) (h_step : ∀ t, η t = η0) (g_adv : ℕ → Ω → W ι) (T : ℕ)

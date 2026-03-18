@@ -16,7 +16,6 @@ exposes almost-sure convergence statements for the stochastic objective process.
 
 ## Theorems
 
-* `zsharp_robbins_monro_update_from_martingale_model`.
 * `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
@@ -30,25 +29,11 @@ open ProbabilityTheory MeasureTheory
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- **Update recursion from martingale model**: extracts only the explicit
-Robbins-Monro update equation from the model bundle. This theorem exists so
-callers that only need the recursion do not depend on convergence machinery. -/
-theorem zsharp_robbins_monro_update_from_martingale_model
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ) :
-    ∀ t, ∀ᵐ ω ∂ℙ,
-      w (t + 1) ω =
-        w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω) :=
-  h_model.h_update
-
 omit [Fintype ι] in
 /-- **Objective limit from submartingale hypotheses**: derives almost-sure
 objective convergence from adaptation, integrability, and one-step
 submartingale inequality assumptions. The explicit update recursion is exposed
-separately by `zsharp_robbins_monro_update_from_martingale_model`. -/
+in `robbins_monro_update_martingale_model.h_update`. -/
 theorem zsharp_robbins_monro_objective_limit_with_martingale_model
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι)
