@@ -16,6 +16,7 @@ exposes almost-sure convergence statements for the stochastic objective process.
 
 ## Theorems
 
+* `zsharp_robbins_monro_update_from_martingale_model`.
 * `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
@@ -29,28 +30,36 @@ open ProbabilityTheory MeasureTheory
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
-/-- **Objective limit with explicit martingale-update model**: combines the
-Robbins-Monro objective-limit interface with an explicit update decomposition
-`w_{t+1} = w_t - η_t(∇f(w_t) + ξ_t)` whose cumulative noise is modeled as a
-martingale process. This theorem exists to make the martingale update contract
-available at the same callsite where almost-sure objective convergence is
-requested. -/
-theorem zsharp_robbins_monro_objective_limit_with_martingale_model
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- **Update recursion from martingale model**: extracts only the explicit
+Robbins-Monro update equation from the model bundle. This theorem exists so
+callers that only need the recursion do not depend on convergence machinery. -/
+theorem zsharp_robbins_monro_update_from_martingale_model
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ)
+    (h_model : robbins_monro_update_martingale_model f w η ℱ) :
+    ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω =
+        w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω) :=
+  h_model.h_update
+
+omit [Fintype ι] in
+/-- **Objective limit from submartingale hypotheses**: derives almost-sure
+objective convergence from adaptation, integrability, and one-step
+submartingale inequality assumptions. The explicit update recursion is exposed
+separately by `zsharp_robbins_monro_update_from_martingale_model`. -/
+theorem zsharp_robbins_monro_objective_limit_with_martingale_model
+    (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
     (R : NNReal)
     (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_step :
       ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    (∀ t, ∀ᵐ ω ∂ℙ,
-      w (t + 1) ω =
-        w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
-      ∧ zsharp_objective_as_convergence f w := by
-  refine ⟨h_model.h_update, ?_⟩
+    zsharp_objective_as_convergence f w := by
   have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
     submartingale_nat h_adapted h_int h_step
   exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd

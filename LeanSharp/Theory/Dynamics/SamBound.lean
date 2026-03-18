@@ -42,15 +42,15 @@ generalization gap assumption.
 We prove that `sam_empirical_max ≥ L_S(w)`, so the SAM bound dominates the
 ordinary Rademacher / PAC-Bayes generalization bound. -/
 theorem sam_bound_from_gap (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
-    (h_gap : ∀ (w : W ι) (r : ℝ), r > 0 →
-        L_D w ≤ L_S w + h (‖w‖ ^ 2 / r ^ 2))
-    (h_bdd : ∀ (w : W ι) (r : ℝ), BddAbove
-        (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 r))) :
+    (h_gap : ∀ (w : W ι), ρ > 0 →
+        L_D w ≤ L_S w + h (‖w‖ ^ 2 / ρ ^ 2))
+    (h_bdd : ∀ (w : W ι), BddAbove
+        (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 ρ))) :
     sam_generalization_bound_holds L_D L_S h ρ := by
   intro w hρ
   have h_sam_ge : L_S w ≤ sam_objective L_S w ρ :=
-    sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w ρ)
-  have h_gap_spec := h_gap w ρ hρ
+    sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w)
+  have h_gap_spec := h_gap w hρ
   linarith [h_gap_spec, h_sam_ge]
 
 end LeanSharp

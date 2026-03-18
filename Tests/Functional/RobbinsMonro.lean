@@ -45,7 +45,8 @@ theorem martingale_model_interface_test
 
 /-- **Martingale-to-Objective-Limit Wiring Verification**: ensures the new
 Robbins-Monro interface theorem accepts the martingale update model and returns
-both update recursion and almost-sure objective convergence in one contract. -/
+the update recursion and almost-sure objective convergence through focused
+contracts. -/
 theorem martingale_model_objective_limit_interface_test
     [IsProbabilityMeasure (volume : Measure Ω)]
     (f : W (Fin 2) → ℝ)
@@ -63,8 +64,10 @@ theorem martingale_model_objective_limit_interface_test
       w (t + 1) ω =
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
       ∧ zsharp_objective_as_convergence f w := by
-  exact zsharp_robbins_monro_objective_limit_with_martingale_model
-    f w η ℱ h_model R h_adapted h_int h_step hbdd
+  refine ⟨?_, ?_⟩
+  · exact zsharp_robbins_monro_update_from_martingale_model f w η ℱ h_model
+  · exact zsharp_robbins_monro_objective_limit_with_martingale_model
+      f w ℱ R h_adapted h_int h_step hbdd
 
 /-- **Model-Descent Almost-Sure Interface Verification**: ensures the model-level
 descent hypothesis bundle can directly produce the Robbins-Monro envelope plus

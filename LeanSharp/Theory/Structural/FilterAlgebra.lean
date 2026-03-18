@@ -15,6 +15,7 @@ These are "Green Zone" foundational proofs that do not require external assumpti
 
 ## Theorems
 
+* `filtered_gradient_coord_eq_mask_mul`.
 * `filtered_gradient_coord_preservation`.
 * `filtered_gradient_zero_of_not_outlier`.
 * `single_outlier_extraction`.
@@ -28,13 +29,22 @@ variable {ι : Type*} [Fintype ι]
 
 open BigOperators
 
+/-- **Coordinate decomposition for filtered gradients**: each output coordinate
+equals the corresponding mask value times the original coordinate. This theorem
+exists as a canonical algebraic normal form that downstream preservation/zeroing
+lemmas can reuse instead of reproving coordinate formulas. -/
+theorem filtered_gradient_coord_eq_mask_mul (g : W ι) (z : ℝ) (i : ι) :
+    (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
+      (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i * (WithLp.equiv 2 (ι → ℝ) g) i := by
+  zsharp_solve
+
 /-- **Coordinate Preservation**: Components that pass the Z-score filter
 are preserved identically in the filtered gradient. -/
 theorem filtered_gradient_coord_preservation (g : W ι) (z : ℝ) (i : ι)
     (h_mask : (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i = 1) :
     (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
     (WithLp.equiv 2 (ι → ℝ) g) i := by
-  zsharp_solve
+  rw [filtered_gradient_coord_eq_mask_mul, h_mask, one_mul]
 
 /-- **Non-Outlier Extraction**: If a component is NOT an outlier, it is zeroed out by the filter. -/
 theorem filtered_gradient_zero_of_not_outlier (g : W ι) (z : ℝ) (i : ι)

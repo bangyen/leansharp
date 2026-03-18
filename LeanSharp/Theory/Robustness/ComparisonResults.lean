@@ -14,17 +14,36 @@ median and mean robustness lemmas into user-facing statements.
 
 ## Theorems
 
+* `median_bounded_mean_unbounded_one_outlier_of_majority`.
 * `median_bounded_mean_unbounded_one_outlier`.
 * `median_robust_mean_nonrobust`.
 * `median_and_zfiltered_mean_bounded_subset`.
 * `z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold`.
-* `zfiltered_mean_unbounded_of_nonpos_threshold`.
 -/
 
 namespace LeanSharp
 
 variable {ι : Type*} [Fintype ι]
 variable {α : Type*}
+
+/-- **One-outlier comparison (majority form)**: with a single movable point and a strict
+majority of fixed points (`s \\ {i0}`), the empirical mean can be made arbitrarily large
+while the geometric median stays bounded. This theorem exists as the minimal-assumption
+form of the one-outlier robustness separation. -/
+theorem median_bounded_mean_unbounded_one_outlier_of_majority [Nonempty ι]
+    [DecidableEq α]
+    (s : Finset α) (g : α → W ι)
+    (i0 : α) (hi0 : i0 ∈ s)
+    (h_maj : 2 * (s.erase i0).card > s.card)
+    (C : ℝ) (hC : -1 ≤ C) :
+    (∃ R : ℝ, ∀ g' : α → W ι, (∀ i ≠ i0, g' i = g i) →
+        ‖geometric_median s g'‖ ≤ R) ∧
+    (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C) := by
+  classical
+  constructor
+  · obtain ⟨R, hR⟩ := median_bounded_subset s g (s.erase i0) (Finset.erase_subset i0 s) h_maj
+    refine ⟨R, fun g' hg' => hR g' (fun i hi => hg' i (Finset.mem_erase.1 hi).1)⟩
+  · exact mean_unbounded s g i0 hi0 C hC
 
 /-- **Corollary (one-outlier comparison)**: with a single movable point, the empirical mean
 can be made arbitrarily large while the geometric median stays bounded (when the sample has
@@ -37,10 +56,7 @@ theorem median_bounded_mean_unbounded_one_outlier [Nonempty ι] (s : Finset α) 
   classical
   have h_maj : 2 * (s.erase i0).card > s.card := by
     rw [Finset.card_erase_of_mem hi0]; omega
-  constructor
-  · obtain ⟨R, hR⟩ := median_bounded_subset s g (s.erase i0) (Finset.erase_subset i0 s) h_maj
-    refine ⟨R, fun g' hg' => hR g' (fun i hi => hg' i (Finset.mem_erase.1 hi).1)⟩
-  · exact mean_unbounded s g i0 hi0 C hC
+  exact median_bounded_mean_unbounded_one_outlier_of_majority s g i0 hi0 h_maj C hC
 
 /-- **Corollary (multi-outlier comparison)**:
 In the presence of $K$ arbitrary outliers (where $2K < n$), the empirical mean can be made
@@ -84,7 +100,7 @@ theorem median_and_zfiltered_mean_bounded_subset
 passes the mask test, so the filtered empirical mean equals the ordinary empirical mean.
 This theorem exists to expose the exact regime where filtered aggregation reduces to
 the classical mean and therefore inherits its robustness profile. -/
-theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
+@[simp] theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
     (s : Finset α) (g : α → W ι) {z : ℝ} (hz : z ≤ 0) :
     z_filtered_empirical_mean s g z = empirical_mean s g := by
   unfold z_filtered_empirical_mean
@@ -108,18 +124,5 @@ theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
     imp_false,
     not_lt
   ] using h_keep
-
-/-- **Filtered-mean non-robustness at nonpositive threshold**: when `z ≤ 0`, Z-filtered
-mean aggregation exactly matches empirical mean, so a single moved point can still make
-the estimate arbitrarily large. -/
-theorem zfiltered_mean_unbounded_of_nonpos_threshold [Nonempty ι]
-    (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s)
-    (z C : ℝ) (hz : z ≤ 0) (hC : -1 ≤ C) :
-    ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖z_filtered_empirical_mean s g' z‖ > C := by
-  obtain ⟨g', hg', hmean⟩ := mean_unbounded s g i0 hi0 C hC
-  refine ⟨g', hg', ?_⟩
-  have hz_eq : z_filtered_empirical_mean s g' z = empirical_mean s g' :=
-    z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold s g' hz
-  simpa only [hz_eq, gt_iff_lt] using hmean
 
 end LeanSharp
