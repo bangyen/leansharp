@@ -21,37 +21,10 @@ jobs:
       - name: Build Lean project
         uses: leanprover/lean-action@v1
 
-      - name: Guard against missing imports
-        run: |
-          chmod +x scripts/check_import.sh
-          ./scripts/check_import.sh
+      - name: Enforce warning-free Lean build
+        run: lake --wfail build
 
-      - name: Guard against unsqueezed simp tactics
+      - name: Run guard checks
         run: |
-          chmod +x scripts/check_simp.sh
-          ./scripts/check_simp.sh
-
-      - name: Guard banned keywords
-        run: |
-          chmod +x scripts/check_banned.sh
-          ./scripts/check_banned.sh
-
-      - name: Guard copyright header blocks
-        run: |
-          chmod +x scripts/check_copyright.sh
-          ./scripts/check_copyright.sh
-
-      - name: Guard module description blocks
-        run: |
-          chmod +x scripts/check_description.sh
-          ./scripts/check_description.sh
-
-      - name: Guard against oversized Lean files
-        run: |
-          chmod +x scripts/check_long_file.sh
-          ./scripts/check_long_file.sh
-
-      - name: Guard Lean formatting (dry-run)
-        run: |
-          chmod +x scripts/format_lean.sh
-          ./scripts/format_lean.sh --check
+          chmod +x scripts/check_all.sh
+          ./scripts/check_all.sh
