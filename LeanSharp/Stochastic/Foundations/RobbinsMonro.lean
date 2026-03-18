@@ -32,8 +32,8 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 omit [Fintype ι] in
 /-- **Objective limit from submartingale hypotheses**: derives almost-sure
 objective convergence from adaptation, integrability, and one-step
-submartingale inequality assumptions. The explicit update recursion is exposed
-in `robbins_monro_update_martingale_model.h_update`. -/
+submartingale inequality assumptions. This theorem is retained as a
+compatibility bridge to the submartingale API. -/
 theorem zsharp_robbins_monro_objective_limit_with_martingale_model
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι)

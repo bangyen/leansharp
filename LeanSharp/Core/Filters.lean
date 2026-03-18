@@ -75,7 +75,8 @@ theorem filtered_gradient_norm_sq_le (g : W ι) (z : ℝ) :
     ]
     positivity
 
-/-- **Filtered Norm Bound**: The Z-score filter reduces or preserves the vector norm. -/
+/-- **Filtered Norm Bound (API convenience)**: Direct corollary of
+`filtered_gradient_norm_sq_le`; kept as a simpler norm-level interface. -/
 theorem filtered_norm_bound (g : W ι) (z : ℝ) :
     ‖filtered_gradient g z‖ ≤ ‖g‖ := by
   have h_sq := filtered_gradient_norm_sq_le g z

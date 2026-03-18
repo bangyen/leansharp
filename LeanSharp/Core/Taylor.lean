@@ -209,17 +209,14 @@ theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η 
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L))
     (h_eta_nonneg : 0 ≤ η)
-    (h_eta_bound : η ≤ 1 / (M : ℝ)) :
+    (h_eta_bound : η * (M : ℝ) ≤ 1) :
     L (w - η • gradient L w) ≤ L w - (η / 2) * ‖gradient L w‖ ^ 2 := by
   set g := gradient L w
   have h_descent := smooth_descent L w (-(η • g)) M h_diff h_smooth
   have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
   -- Step 1: Verify the descent radius bound
   have h_bound : (M : ℝ) * η ≤ 1 := by
-    by_cases hM : 0 < (M : ℝ)
-    · linarith [((le_div_iff₀ hM).mp h_eta_bound : η * M ≤ 1)]
-    · have hM_zero : (M : ℝ) = 0 := by linarith [NNReal.coe_nonneg M]
-      simp only [hM_zero, zero_mul, zero_le_one]
+    simpa only [mul_comm] using h_eta_bound
   have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
     rw [
       inner_neg_right,
