@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Convergence.Bridges
 import LeanSharp.Stochastic.Foundations.Integrability
+import LeanSharp.Stochastic.Foundations.Oracles
 
 /-!
 # Convergence Hypothesis Bundles
@@ -69,5 +70,22 @@ def zsharp_model_descent_hypotheses
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
         (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+
+/-- Objective convergence hypothesis bundle for heavy-tailed (oracle-based) noise.
+This bundle replaces the bounded-variance assumption with a polynomial-tail
+certificate from a probability oracle. -/
+def zsharp_oracle_descent_hypotheses
+    (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace) : Prop :=
+  robbins_monro_stepsize η
+    ∧ (∃ C p : ℝ, 0 < C ∧ 1 ≤ p ∧
+      non_gaussian_probability_oracle_process (fun t ω => w (t + 1) ω - w t ω))
+    ∧ (∃ R : NNReal,
+    StronglyAdapted ℱfil (fun t ω => f (w t ω))
+      ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+      ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    ∧ (∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
 
 end LeanSharp

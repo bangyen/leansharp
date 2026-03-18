@@ -43,6 +43,7 @@ import LeanSharp.Layers.Specialized.Quantization
 import LeanSharp.Stochastic.Convergence.Process
 import LeanSharp.Stochastic.Convergence.Bridges
 import LeanSharp.Stochastic.Convergence.Assumptions
+import LeanSharp.Stochastic.Convergence.HeavyTail
 
 -- Mechanics
 import LeanSharp.Stochastic.Mechanics.DescentSteps
@@ -65,6 +66,7 @@ import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Generalization
 import LeanSharp.Theory.Dynamics.SamBound
 import LeanSharp.Theory.Dynamics.Schedulers
+import LeanSharp.Theory.Dynamics.SecondOrder
 
 -- Structural
 import LeanSharp.Theory.Structural.ChainStability
