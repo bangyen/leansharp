@@ -31,7 +31,14 @@ theorem toy_cosine_convergence (T : ℕ) (hT : T > 0)
                 alignment_condition L.toFun w 0 ε z L.μ L.smoothness) :
     zsharp_convergence_holds L.toFun 0
       (cosine_decay_schedule η0 0 T) ρ z L.smoothness L.μ := by
-  apply zsharp_convergence L
+  let M : ZSharpModel (Fin 2) := {
+    L := L,
+    w_star := 0,
+    ρ := ρ,
+    z := z,
+    alignment := h_align
+  }
+  apply zsharp_convergence M
   · intro t; rw [cosine_decay_schedule]
     -- Proof that η_t * L_smooth^2 ≤ μ
     -- η_t ≤ η0 since cosine decay is antitone
@@ -40,10 +47,9 @@ theorem toy_cosine_convergence (T : ℕ) (hT : T > 0)
     have h_eta0 : η0 = cosine_decay_schedule η0 0 T 0 := by
       rw [cosine_decay_zero η0 0 T hT]
     rw [← h_eta0] at h_mono
-    calc cosine_decay_schedule η0 0 T t * (L.smoothness : ℝ) ^ 2
-      _ ≤ η0 * (L.smoothness : ℝ) ^ 2 := mul_le_mul_of_nonneg_right h_mono (sq_nonneg _)
-      _ ≤ L.μ := h_bounds.2.1
+    calc cosine_decay_schedule η0 0 T t * (M.L.smoothness : ℝ) ^ 2
+      _ ≤ η0 * (M.L.smoothness : ℝ) ^ 2 := mul_le_mul_of_nonneg_right h_mono (sq_nonneg _)
+      _ ≤ M.L.μ := h_bounds.2.1
   · exact h_bounds.2.2.2
-  · exact h_align
 
 end LeanSharp

@@ -29,19 +29,24 @@ theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
                 alignment_condition IllConditioned.L_advanced w 0 ε z 2 20) :
     zsharp_convergence_holds IllConditioned.L_advanced 0
       (cosine_decay_schedule η0 0 T) ρ z 20 2 := by
-  let L := IllConditioned.L_advanced_bundled
-  apply zsharp_convergence L
+  let M : ZSharpModel (Fin 2) := {
+    L := IllConditioned.L_advanced_bundled,
+    w_star := 0,
+    ρ := ρ,
+    z := z,
+    alignment := h_align
+  }
+  apply zsharp_convergence M
   · intro t; rw [cosine_decay_schedule]
     have h_mono : cosine_decay_schedule η0 0 T t ≤ cosine_decay_schedule η0 0 T 0 :=
       cosine_decay_antitone η0 0 T (by linarith) (Nat.zero_le t)
     have h_eta0 : η0 = cosine_decay_schedule η0 0 T 0 := by
       rw [cosine_decay_zero η0 0 T hT]
     rw [← h_eta0] at h_mono
-    calc cosine_decay_schedule η0 0 T t * (L.smoothness : ℝ) ^ 2
+    calc cosine_decay_schedule η0 0 T t * (M.L.smoothness : ℝ) ^ 2
       _ ≤ η0 * 20 ^ 2 := mul_le_mul_of_nonneg_right h_mono (by norm_num)
       _ ≤ 2 := h_bounds.2.1
-      _ = L.μ := rfl
+      _ = M.L.μ := rfl
   · change (2 : ℝ) < 20; norm_num
-  · exact h_align
 
 end LeanSharp

@@ -52,18 +52,30 @@ def generalized_filter_condition
     (H : W ι →L[ℝ] W ι) (g_base g_filtered : W ι) (κ : ℝ) : Prop :=
   @inner ℝ (W ι) _ g_filtered (H g_filtered) ≤ κ * ‖g_base‖ ^ 2
 
+/-- Bundles a local curvature operator (Hessian) with its spectral characteristics. -/
+structure CurvatureCertificate (ι : Type*) [Fintype ι] where
+  /-- The loss function. -/
+  L : W ι → ℝ
+  /-- The point at which the curvature is evaluated. -/
+  w : W ι
+  /-- Proof that the Hessian is symmetric. -/
+  h_symm : (hessian L w).toLinearMap.IsSymmetric
+  /-- The sharpness (max eigenvalue) at this point. -/
+  sharpness_val : ℝ
+  /-- Proof that the sharpness is non-negative. -/
+  sharpness_nonneg : 0 ≤ sharpness_val
+  /-- Proof that the quadratic form is bounded by sharpness. -/
+  spectral_bound : ∀ v, hessian_quadratic_form L w v ≤ sharpness_val * ‖v‖ ^ 2
+
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.
 
-The bound is $\lambda_{max} \|g\|^2$, connecting the geometric sharpness to
+The bound is `sharpness * ‖g‖²`, connecting the geometric sharpness to
 the statistical filter. -/
-theorem zsharp_curvature_bound (L : W ι → ℝ) (w : W ι) (g : W ι) (z : ℝ)
-    (hT : (hessian L w).toLinearMap.IsSymmetric)
-    (h_spectral : ∀ v : W ι, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
-    (h_sharpness_nonneg : 0 ≤ sharpness L w hT) :
-    hessian_quadratic_form L w (filtered_gradient g z) ≤ sharpness L w hT * ‖g‖ ^ 2 := by
-  apply (h_spectral _).trans
-  apply mul_le_mul_of_nonneg_left (filtered_gradient_norm_sq_le g z) h_sharpness_nonneg
+theorem zsharp_curvature_bound (C : CurvatureCertificate ι) (g : W ι) (z : ℝ) :
+    hessian_quadratic_form C.L C.w (filtered_gradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
+  apply (C.spectral_bound _).trans
+  apply mul_le_mul_of_nonneg_left (filtered_gradient_norm_sq_le g z) C.sharpness_nonneg
 
 /-- Lifts a spectral curvature bound plus a norm-contraction witness into the
 generalized filter condition. This theorem exists so new filters only need to provide
