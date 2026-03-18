@@ -87,8 +87,9 @@ def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n →
   ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
 
-/-- **Stability Theorem**: The Z-score filtered gradient update exhibits lower
-uniform stability. -/
+/-- **Interface corollary (stability transfer)**: if filtered updates are
+pointwise no less stable than a SAM baseline, then the same uniform stability
+constant transfers to the filtered algorithm. -/
 theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
     (A_sam : Dataset DataPoint n → W ι)
     (A_zsharp : Dataset DataPoint n → W ι)

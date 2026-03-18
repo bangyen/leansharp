@@ -34,9 +34,8 @@ omit [Fintype ι] in
 /-- **End-to-end objective limit without opaque bridge assumptions** -/
 theorem zsharp_robbins_monro_objective_limit_of_submartingale
     (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (w : ℕ → Ω → W ι)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (hη : robbins_monro_stepsize η)
     (R : NNReal)
     (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
@@ -44,7 +43,6 @@ theorem zsharp_robbins_monro_objective_limit_of_submartingale
       ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
     zsharp_objective_as_convergence f w := by
-  let _ := hη
   exact zsharp_objective_as_convergence_of_one_step_submartingale
     f w ℱ R h_adapted h_int h_step hbdd
 
@@ -58,7 +56,6 @@ theorem zsharp_robbins_monro_objective_limit_with_martingale_model
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (hη : robbins_monro_stepsize η)
     (h_model : robbins_monro_update_martingale_model f w η ℱ)
     (R : NNReal)
     (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
@@ -70,9 +67,9 @@ theorem zsharp_robbins_monro_objective_limit_with_martingale_model
       w (t + 1) ω =
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
       ∧ zsharp_objective_as_convergence f w := by
-  refine ⟨robbins_monro_update_recursion f w η ℱ h_model, ?_⟩
+  refine ⟨h_model.h_update, ?_⟩
   exact zsharp_robbins_monro_objective_limit_of_submartingale
-    f w η ℱ hη R h_adapted h_int h_step hbdd
+    f w ℱ R h_adapted h_int h_step hbdd
 
 /-- **Bridge application theorem** -/
 theorem zsharp_objective_as_convergence_of_bridge
@@ -104,7 +101,6 @@ theorem zsharp_robbins_monro_almost_sure_convergence
     (L_smooth : NNReal) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
-    (hη : robbins_monro_stepsize η)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_adapted_neg : StronglyAdapted ℱfil (fun t ω => -f (w t ω)))
     (h_step_neg :
@@ -123,18 +119,16 @@ theorem zsharp_robbins_monro_almost_sure_convergence
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
       ∧ zsharp_objective_as_convergence f w := by
-  let _ := hη
   refine ⟨?_, ?_⟩
   · intro T
     exact stochastic_zsharp_sequence_descent L_smooth f w η z σsq T g_adv ℱ
       h_step h_desc_step h_int h_int_grad h_meas
-  · rcases zsharp_neg_objective_uniform_l1_witness f w R hbdd_neg with ⟨R', hR'⟩
-    have h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ := by
+  · have h_sub_neg : Submartingale (fun t ω => -f (w t ω)) ℱfil ℙ := by
       apply submartingale_nat
       · exact h_adapted_neg
       · intro t; exact (h_int t).neg
       · exact h_step_neg
-    exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R' h_sub_neg hR'
+    exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
 
 /-- **End-to-end almost-sure convergence theorem from concrete model-level ZSharp
 hypotheses**: returns both the descent-envelope inequality family and the
@@ -170,7 +164,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
     rw [hfun, eLpNorm_neg]
     exact hbdd_obj t
   exact @zsharp_robbins_monro_almost_sure_convergence ι _ Ω _ _
-    L_smooth f w η z σsq g_adv ℱ h_rm ℱfil
+    L_smooth f w η z σsq g_adv ℱ ℱfil
     h_adapted_neg h_step_neg R_neg hbdd_neg
     (fun t => h_struct.h_step t) h_desc_step h_int h_int_grad h_meas
 

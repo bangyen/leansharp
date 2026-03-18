@@ -81,8 +81,8 @@ def is_h2 (μ : Measure (W ι)) (u : W ι → ℝ) : Prop :=
       is_l2_hessian μ hess_u
 
 omit [MeasurableSpace (W ι)] in
-/-- Strong differentiability data yields the weak-gradient interface by choosing
-the existing `gradient` field from `Core/Landscape`. -/
+/-- **Interface corollary**: strong differentiability data yields the weak-gradient
+contract by choosing the existing `gradient` field from `Core/Landscape`. -/
 theorem has_weak_gradient_of_fderiv
     (u : W ι → ℝ)
     (h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x) :
@@ -94,8 +94,9 @@ theorem has_weak_gradient_of_fderiv
   ] using h_fderiv x
 
 omit [MeasurableSpace (W ι)] in
-/-- Strong differentiability data for `gradient u` yields the weak-Hessian
-interface by choosing the existing `hessian` field from `Core/Landscape`. -/
+/-- **Interface corollary**: strong differentiability data for `gradient u`
+yields the weak-Hessian contract by choosing the existing `hessian` field from
+`Core/Landscape`. -/
 theorem has_weak_hessian_of_gradient_fderiv
     (u : W ι → ℝ)
     (h_grad_fderiv : ∀ x, HasFDerivAt (gradient u) (fderiv ℝ (gradient u) x) x) :
@@ -103,9 +104,8 @@ theorem has_weak_hessian_of_gradient_fderiv
   intro x
   simpa only [hessian] using h_grad_fderiv x
 
-/-- Explicit `H¹` transition mapping when the weak field is chosen as `gradient u`.
-This theorem gives a direct equivalence between the bundled `H¹` contract and
-the corresponding standard-derivative plus `L²` data. -/
+/-- **Interface equivalence** for the `gradient` choice: this maps the bundled
+`H¹` contract to standard derivative plus `L²` data, and back. -/
 theorem is_h1_with_gradient_iff
     (μ : Measure (W ι)) (u : W ι → ℝ) :
     (has_weak_gradient u (gradient u) ∧ is_l2_scalar μ u ∧ is_l2_vector μ (gradient u))
@@ -118,9 +118,9 @@ theorem is_h1_with_gradient_iff
   · intro h
     refine ⟨has_weak_gradient_of_fderiv u h.1, h.2.1, h.2.2⟩
 
-/-- Explicit `H²` transition mapping when weak fields are chosen as
-`gradient u` and `hessian u`. This theorem bridges bundled weak contracts and
-standard first/second derivative data with matching `L²` assumptions. -/
+/-- **Interface equivalence** for the `gradient`/`hessian` choice: this bridges
+bundled weak contracts and standard first/second derivative data with matching
+`L²` assumptions. -/
 theorem is_h2_with_gradient_hessian_iff
     (μ : Measure (W ι)) (u : W ι → ℝ) :
     (has_weak_gradient u (gradient u) ∧

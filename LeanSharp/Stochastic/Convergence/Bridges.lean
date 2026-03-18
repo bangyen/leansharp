@@ -24,14 +24,11 @@ assumptions.
 
 ## Theorems
 
-* `robbins_monro_stepsize_nonneg`.
-* `robbins_monro_stepsize_square_summable`.
-* `robbins_monro_stepsize_tendsto_zero`.
 * `zsharp_neg_objective_submartingale_of_one_step`.
-* `zsharp_neg_objective_uniform_l1_witness`.
-* `zsharp_neg_uniform_l1_of_objective_uniform_l1`.
-* `zsharp_neg_step_mono_of_objective_supermartingale_step`.
-* `zsharp_neg_adapted_of_objective_adapted`.
+* `zsharp_objective_as_convergence_of_submartingale`.
+* `zsharp_objective_as_convergence_of_martingale`.
+* `zsharp_objective_as_convergence_of_one_step_submartingale`.
+* `zsharp_objective_as_convergence_of_neg_submartingale`.
 -/
 
 namespace LeanSharp
@@ -54,24 +51,6 @@ def robbins_monro_stepsize (η : ℕ → ℝ) : Prop :=
   (∀ t, 0 ≤ η t) ∧ Summable (fun t => (η t) ^ 2) ∧
     Filter.Tendsto η Filter.atTop (nhds 0)
 
-/-- Exposes the nonnegativity component of `robbins_monro_stepsize` so downstream
-proofs can reuse it without repeatedly unpacking the full conjunction. -/
-theorem robbins_monro_stepsize_nonneg (η : ℕ → ℝ)
-    (hη : robbins_monro_stepsize η) : ∀ t, 0 ≤ η t :=
-  hη.1
-
-/-- Exposes square-summability from `robbins_monro_stepsize`, which is the key
-summability side-condition in Robbins-Monro convergence arguments. -/
-theorem robbins_monro_stepsize_square_summable (η : ℕ → ℝ)
-    (hη : robbins_monro_stepsize η) : Summable (fun t => (η t) ^ 2) :=
-  hη.2.1
-
-/-- Exposes vanishing step sizes from `robbins_monro_stepsize`. This captures
-the asymptotic stabilization condition used in stochastic approximation. -/
-theorem robbins_monro_stepsize_tendsto_zero (η : ℕ → ℝ)
-    (hη : robbins_monro_stepsize η) : Filter.Tendsto η Filter.atTop (nhds 0) :=
-  hη.2.2
-
 omit [Fintype ι] in
 /-- Constructor theorem that turns one-step transformed-objective assumptions into
 a `Submartingale` certificate for `t ↦ -f (w t ·)`. -/
@@ -84,19 +63,6 @@ theorem zsharp_neg_objective_submartingale_of_one_step
       ∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱ t]) :
     Submartingale (fun t ω => -f (w t ω)) ℱ ℙ := by
   exact submartingale_nat h_adapted_neg h_int_neg h_step_neg
-
-/- The transformed objective needs a uniform `L¹` witness before applying
-Mathlib's a.e. submartingale convergence theorem. -/
-omit [Fintype ι] [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- Packages an explicit uniform `L¹` witness for the transformed objective
-process. This keeps the final convergence theorem free of existential
-bookkeeping in downstream proofs. -/
-theorem zsharp_neg_objective_uniform_l1_witness
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
-    (R : NNReal)
-    (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R) :
-    ∃ R' : NNReal, ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R' :=
-  ⟨R, hbdd_neg⟩
 
 /-- **Supermartingale-to-a.s. bridge contract for ZSharp objectives**: this
 predicate packages the expected-descent envelope and Robbins-Monro step-size

@@ -26,7 +26,7 @@ namespace LeanSharp
 variable {ι : Type*} [Fintype ι]
 variable {α : Type*}
 
-/-- **Median vs mean under one outlier**: With a single movable point, the empirical mean
+/-- **Corollary (one-outlier comparison)**: with a single movable point, the empirical mean
 can be made arbitrarily large while the geometric median stays bounded (when the sample has
 at least three points). So median-based aggregation is robust and mean-based is not. -/
 theorem median_bounded_mean_unbounded_one_outlier [Nonempty ι] (s : Finset α) (g : α → W ι)
@@ -42,7 +42,7 @@ theorem median_bounded_mean_unbounded_one_outlier [Nonempty ι] (s : Finset α) 
     refine ⟨R, fun g' hg' => hR g' (fun i hi => hg' i (Finset.mem_erase.1 hi).1)⟩
   · exact mean_unbounded s g i0 hi0 C hC
 
-/-- **Generalized Robustness Comparison**:
+/-- **Corollary (multi-outlier comparison)**:
 In the presence of $K$ arbitrary outliers (where $2K < n$), the empirical mean can be made
 arbitrarily large while the geometric median remains bounded. This formally proves that
 median-based aggregation is inherently robust to multiple malicious outliers while the
@@ -59,7 +59,7 @@ theorem median_robust_mean_nonrobust [Nonempty ι] [DecidableEq α] (s : Finset 
     have hi0_s : i0 ∈ s := (Finset.mem_sdiff.1 hi0).1
     exact mean_unbounded s g i0 hi0_s C hC
 
-/-- **Bounded-outlier regime certificate**: when a strict majority of points are fixed
+/-- **Corollary (bounded-outlier regime certificate)**: when a strict majority of points are fixed
 and outliers are norm-bounded, both the geometric median and the Z-filtered empirical
 mean stay bounded. This theorem formalizes when filtered-mean aggregation is safe while
 retaining a median-based fallback guarantee. -/

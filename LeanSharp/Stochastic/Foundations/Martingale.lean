@@ -19,8 +19,8 @@ stochastic updates as a deterministic drift term plus martingale noise.
 
 ## Theorems
 
-* `robbins_monro_update_recursion`.
-* `robbins_monro_noise_partial_sum_martingale`.
+This module provides the `robbins_monro_update_martingale_model` structure; users
+should consume its fields directly (`h_update`, `h_noise_martingale`).
 -/
 
 namespace LeanSharp
@@ -54,32 +54,5 @@ structure robbins_monro_update_martingale_model
     ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω =
         w t ω - η t • (gradient f (w t ω) + ξ t ω)
-
-/-
-These accessors are structural wrappers around the model fields.
--/
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- Exposes the Robbins-Monro update recursion from the martingale model. -/
-theorem robbins_monro_update_recursion
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι)
-    (η : ℕ → ℝ)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ) :
-    ∀ t, ∀ᵐ ω ∂ℙ,
-      w (t + 1) ω =
-        w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω) :=
-  h_model.h_update
-
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- Exposes martingale structure of the cumulative Robbins-Monro noise process. -/
-theorem robbins_monro_noise_partial_sum_martingale
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι)
-    (η : ℕ → ℝ)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ) :
-    Martingale (robbins_monro_partial_noise_sum h_model.ξ) ℱ ℙ :=
-  h_model.h_noise_martingale
 
 end LeanSharp

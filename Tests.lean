@@ -6,7 +6,6 @@ Authors: Bangyen Pham
 
 import Tests.Functional.Integrability
 import Tests.Functional.RobbinsMonro
-import Tests.Functional.RobustMethods
 import Tests.Functional.SobolevSpace
 import Tests.Landscape.CosineDecays
 import Tests.Landscape.HardThresholds
