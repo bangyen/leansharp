@@ -77,6 +77,7 @@ import LeanSharp.Theory.Robustness.FilteredMean
 import LeanSharp.Theory.Robustness.MedianComparison
 
 -- Sensitivity
+import LeanSharp.Theory.SobolevRegularity
 import LeanSharp.Theory.Sensitivity
 
 /-!

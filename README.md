@@ -40,7 +40,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Verification & Refinement)
 
 #### Sobolev Regularity
-* Define $H^1$ and $H^2$ Sobolev spaces and weak derivatives in the current vector space context. **[Medium]**
 * Prove equivalence or transition mappings between standard derivatives and weak derivatives. **[Medium-High]**
 * Refactor existing core Taylor descent lemmas to hold in $H^k$ spaces. **[Medium-High]**
 
