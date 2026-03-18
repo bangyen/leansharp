@@ -39,9 +39,6 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-#### Sobolev Regularity
-* Refactor existing core Taylor descent lemmas to hold in $H^k$ spaces. **[Medium-High]**
-
 #### Deterministic Stability
 * Prove localized stability bounds for individual gradient updates. **[High]**
 * Prove the overarching uniform stability theorem for the entire filter process. **[High]**

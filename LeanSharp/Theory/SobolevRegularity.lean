@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
+import LeanSharp.Core.Taylor
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
@@ -36,6 +37,9 @@ generalization.
 * `is_h1_of_strong_data`.
 * `is_h2_of_strong_data`.
 * `is_h2_implies_is_h1`.
+* `smooth_descent_of_h2`.
+* `sam_taylor_bound_of_h2`.
+* `smooth_one_step_descent_of_h2`.
 -/
 
 namespace LeanSharp
@@ -210,5 +214,72 @@ theorem is_h2_implies_is_h1
     is_h1 μ u := by
   rcases h_h2 with ⟨grad_u, hess_u, h_weak_grad, h_weak_hess, h_l2_u, h_l2_grad, h_l2_hess⟩
   exact ⟨grad_u, h_weak_grad, h_l2_u, h_l2_grad⟩
+
+/-- `H²`-interface wrapper for `smooth_descent`: if `u` is supplied with canonical
+weak-gradient and weak-Hessian contracts (in the current finite-dimensional Sobolev
+interface) and the gradient is Lipschitz, then the standard Taylor descent bound
+holds. -/
+theorem smooth_descent_of_h2
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w ε : W ι) (M : NNReal)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u)) :
+    u (w + ε) ≤ u w + inner ℝ (gradient u w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
+  let _ := μ
+  let _ := h_h2_canonical
+  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
+    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
+  have h_diff : Differentiable ℝ u := by
+    intro x
+    exact (h_fderiv x).differentiableAt
+  exact smooth_descent u w ε M h_diff h_smooth
+
+/-- `H²`-interface wrapper for `sam_taylor_bound`. -/
+theorem sam_taylor_bound_of_h2
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w : W ι) (ρ : ℝ) (M : NNReal)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u))
+    (hρ : 0 ≤ ρ) :
+    sam_objective u w ρ ≤ u w + ‖gradient u w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
+  let _ := h_h2_canonical
+  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
+    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
+  have h_diff : Differentiable ℝ u := by
+    intro x
+    exact (h_fderiv x).differentiableAt
+  exact sam_taylor_bound u w ρ M h_smooth h_diff hρ
+
+/-- `H²`-interface wrapper for `smooth_one_step_descent`. -/
+theorem smooth_one_step_descent_of_h2
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w : W ι) (M : NNReal) (η : ℝ)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u))
+    (h_eta : 0 < η)
+    (h_eta_bound : η ≤ 1 / (M : ℝ)) :
+    u (w - η • gradient u w) ≤ u w - (η / 2) * ‖gradient u w‖ ^ 2 := by
+  let _ := h_h2_canonical
+  have h_fderiv : ∀ x, HasFDerivAt u (fderiv ℝ u x) x :=
+    (is_h2_with_gradient_hessian_iff μ u).1 h_h2_canonical |>.1
+  have h_diff : Differentiable ℝ u := by
+    intro x
+    exact (h_fderiv x).differentiableAt
+  exact smooth_one_step_descent u w M η h_diff h_smooth h_eta h_eta_bound
 
 end LeanSharp

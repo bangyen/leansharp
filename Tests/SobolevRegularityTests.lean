@@ -21,6 +21,9 @@ downstream statements.
 * `h1_transition_mapping_test`.
 * `h2_transition_mapping_test`.
 * `h2_implies_h1_interface_test`.
+* `smooth_descent_h2_wrapper_test`.
+* `sam_taylor_bound_h2_wrapper_test`.
+* `smooth_one_step_descent_h2_wrapper_test`.
 -/
 
 namespace LeanSharp
@@ -105,5 +108,54 @@ theorem h2_implies_h1_interface_test
     (h_h2 : is_h2 μ u) :
     is_h1 μ u := by
   exact is_h2_implies_is_h1 μ u h_h2
+
+/-- **H² Taylor Wrapper Verification**: checks `smooth_descent_of_h2` can be
+applied directly from canonical Sobolev contracts. -/
+theorem smooth_descent_h2_wrapper_test
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w ε : W ι) (M : NNReal)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u)) :
+    u (w + ε) ≤ u w + inner ℝ (gradient u w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
+  exact smooth_descent_of_h2 μ u w ε M h_h2_canonical h_smooth
+
+/-- **H² SAM Wrapper Verification**: checks `sam_taylor_bound_of_h2` applies
+under canonical Sobolev contracts. -/
+theorem sam_taylor_bound_h2_wrapper_test
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w : W ι) (ρ : ℝ) (M : NNReal)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u))
+    (hρ : 0 ≤ ρ) :
+    sam_objective u w ρ ≤ u w + ‖gradient u w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
+  exact sam_taylor_bound_of_h2 μ u w ρ M h_h2_canonical h_smooth hρ
+
+/-- **H² One-Step Wrapper Verification**: checks `smooth_one_step_descent_of_h2`
+applies under canonical Sobolev contracts. -/
+theorem smooth_one_step_descent_h2_wrapper_test
+    (μ : Measure (W ι)) (u : W ι → ℝ)
+    (w : W ι) (M : NNReal) (η : ℝ)
+    (h_h2_canonical :
+      has_weak_gradient u (gradient u) ∧
+        has_weak_hessian (gradient u) (hessian u) ∧
+        is_l2_scalar μ u ∧
+        is_l2_vector μ (gradient u) ∧
+        is_l2_hessian μ (hessian u))
+    (h_smooth : LipschitzWith M (gradient u))
+    (h_eta : 0 < η)
+    (h_eta_bound : η ≤ 1 / (M : ℝ)) :
+    u (w - η • gradient u w) ≤ u w - (η / 2) * ‖gradient u w‖ ^ 2 := by
+  exact smooth_one_step_descent_of_h2
+    μ u w M η h_h2_canonical h_smooth h_eta h_eta_bound
 
 end LeanSharp
