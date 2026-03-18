@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Theory.Robustness.MedianComparison
+import LeanSharp.Theory.Structural.FilterAlgebra
 
 /-!
 # Robustness Comparison Results
@@ -16,6 +17,8 @@ median and mean robustness lemmas into user-facing statements.
 * `median_bounded_mean_unbounded_one_outlier`.
 * `median_robust_mean_nonrobust`.
 * `median_and_zfiltered_mean_bounded_subset`.
+* `z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold`.
+* `zfiltered_mean_unbounded_of_nonpos_threshold`.
 -/
 
 namespace LeanSharp
@@ -76,5 +79,47 @@ theorem median_and_zfiltered_mean_bounded_subset
   refine ⟨h_med g' hg_fixed, ?_⟩
   exact z_filtered_empirical_mean_bounded_subset_max
     s g s_fixed h_sub z R_fixed R_out hs h_fixed_bound g' hg_fixed hg_out
+
+/-- **Degenerate-threshold identity**: for nonpositive Z thresholds, every coordinate
+passes the mask test, so the filtered empirical mean equals the ordinary empirical mean.
+This theorem exists to expose the exact regime where filtered aggregation reduces to
+the classical mean and therefore inherits its robustness profile. -/
+theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
+    (s : Finset α) (g : α → W ι) {z : ℝ} (hz : z ≤ 0) :
+    z_filtered_empirical_mean s g z = empirical_mean s g := by
+  unfold z_filtered_empirical_mean
+  congr 1
+  funext i
+  apply (WithLp.equiv 2 (ι → ℝ)).injective
+  ext j
+  apply filtered_gradient_coord_preservation
+  unfold z_score_mask
+  rw [Equiv.apply_symm_apply]
+  have h_keep : |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vector_mean (g i)| ≥ z * vector_std (g i) := by
+    have hzσ : z * vector_std (g i) ≤ 0 :=
+      mul_nonpos_of_nonpos_of_nonneg hz (Real.sqrt_nonneg _)
+    exact le_trans hzσ (abs_nonneg _)
+  exact by simpa only [
+    WithLp.equiv_apply,
+    ge_iff_le,
+    ite_eq_left_iff,
+    not_le,
+    zero_ne_one,
+    imp_false,
+    not_lt
+  ] using h_keep
+
+/-- **Filtered-mean non-robustness at nonpositive threshold**: when `z ≤ 0`, Z-filtered
+mean aggregation exactly matches empirical mean, so a single moved point can still make
+the estimate arbitrarily large. -/
+theorem zfiltered_mean_unbounded_of_nonpos_threshold [Nonempty ι]
+    (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s)
+    (z C : ℝ) (hz : z ≤ 0) (hC : -1 ≤ C) :
+    ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖z_filtered_empirical_mean s g' z‖ > C := by
+  obtain ⟨g', hg', hmean⟩ := mean_unbounded s g i0 hi0 C hC
+  refine ⟨g', hg', ?_⟩
+  have hz_eq : z_filtered_empirical_mean s g' z = empirical_mean s g' :=
+    z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold s g' hz
+  simpa only [hz_eq, gt_iff_lt] using hmean
 
 end LeanSharp
