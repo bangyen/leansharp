@@ -41,6 +41,10 @@ The following items represent the planned evolution of LeanSharp, categorized by
 ### Immediate Roadmap (Verification & Refinement)
 
 * Formalize second-order Fréchet derivatives in Mathlib. **[High]**
+* Formalize third-order Fréchet derivatives. **[High]**
+* Prove the multilinear Taylor remainder theorem. **[High]**
+* Extend oracle-based infinite-variance guarantees to explicit $\alpha$-stable families. **[High]**
+* Define the analytical limit as layer width $D \to \infty$. **[High]**
 
 ---
 
@@ -52,23 +56,12 @@ These items represent specialized research directions or are currently limited b
 * Prove a custom Central Limit Theorem (CLT) applicable to this specific filtered distribution. **[Extreme]**
 * Establish the statistical optimality lower bound. **[Extreme]**
 
-#### Hessian-Aware Filtering
-* Formalize second-order Fréchet derivatives in Mathlib. **[High]**
-
 #### Neural Tangent Kernels
-* Define the analytical limit as layer width $D \to \infty$. **[High]**
 * Prove network initialization bounds. **[Extreme]**
 
 #### Denoising Diffusion
 * Formalize Forward/Reverse SDE definitions governing DDPMs. **[Extreme]**
 * Prove the score-matching stability objective. **[Extreme]**
-
-#### Heavy-Tailed Noise
-* Extend oracle-based infinite-variance guarantees to explicit $\alpha$-stable families. **[High]**
-
-#### Third-Order Descent
-* Formalize third-order Fréchet derivatives. **[High]**
-* Prove the multilinear Taylor remainder theorem. **[High]**
 
 ## Installation & Building
 
