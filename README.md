@@ -39,9 +39,10 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-#### Deterministic Stability
-* Prove localized stability bounds for individual gradient updates. **[High]**
-* Prove the overarching uniform stability theorem for the entire filter process. **[High]**
+#### Promoted from Extensions (Near-Term)
+* Prove robustness bounds compared to mean/Z-score baselines (mean unbounded / median bounded already in `Theory/Robustness.lean`). **[Medium-High]**
+* Define the local curvature matrix and the generalized filter condition. **[Medium]**
+* Define Cauchy/non-Gaussian probability oracles. **[Medium-High]**
 
 ---
 
@@ -56,7 +57,6 @@ These items represent specialized research directions or are currently limited b
 
 #### Hessian-Aware Filtering
 * Formalize second-order Fréchet derivatives in Mathlib. **[High]**
-* Define the local curvature matrix and the generalized filter condition. **[Medium]**
 * Prove the descent lemma utilizing the second-order information. **[Medium-High]**
 
 #### Neural Tangent Kernels
@@ -68,11 +68,7 @@ These items represent specialized research directions or are currently limited b
 * Prove the score-matching stability objective. **[Extreme]**
 
 #### Heavy-Tailed Noise
-* Define Cauchy/non-Gaussian probability oracles. **[Medium-High]**
 * Prove bounds under infinite variance conditions. **[High]**
-
-#### Median-Based Robustness
-* Prove robustness bounds compared to mean/Z-score baselines (mean unbounded / median bounded already in `Theory/Robustness.lean`). **[Medium-High]**
 
 #### Third-Order Descent
 * Formalize third-order Fréchet derivatives. **[High]**

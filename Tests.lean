@@ -14,6 +14,7 @@ import Tests.RobustnessTests
 import Tests.ScheduleConvergence
 import Tests.SchedulerTests
 import Tests.SobolevRegularityTests
+import Tests.StabilityTests
 import Tests.TacticTests
 
 /-!
