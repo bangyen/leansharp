@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 
 import Tests.AdvancedVerification
 import Tests.ExampleModels
+import Tests.HardThresholdingTests
 import Tests.IntegrabilityTests
 import Tests.LayerTests
 import Tests.RobbinsMonroMartingaleTests

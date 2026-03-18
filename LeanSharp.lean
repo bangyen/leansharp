@@ -63,6 +63,7 @@ import LeanSharp.Theory.Dynamics.Schedulers
 -- Structural
 import LeanSharp.Theory.Structural.ChainStability
 import LeanSharp.Theory.Structural.FilterAlgebra
+import LeanSharp.Theory.Structural.HardThresholding
 import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
 import LeanSharp.Theory.Structural.Stability
