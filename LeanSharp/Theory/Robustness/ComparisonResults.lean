@@ -33,7 +33,7 @@ theorem median_bounded_mean_unbounded_one_outlier_of_majority [Nonempty ι]
     (s : Finset α) (g : α → W ι)
     (i0 : α) (hi0 : i0 ∈ s)
     (h_maj : 2 * (s.erase i0).card > s.card)
-    (C : ℝ) (hC : -1 ≤ C) :
+    (C : ℝ) :
     (∃ R : ℝ, ∀ g' : α → W ι, (∀ i ≠ i0, g' i = g i) →
         ‖geometric_median s g'‖ ≤ R) ∧
     (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C) := by
@@ -41,7 +41,7 @@ theorem median_bounded_mean_unbounded_one_outlier_of_majority [Nonempty ι]
   constructor
   · obtain ⟨R, hR⟩ := median_bounded_subset s g (s.erase i0) (Finset.erase_subset i0 s) h_maj
     refine ⟨R, fun g' hg' => hR g' (fun i hi => hg' i (Finset.mem_erase.1 hi).1)⟩
-  · exact mean_unbounded s g i0 hi0 C hC
+  · exact mean_unbounded s g i0 hi0 C
 
 /-- **Corollary (bounded-outlier regime certificate)**: when a strict majority of points are fixed
 and outliers are norm-bounded, both the geometric median and the Z-filtered empirical

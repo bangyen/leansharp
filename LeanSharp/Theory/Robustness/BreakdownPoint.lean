@@ -60,8 +60,7 @@ theorem mean_breakdown_point_zero [Nonempty ι] (s : Finset α) (g : α → W ι
     let i0 := hs.choose
     have hi0 : i0 ∈ s := hs.choose_spec
     let C := max R 0 + 1
-    have hC : -1 ≤ C := by linarith [le_max_right R 0]
-    obtain ⟨g', h_diff, h_norm⟩ := mean_unbounded s g i0 hi0 C hC
+    obtain ⟨g', h_diff, h_norm⟩ := mean_unbounded s g i0 hi0 C
     refine ⟨g', ?_, ?_⟩
     · have hsub : s.filter (fun i => g' i ≠ g i) ⊆ ({i0} : Finset α) := by
         intro i hi

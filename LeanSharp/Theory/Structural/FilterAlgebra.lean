@@ -19,7 +19,6 @@ These are "Green Zone" foundational proofs that do not require external assumpti
 * `filtered_gradient_coord_preservation`.
 * `filtered_gradient_zero_of_not_outlier`.
 * `single_outlier_extraction`.
-* `sparse_signal_recovery`.
 * `z_score_mask_scale_invariance`.
 -/
 
@@ -73,25 +72,6 @@ theorem single_outlier_extraction (g : W ι) (z : ℝ) (i : ι)
     have h_μ_j : |(WithLp.equiv 2 (ι → ℝ) g) j - vector_mean g| < z * vector_std g := by
       rw [h_μ, sub_zero]; exact h_not
     exact filtered_gradient_zero_of_not_outlier g z j h_μ_j
-
-/-- **Sparse Signal Recovery**: In a regime where one component is much larger
-than the rest (an outlier), the Z-score filter preserves it. -/
-theorem sparse_signal_recovery (g : W ι) (z : ℝ) (i : ι)
-    (h_sparse : |(WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g| ≥ z * vector_std g) :
-    (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
-    (WithLp.equiv 2 (ι → ℝ) g) i := by
-  apply filtered_gradient_coord_preservation
-  simpa only [
-    z_score_mask,
-    WithLp.equiv_apply,
-    ge_iff_le,
-    WithLp.equiv_symm_apply,
-    ite_eq_left_iff,
-    not_le,
-    zero_ne_one,
-    imp_false,
-    not_lt
-  ] using h_sparse
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/

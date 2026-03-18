@@ -141,7 +141,10 @@ end ZSharpStructuralAssumptions
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **Structural Integrability**: The main theorem that derives the entire sequence of
-integrability witnesses from structural assumptions. -/
+integrability witnesses from structural assumptions. This theorem is intentionally
+retained as a compatibility wrapper for callers that already package assumptions in
+`ZSharpStructuralAssumptions`; minimal new results should prefer
+`zsharp_integrability_of_assumptions`. -/
 theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
     (∀ t, Integrable (fun ω => f (w t ω))) ∧

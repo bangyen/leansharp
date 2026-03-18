@@ -157,7 +157,7 @@ theorem is_h2_implies_is_h1
     (μ : Measure (W ι)) (u : W ι → ℝ)
     (h_h2 : is_h2 μ u) :
     is_h1 μ u := by
-  rcases h_h2 with ⟨grad_u, hess_u, h_weak_grad, h_weak_hess, h_l2_u, h_l2_grad, h_l2_hess⟩
+  rcases h_h2 with ⟨grad_u, _, h_weak_grad, _, h_l2_u, h_l2_grad, _⟩
   exact ⟨grad_u, h_weak_grad, h_l2_u, h_l2_grad⟩
 
 end LeanSharp

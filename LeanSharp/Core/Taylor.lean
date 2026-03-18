@@ -196,7 +196,7 @@ $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
 theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η : ℝ)
     (h_diff : Differentiable ℝ L)
     (h_smooth : LipschitzWith M (gradient L))
-    (h_eta : 0 < η)
+    (h_eta_nonneg : 0 ≤ η)
     (h_eta_bound : η ≤ 1 / (M : ℝ)) :
     L (w - η • gradient L w) ≤ L w - (η / 2) * ‖gradient L w‖ ^ 2 := by
   set g := gradient L w
@@ -219,6 +219,21 @@ theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η 
     _ = L (w + -(η • g)) := by rw [h_step]
     _ ≤ L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
     _ ≤ L w - (η / 2) * ‖g‖ ^ 2 := by
-      nlinarith [h_bound, h_inner_desc, h_norm_desc]
+      have hquad : (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
+        rw [h_norm_desc]
+        have hMη_norm : ((M : ℝ) * η) * ‖g‖ ^ 2 ≤ ‖g‖ ^ 2 := by
+          nlinarith [h_bound, sq_nonneg ‖g‖]
+        calc
+          (M : ℝ) / 2 * (η ^ 2 * ‖g‖ ^ 2)
+              = (η / 2) * (((M : ℝ) * η) * ‖g‖ ^ 2) := by ring
+          _ ≤ (η / 2) * ‖g‖ ^ 2 :=
+            mul_le_mul_of_nonneg_left hMη_norm (by nlinarith [h_eta_nonneg])
+      calc
+        L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2
+            ≤ L w + inner ℝ g (-(η • g)) + (η / 2) * ‖g‖ ^ 2 := by
+              nlinarith [hquad]
+        _ = L w - (η / 2) * ‖g‖ ^ 2 := by
+          rw [h_inner_desc]
+          ring
 
 end LeanSharp

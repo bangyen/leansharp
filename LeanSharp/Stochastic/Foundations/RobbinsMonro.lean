@@ -122,7 +122,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
       ∧ zsharp_objective_as_convergence f w := by
-  rcases h_model with ⟨h_rm, ⟨h_struct⟩, ⟨R_obj, h_adapted_obj, h_step_obj, hbdd_obj⟩,
+  rcases h_model with ⟨_, ⟨h_struct⟩, ⟨R_obj, h_adapted_obj, h_step_obj, hbdd_obj⟩,
     h_meas, h_desc_step⟩
   let g_adv (t : ℕ) (ω : Ω) := gradient f (w t ω)
   have ⟨h_int, h_int_grad⟩ := zsharp_structural_integrability f w η z σsq h_struct

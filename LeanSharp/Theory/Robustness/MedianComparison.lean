@@ -28,22 +28,21 @@ variable {α : Type*}
 open BigOperators
 
 /-- **Mean Non-Robustness**: A single large outlier can move the mean arbitrarily far. -/
-lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ)
-    (hC : -1 ≤ C) :
+lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ) :
     ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C := by
   classical
   let other_sum := ∑ i ∈ s.erase i0, g i
   let n := (s.card : ℝ)
-  -- Choose v such that ‖(1/n) * (v + other_sum)‖ > C
-  let v := (n * (C + 1) + ‖other_sum‖) • unit_vector ι
+  -- Choose v such that ‖(1/n) * (v + other_sum)‖ > C without sign assumptions on C.
+  let v := (n * (|C| + 1) + ‖other_sum‖) • unit_vector ι
   use fun i => if i = i0 then v else g i
-  have h_norm_v : ‖v‖ = n * (C + 1) + ‖other_sum‖ := by
+  have h_norm_v : ‖v‖ = n * (|C| + 1) + ‖other_sum‖ := by
     rw [
       norm_smul,
       norm_unit_vector,
       mul_one,
       Real.norm_eq_abs,
-      abs_of_nonneg (add_nonneg (mul_nonneg (by positivity) (by linarith)) (norm_nonneg _))
+      abs_of_nonneg (add_nonneg (mul_nonneg (by positivity) (by positivity)) (norm_nonneg _))
     ]
   constructor
   · intro i hi; simp only [if_neg hi]
@@ -59,10 +58,10 @@ lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (
     have hn_pos : 0 < n := by have : s.Nonempty := ⟨i0, hi0⟩; positivity
     rw [norm_smul, Real.norm_eq_abs (1 / n), abs_of_pos (one_div_pos.mpr hn_pos)]
     have heq : (1 / n) * (‖v‖ - ‖other_sum‖) = (1 / n)
-      * (n * (C + 1) + ‖other_sum‖ - ‖other_sum‖) := by rw [h_norm_v]
-    have hring : (1 / n) * (n * (C + 1) + ‖other_sum‖ - ‖other_sum‖)
-      = (1 / n) * (n * (C + 1)) := by ring
-    have hlast : (1 / n) * (n * (C + 1)) = C + 1 := by field_simp [hn_pos.ne.symm]
+      * (n * (|C| + 1) + ‖other_sum‖ - ‖other_sum‖) := by rw [h_norm_v]
+    have hring : (1 / n) * (n * (|C| + 1) + ‖other_sum‖ - ‖other_sum‖)
+      = (1 / n) * (n * (|C| + 1)) := by ring
+    have hlast : (1 / n) * (n * (|C| + 1)) = |C| + 1 := by field_simp [hn_pos.ne.symm]
     have hineq : ‖v + other_sum‖ ≥ ‖v‖ - ‖other_sum‖ := by
       have H := (norm_sub_norm_le v (-other_sum)).trans_eq (by rw [sub_neg_eq_add])
       have hneg : ‖v‖ - ‖-other_sum‖ = ‖v‖ - ‖other_sum‖ := by rw [norm_neg other_sum]
@@ -70,7 +69,10 @@ lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (
     have hchain := heq.trans (hring.trans hlast)
     have hge := ge_trans (mul_le_mul_of_nonneg_left hineq (one_div_pos.mpr hn_pos).le)
       (ge_of_eq hchain)
-    exact lt_of_lt_of_le (by linarith) hge
+    have hC_lt_abs_add_one : C < |C| + 1 := by
+      have hC_le_abs : C ≤ |C| := le_abs_self C
+      linarith
+    exact lt_of_lt_of_le hC_lt_abs_add_one hge
 
 /-- **Median Robustness (Boundedness)**: The geometric median remains bounded even if
 some points are moved, as long as a majority stay fixed.
@@ -166,7 +168,7 @@ are fixed, an adversary can move the remaining points so that the geometric medi
 has arbitrarily large norm. Together with `median_bounded_subset` this characterizes
 the 50% breakdown point: the median stays bounded iff more than half the points are fixed. -/
 theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixed : Finset α)
-    (h_sub : s_fixed ⊆ s) (h_break : 2 * s_fixed.card < s.card) (C : ℝ) (hC : -1 ≤ C) :
+    (h_sub : s_fixed ⊆ s) (h_break : 2 * s_fixed.card < s.card) (C : ℝ) :
     ∃ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) ∧ ‖geometric_median s g'‖ > C := by
   classical
   have hs_nonempty : s.Nonempty := by
@@ -185,11 +187,17 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
   set B := ∑ i ∈ s_fixed, ‖g i‖
   set n_out := (s_out.card : ℝ)
   set n_fixed := (s_fixed.card : ℝ)
-  set R := max (C + 2) ((n_out * C + B) / (n_out - n_fixed) + 1)
-  have hR_ge : R ≥ 0 := by unfold R; apply le_max_iff.mpr; left; linarith
-  have hR_gt_C : C < R := by unfold R; exact lt_max_of_lt_left (by linarith)
+  set R := max (|C| + 2) ((n_out * C + B) / (n_out - n_fixed) + 1)
+  have hR_ge : R ≥ 0 := by unfold R; apply le_max_iff.mpr; left; positivity
+  have hR_gt_C : C < R := by
+    unfold R
+    have hC_lt_abs_add_two : C < |C| + 2 := by
+      have hC_le_abs : C ≤ |C| := le_abs_self C
+      linarith
+    exact lt_of_lt_of_le hC_lt_abs_add_two (le_max_left _ _)
   have hR_large : (n_out * C + B) / (n_out - n_fixed) < R := by
-    unfold R; have h1 := le_max_right (C + 2) ((n_out * C + B) / (n_out - n_fixed) + 1)
+    unfold R
+    have h1 := le_max_right (|C| + 2) ((n_out * C + B) / (n_out - n_fixed) + 1)
     linarith
   use fun i => if i ∈ s_out then R • unit_vector ι else g i
   constructor

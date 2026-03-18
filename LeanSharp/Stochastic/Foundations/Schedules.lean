@@ -78,7 +78,7 @@ if each step satisfies the stated conditional contraction and the canonical
 step-size schedule $\eta_t = 1 / (\mu (t+1))$ with `μ > 0`, then the expected
 squared distance to `w_star` decays at rate `1/T`. -/
 theorem zsharp_strongly_convex_rate (w_star : W ι) w0
-    (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W ι) [Nonempty Ω]
+    (η : ℕ → ℝ) (z μ : ℝ) (g_adv : ℕ → Ω → W ι)
     (ℱ : ℕ → MeasurableSpace Ω)
     (h_le : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_cond_bound : ∀ t, ∀ᵐ ω ∂volume,
@@ -87,8 +87,7 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
       (1 - η t * μ) * ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)
     (hμ : 0 < μ)
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
-    (h_align0 : ∀ ω, stochastic_alignment_condition w_star
-      (weight_sequence w0 η z g_adv 0 ω) η 0 z μ (g_adv 0))
+    (h_align0 : stochastic_alignment_condition w_star w0 η 0 z μ (g_adv 0))
     (h_int : ∀ t, Integrable (fun ω => ‖weight_sequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
     ∃ C : ℝ, ∀ T : ℕ, T > 0 →
       𝔼[fun ω => ‖weight_sequence w0 η z g_adv T ω - w_star‖ ^ 2] ≤ C / T := by
@@ -103,7 +102,7 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
       rw [ht, Nat.cast_one, div_one]
       have h_bound : 𝔼[fun ω => ‖stochastic_zsharp_step w0 η 0 z (g_adv 0) ω - w_star‖ ^ 2] ≤
           (1 - (η 0) * μ) * ‖w0 - w_star‖ ^ 2 :=
-        stochastic_zsharp_convergence w_star w0 η 0 z μ (h_align0 (Classical.arbitrary Ω))
+        stochastic_zsharp_convergence w_star w0 η 0 z μ h_align0
       have h_zero : 1 - (η 0) * μ = 0 := by
         rw [h_step 0]; field_simp [hμ.ne']; ring
       rw [h_zero, zero_mul] at h_bound
