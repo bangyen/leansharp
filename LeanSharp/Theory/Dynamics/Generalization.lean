@@ -30,8 +30,6 @@ landscape and the statistical generalization performance of the model.
 
 * `sam_concrete_generalization`: Connects population risk to empirical risk via
   sharpness and Taylor expansion.
-* `zsharp_stability_theorem`: Proves that filtered updates exhibit lower uniform
-  stability.
 -/
 
 namespace LeanSharp
@@ -86,19 +84,5 @@ Uniform stability $\beta$ measures the sensitivity of the algorithm to the data.
 def uniform_stability {DataPoint : Type*} {n : ℕ} (A : Dataset DataPoint n → W ι) (β : ℝ) : Prop :=
   ∀ (S S' : Dataset DataPoint n), dataset_neighbor S S' →
   ‖A S - A S'‖ ≤ β / (n : ℝ)
-
-/-- **Interface corollary (stability transfer)**: if filtered updates are
-pointwise no less stable than a SAM baseline, then the same uniform stability
-constant transfers to the filtered algorithm. -/
-theorem zsharp_stability_theorem {DataPoint : Type*} {n : ℕ} (β_sam : ℝ)
-    (A_sam : Dataset DataPoint n → W ι)
-    (A_zsharp : Dataset DataPoint n → W ι)
-    (h_sam_stable : uniform_stability A_sam β_sam)
-    (h_filter_bound : ∀ S S' : Dataset DataPoint n,
-      ‖A_zsharp S - A_zsharp S'‖ ≤ ‖A_sam S - A_sam S'‖) :
-    uniform_stability A_zsharp β_sam := fun S S' h_neighbor =>
-  calc ‖A_zsharp S - A_zsharp S'‖
-    _ ≤ ‖A_sam S - A_sam S'‖ := h_filter_bound S S'
-    _ ≤ β_sam / (n : ℝ)      := h_sam_stable S S' h_neighbor
 
 end LeanSharp

@@ -26,8 +26,6 @@ loss landscape and the statistical Z-score gradient filter.
   is bounded by the landscape's $L_2$ sharpness and the original gradient norm.
 * `generalized_filter_condition_of_spectral_bound`: Lifts spectral bounds to the
   generalized filter contract under a norm-contraction hypothesis.
-* `zsharp_generalized_filter_condition`: Instantiates the generalized filter contract
-  for Z-score filtered gradients.
 -/
 
 namespace LeanSharp
@@ -78,17 +76,5 @@ theorem generalized_filter_condition_of_spectral_bound
     generalized_filter_condition H g_base g_filtered κ := by
   unfold generalized_filter_condition
   exact (h_spectral g_filtered).trans (mul_le_mul_of_nonneg_left h_contract hκ_nonneg)
-
-/-- Instantiates the generalized filter condition for Z-score filtering by combining
-the sharpness spectral bound with the known filtered-gradient norm contraction. -/
-theorem zsharp_generalized_filter_condition
-    (L : W ι → ℝ) (w : W ι) (g : W ι) (z : ℝ)
-    (hT : (hessian L w).toLinearMap.IsSymmetric)
-    (h_spectral : ∀ v : W ι, hessian_quadratic_form L w v ≤ sharpness L w hT * ‖v‖ ^ 2)
-    (h_sharpness_nonneg : 0 ≤ sharpness L w hT) :
-    generalized_filter_condition (local_curvature_matrix L w) g (filtered_gradient g z)
-      (sharpness L w hT) := by
-  unfold generalized_filter_condition local_curvature_matrix
-  exact zsharp_curvature_bound L w g z hT h_spectral h_sharpness_nonneg
 
 end LeanSharp

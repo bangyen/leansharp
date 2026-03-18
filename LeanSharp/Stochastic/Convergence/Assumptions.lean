@@ -22,7 +22,7 @@ simplify interface theorems.
 
 ## Theorems
 
-* `zsharp_strongest_descent_hypotheses_of_model_descent_hypotheses`.
+This module only defines hypothesis bundles.
 -/
 
 namespace LeanSharp
@@ -69,21 +69,5 @@ def zsharp_model_descent_hypotheses
       volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
         (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
-
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- Repackages concrete model-level ZSharp hypotheses into the strongest descent
-bundle used by downstream interface theorems. -/
-theorem zsharp_strongest_descent_hypotheses_of_model_descent_hypotheses
-    (L_smooth : NNReal) (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
-    (ℱ : ℕ → MeasurableSpace Ω)
-    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model :
-      zsharp_model_descent_hypotheses L_smooth f w η z σsq ℱ ℱfil) :
-    zsharp_strongest_descent_hypotheses L_smooth f w η z σsq
-      (fun t ω => gradient f (w t ω)) ℱ ℱfil := by
-  rcases h_model with ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩
-  have h_int_all := zsharp_structural_integrability f w η z σsq h_struct
-  exact ⟨h_rm, h_bridge, h_struct.h_step, h_desc_step, h_int_all.1, h_int_all.2, h_meas⟩
 
 end LeanSharp

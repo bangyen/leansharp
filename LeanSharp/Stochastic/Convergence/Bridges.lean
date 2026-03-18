@@ -25,7 +25,6 @@ assumptions.
 ## Theorems
 
 * `zsharp_objective_as_convergence_of_submartingale`.
-* `zsharp_objective_as_convergence_of_one_step_submartingale`.
 * `zsharp_objective_as_convergence_of_neg_submartingale`.
 -/
 
@@ -83,25 +82,6 @@ theorem zsharp_objective_as_convergence_of_submartingale
     h_sub.ae_tendsto_limitProcess hbdd
   filter_upwards [h_ae_tendsto] with ω hω
   exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
-
-omit [Fintype ι] in
-/-- **One-step bridge constructor**: packages explicit adaptedness, integrability,
-and one-step conditional expectation monotonicity into a submartingale certificate,
-then applies the theorem-backed Mathlib bridge to get almost-sure objective
-convergence. -/
-theorem zsharp_objective_as_convergence_of_one_step_submartingale
-    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
-    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
-    (h_step :
-      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
-    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    zsharp_objective_as_convergence f w := by
-  have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
-    submartingale_nat h_adapted h_int h_step
-  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 omit [Fintype ι] in
 /-- **Sign-flip convergence transfer**: if the transformed objective process

@@ -51,8 +51,9 @@ theorem zsharp_robbins_monro_objective_limit_with_martingale_model
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
       ∧ zsharp_objective_as_convergence f w := by
   refine ⟨h_model.h_update, ?_⟩
-  exact zsharp_objective_as_convergence_of_one_step_submartingale
-    f w ℱ R h_adapted h_int h_step hbdd
+  have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
+    submartingale_nat h_adapted h_int h_step
+  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 /-- **Bridge application theorem** -/
 theorem zsharp_objective_as_convergence_of_bridge
