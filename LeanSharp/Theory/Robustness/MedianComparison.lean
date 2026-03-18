@@ -111,7 +111,7 @@ theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finse
     have H : ∀ x ∈ Set.univ, (fun m => ∑ i ∈ s, ‖g' i - m‖)
         (geometric_median s g') ≤ (fun m => ∑ i ∈ s, ‖g' i - m‖) x := by
       unfold geometric_median; rw [dif_pos hs_nonempty]
-      exact Classical.choose_spec (exists_isMin_on_finite_sum_norm s g' hs_nonempty)
+      exact Classical.choose_spec (exists_isMin_on_finite_sum_norm s g')
     exact H (g i0) (Set.mem_univ (g i0))
   let s_out := s \ s_fixed
   have h_split (x : W ι) : ∑ i ∈ s, ‖g' i - x‖
@@ -215,11 +215,11 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
       intro i hi; simp only [g']; rw [if_pos hi]
     have hm_min : ∀ x : W ι, ∑ i ∈ s, ‖g' i - m‖ ≤ ∑ i ∈ s, ‖g' i - x‖ := by
       intro x
-      have h_m_choice : m = Classical.choose (exists_isMin_on_finite_sum_norm s g' hs_nonempty) :=
+      have h_m_choice : m = Classical.choose (exists_isMin_on_finite_sum_norm s g') :=
         geometric_median_eq_choose s g' hs_nonempty
       rw [h_m_choice]
       exact Classical.choose_spec
-        (exists_isMin_on_finite_sum_norm s g' hs_nonempty) (Set.mem_univ x)
+        (exists_isMin_on_finite_sum_norm s g') (Set.mem_univ x)
     by_contra h_norm_le
     push_neg at h_norm_le
     set v := R • unit_vector ι

@@ -66,9 +66,10 @@ theorem zsharp_second_order_descent
         -- to the functional descent.
         nlinarith [h_curv]
 
-/-- **Alignment Condition Bridge**:
-Proves that the curvature-aware descent lemma satisfies the alignment
-condition required for geometric convergence. -/
+/-- **Alignment Condition Wrapper**:
+This theorem packages already-established inner-product and norm bounds into
+the `alignment_condition` interface. It exists as a compatibility bridge for
+downstream convergence lemmas rather than as a new geometric estimate. -/
 theorem alignment_condition_of_curvature_bound
     (f : W ι → ℝ) (w w_star g_base : W ι) (z μ L_smooth : ℝ)
     (h_inner : μ * ‖w - w_star‖ ^ 2 ≤

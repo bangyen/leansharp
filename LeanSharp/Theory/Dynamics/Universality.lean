@@ -20,10 +20,10 @@ to establish optimality lower bounds and custom Central Limit Theorems (CLT).
   given a base noise distribution and a z-score threshold.
 * `filtered_char_fun`: Characteristic function of the filtered distribution.
 
-## Main theorems
+## Main contracts
 
-* `filtered_gaussian_symmetry`: Symmetry property of the filtered distribution
-  under Gaussian noise.
+* `filtered_distribution_symmetric`: Distribution-level symmetry interface used
+  by downstream universality arguments.
 -/
 
 namespace LeanSharp
@@ -57,14 +57,6 @@ interface instead of a specific base-noise construction. -/
 def filtered_distribution_symmetric (μ : Measure (W ι)) (z : ℝ) : Prop :=
   ∀ (A : Set (W ι)), MeasurableSet A →
     filtered_distribution μ z A = filtered_distribution μ z (Neg.neg '' A)
-
-/-- **Symmetry of Filtered Gaussian**:
-If the base noise distribution is a zero-mean isotropic Gaussian, the
-filtered distribution remains symmetric. -/
-theorem filtered_gaussian_symmetry (μ : Measure (W ι)) (z : ℝ)
-    (h_symm : filtered_distribution_symmetric μ z) :
-    filtered_distribution_symmetric μ z := by
-  exact h_symm
 
 end Universality
 

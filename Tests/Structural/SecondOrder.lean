@@ -13,9 +13,8 @@ import LeanSharp.Theory.Dynamics.SecondOrder
 
 * `quadratic_bowl`: A concrete quadratic landscape for testing.
 
-## Main theorems
+## Theorems
 
-* `quadratic_bowl_hessian`: Exact Hessian calculation for the bowl.
 * `quadratic_bowl_descent_test`: Verification of the second-order descent lemma.
 -/
 
@@ -32,14 +31,6 @@ noncomputable def quadratic_bowl (ι : Type*) [Fintype ι] (w : W ι) : ℝ :=
 section Tests
 
 variable {ι : Type*} [Fintype ι]
-
-/-- **Hessian of Quadratic Bowl**:
-The Hessian of the quadratic bowl is the identity matrix. -/
-theorem quadratic_bowl_hessian (w : W ι) :
-    local_curvature_matrix (quadratic_bowl ι) w = (1 : W ι →L[ℝ] W ι) →
-    local_curvature_matrix (quadratic_bowl ι) w = (1 : W ι →L[ℝ] W ι) := by
-  intro h_hessian
-  exact h_hessian
 
 /-- **Second-Order Descent on Quadratic Bowl**:
 Verifies that the descent lemma correctly predicts the objective decrease

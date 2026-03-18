@@ -109,29 +109,35 @@ lemma tendsto_sum_distances_cocompact {α : Type*} (s : Finset α) (g : α → W
       filter_upwards [tendsto_norm_cocompact_atTop.eventually_ge_atTop (b + ‖g i0‖)] with m hm
       linarith
 
-/-- The geometric median exists for any finite set of points in a finite-dim space. -/
-lemma exists_isMin_on_finite_sum_norm {α : Type*} (s : Finset α) (g : α → W ι) (hs : s.Nonempty) :
+/-- The geometric median objective possesses a minimizer for every finite index set. -/
+lemma exists_isMin_on_finite_sum_norm {α : Type*} (s : Finset α) (g : α → W ι) :
     ∃ m : W ι, IsMinOn (fun m => ∑ i ∈ s, ‖g i - m‖) Set.univ m := by
-  let f := fun m : W ι => ∑ i ∈ s, ‖g i - m‖
-  have hf : Continuous f := continuous_sum_distances s g
-  have h_coercive := tendsto_sum_distances_cocompact s g hs
-  let m0 : W ι := g hs.choose
-  have hev : ∀ᶠ (x : W ι) in Filter.cocompact (W ι), f m0 ≤ f x :=
-    h_coercive.eventually (Filter.eventually_ge_atTop (f m0))
-  have ⟨m, hm⟩ := hf.exists_forall_le' m0 hev
-  exact ⟨m, fun x _ => hm x⟩
+  by_cases hs : s.Nonempty
+  · let f := fun m : W ι => ∑ i ∈ s, ‖g i - m‖
+    have hf : Continuous f := continuous_sum_distances s g
+    have h_coercive := tendsto_sum_distances_cocompact s g hs
+    let m0 : W ι := g hs.choose
+    have hev : ∀ᶠ (x : W ι) in Filter.cocompact (W ι), f m0 ≤ f x :=
+      h_coercive.eventually (Filter.eventually_ge_atTop (f m0))
+    have ⟨m, hm⟩ := hf.exists_forall_le' m0 hev
+    exact ⟨m, fun x _ => hm x⟩
+  · use 0
+    have h_empty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp hs
+    intro x hx
+    simp only [h_empty, Finset.sum_empty, le_refl] at *
+    exact hx
 
 /-- The Multivariate (Geometric) Median minimizes the sum of Euclidean distances. -/
 noncomputable def geometric_median {α : Type*} (s : Finset α) (g : α → W ι) : W ι :=
-  if h : s.Nonempty then
-    Classical.choose (exists_isMin_on_finite_sum_norm s g h)
+  if _ : s.Nonempty then
+    Classical.choose (exists_isMin_on_finite_sum_norm s g)
   else
     0
 
 /-- When `s` is nonempty, `geometric_median` equals the chosen minimizer; used to apply
 `Classical.choose_spec` in robustness proofs. -/
 lemma geometric_median_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
-    geometric_median s g = Classical.choose (exists_isMin_on_finite_sum_norm s g h) := by
+    geometric_median s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
   unfold geometric_median; rw [dif_pos h]
 
 end LeanSharp

@@ -30,8 +30,10 @@ namespace LeanSharp
 variable {ι : Type*} [Fintype ι]
 variable {L : W ι → ℝ} {w : W ι} {η ρ z : ℝ}
 
-/-- The update function of SAM (z-sharp version) is differentiable at `w` if the loss
-    is twice differentiable and the gradient is nonzero. -/
+/-- Local fixed-mask differentiability rule for `sam_zsharp_update`.
+This theorem exists to certify differentiability in the regime where the
+z-score mask is locally constant near `w`; boundary-crossing mask changes are
+intentionally outside this contract. -/
 theorem differentiable_at_sam_zsharp_update
     (h_grad_diff_at_sam : DifferentiableAt ℝ (gradient L) (w + sam_perturbation L w ρ))
     (h_mask_stable : ∀ᶠ p in 𝓝 w, z_score_mask (gradient L (p + sam_perturbation L p ρ)) z =
