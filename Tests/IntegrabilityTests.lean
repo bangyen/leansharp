@@ -59,7 +59,7 @@ theorem structural_descent_envelope_test
       𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
       (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
   have h_int_all := zsharp_structural_integrability f w η z σsq h_struct
-  exact zsharp_robbins_monro_descent_envelope L_smooth f w η z σsq T
+  exact stochastic_zsharp_sequence_descent L_smooth f w η z σsq T
     (fun t ω => gradient f (w t ω)) ℱ (fun t => h_struct.h_step t) h_desc_step
     h_int_all.1 h_int_all.2 h_meas
 
@@ -87,8 +87,8 @@ theorem integrability_interface_test
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
     zsharp_objective_as_convergence f w := by
   -- This should now be a one-liner call to the structural interface
-  exact zsharp_robbins_monro_objective_limit_structural
-    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas h_desc_step
+  exact (zsharp_robbins_monro_almost_sure_convergence_structural
+    L_smooth f w η z σsq ℱ ℱfil h_struct h_rm h_bridge h_meas h_desc_step).2
 
 /-- **Structural Almost-Sure Interface Verification**: this test verifies that
 the structural Robbins-Monro interface can produce the full envelope-plus-a.s.

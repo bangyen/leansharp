@@ -54,32 +54,6 @@ noncomputable def stochastic_zsharp_step (w : W ι) (η : ℕ → ℝ) (t : ℕ)
   let g_f := filtered_gradient (g_adv ω) z
   w - (η t) • g_f
 
-/-- **L2 Bias-Variance Integrability**: Helper lemma containing the integrability checks
-for the decomposition. -/
-private lemma l2_bias_variance_integrability {Ω : Type*} [MeasureSpace Ω]
-    [IsProbabilityMeasure (volume : Measure Ω)]
-    (g : Ω → W ι) (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
-    (h_int_g : Integrable g) :
-    let c := 𝔼[g]
-    Integrable (fun _ : Ω => c) ∧
-    Integrable (fun _ : Ω => ‖c‖ ^ 2) ∧
-    Integrable (fun ω => g ω - c) ∧
-    Integrable (fun ω => 2 * inner ℝ (g ω - c) c) ∧
-    Integrable (fun ω => ‖g ω - c‖ ^ 2) := by
-  let c := 𝔼[g]
-  have h_int_c : Integrable (fun _ : Ω => c) := integrable_const c
-  have h_int_c2 : Integrable (fun _ : Ω => ‖c‖ ^ 2) := integrable_const _
-  have h_int_mc : Integrable (fun ω => g ω - c) := h_int_g.sub h_int_c
-  have h_int_inner : Integrable (fun ω => 2 * inner ℝ (g ω - c) c) :=
-    Integrable.const_mul (h_int_mc.inner_const c) 2
-  have h_int_diff2 : Integrable (fun ω => ‖g ω - c‖ ^ 2) := by
-    have h1 : (fun ω => ‖g ω - c‖ ^ 2) =
-              (fun ω => ‖g ω‖ ^ 2 + ‖c‖ ^ 2 - 2 * inner ℝ (g ω) c) := by
-      ext ω; rw [norm_sub_sq_real]; ring
-    rw [h1]; apply Integrable.sub (h_int.add h_int_c2)
-    exact Integrable.const_mul (h_int_g.inner_const c) 2
-  refine ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩
-
 /-- **L2 Bias-Variance Decomposition**: The standard identity
 $𝔼[‖g‖ ^ 2] = 𝔼[‖g - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2$ for any random vector $g$. -/
 theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
@@ -88,14 +62,21 @@ theorem l2_bias_variance_decomposition {Ω : Type*} [MeasureSpace Ω]
     (h_int_g : Integrable g) :
     𝔼[fun ω => ‖g ω‖ ^ 2] = 𝔼[fun ω => ‖g ω - 𝔼[g]‖ ^ 2] + ‖𝔼[g]‖ ^ 2 := by
   let c := 𝔼[g]
-  obtain ⟨h_int_c, h_int_c2, h_int_mc, h_int_inner, h_int_diff2⟩ :=
-    l2_bias_variance_integrability g h_int h_int_g
+  have h_int_c : Integrable (fun _ : Ω => c) := integrable_const c
+  have h_int_c2 : Integrable (fun _ : Ω => ‖c‖ ^ 2) := integrable_const _
+  have h_int_mc : Integrable (fun ω => g ω - c) := h_int_g.sub h_int_c
+  have h_int_diff2 : Integrable (fun ω => ‖g ω - c‖ ^ 2) := by
+    have h1 : (fun ω => ‖g ω - c‖ ^ 2) =
+              (fun ω => ‖g ω‖ ^ 2 + ‖c‖ ^ 2 - 2 * inner ℝ (g ω) c) := by
+      ext ω; rw [norm_sub_sq_real]; ring
+    rw [h1]; apply Integrable.sub (h_int.add h_int_c2)
+    exact Integrable.const_mul (h_int_g.inner_const c) 2
   calc 𝔼[fun ω => ‖g ω‖ ^ 2]
       = 𝔼[fun ω => ‖g ω - c‖ ^ 2 + ‖c‖ ^ 2 + 2 * inner ℝ (g ω - c) c] := by
         congr; ext ω; dsimp only; nth_rw 1 [← sub_add_cancel (g ω) c]; rw [norm_add_sq_real]; ring
     _ = 𝔼[fun ω => ‖g ω - c‖ ^ 2] + ‖c‖ ^ 2 := by
-        have h_int_inner' : Integrable (fun ω => inner ℝ (g ω - c) c) :=
-          h_int_mc.inner_const c
+        have h_int_inner : Integrable (fun ω => 2 * inner ℝ (g ω - c) c) :=
+          Integrable.const_mul (h_int_mc.inner_const c) 2
         have h_zero : 𝔼[fun ω => inner ℝ (g ω - c) c] = 0 := by
           simp_rw [real_inner_comm]
           erw [integral_inner h_int_mc c, integral_sub h_int_g h_int_c]
