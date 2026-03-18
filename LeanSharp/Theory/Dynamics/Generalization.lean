@@ -63,16 +63,14 @@ def pac_bayes_sharpness_bound (L_D L_S : W ι → ℝ) (w : W ι) (ρ : ℝ) (C 
 via the Taylor bound proved in `Taylor.lean`.
 
 This uses the exact `sam_objective` we formalized previously. -/
-theorem sam_concrete_generalization (L_D L_S : W ι → ℝ) (w : W ι) (ρ : ℝ) (M : ℝ≥0) (C : ℝ)
-    (h_smooth : LipschitzWith M (gradient L_S))
-    (h_diff : Differentiable ℝ L_S)
-    (hρ : 0 ≤ ρ)
-    (h_gen : L_D w ≤ sam_objective L_S w ρ + C) :
-    L_D w ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
+theorem sam_concrete_generalization (L_D : W ι → ℝ) (L_S : SmoothObjective ι) (w : W ι)
+    (ρ : ℝ) (C : ℝ) (hρ : 0 ≤ ρ)
+    (h_gen : L_D w ≤ sam_objective L_S.toFun w ρ + C) :
+    L_D w ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ + (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
   calc L_D w
-    _ ≤ sam_objective L_S w ρ + C := h_gen
-    _ ≤ L_S w + ‖gradient L_S w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 + C := by
-      linarith [sam_taylor_bound L_S w ρ M h_smooth h_diff hρ]
+    _ ≤ sam_objective L_S.toFun w ρ + C := h_gen
+    _ ≤ L_S.toFun w + ‖gradient L_S.toFun w‖ * ρ + (L_S.smoothness : ℝ) / 2 * ρ ^ 2 + C := by
+      linarith [sam_taylor_bound L_S w ρ hρ]
 
 /-!
 ## Uniform Stability

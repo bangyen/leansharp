@@ -61,8 +61,16 @@ theorem median_and_zfiltered_mean_bounded_subset
   refine ⟨R_med, ?_⟩
   intro g' hg_fixed hg_out
   refine ⟨h_med g' hg_fixed, ?_⟩
-  exact z_filtered_empirical_mean_bounded_subset_max
-    s g s_fixed h_sub z R_fixed R_out hs h_fixed_bound g' hg_fixed hg_out
+  let S : RobustSample α ι := {
+    s := s,
+    g := g,
+    s_fixed := s_fixed,
+    h_sub := h_sub,
+    R_fixed := R_fixed,
+    R_out := R_out,
+    h_fixed_bound := h_fixed_bound
+  }
+  exact z_filtered_empirical_mean_bounded_subset_max S z hs g' hg_fixed hg_out
 
 /-- **Degenerate-threshold identity**: for nonpositive Z thresholds, every coordinate
 passes the mask test, so the filtered empirical mean equals the ordinary empirical mean.

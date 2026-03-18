@@ -15,13 +15,14 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 This module formalizes the parameter space and core calculus operators for
 Sharpness-Aware Minimization (SAM).
 
-## Main definitions
+## Definitions
 
 * `W`: The parameter space $\mathbb{R}^d$, represented as a Euclidean space.
 * `gradient`: The gradient of a loss function, defined via the Riesz representation.
 * `hessian`: The Hessian operator, defined as the derivative of the gradient.
+* `TwiceDifferentiable`: Bundles a function $L$ with its second-order regularity properties.
 
-## Main theorems
+## Theorems
 
 * `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
 
@@ -91,18 +92,23 @@ private lemma hessian_symmetry_reduction (L : W ι → ℝ) (w : W ι)
   rw [h_riesz, real_inner_comm, h_riesz]
   exact h_sym x y
 
-/-- The Hessian is symmetric (self-adjoint) for C² loss functions.
-Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib.
+/-- A structure bundling a function $L$ with its second-order regularity properties. -/
+structure TwiceDifferentiable (ι : Type*) [Fintype ι] where
+  /-- The underlying loss function. -/
+  toFun : W ι → ℝ
+  /-- Proof that the function is differentiable everywhere. -/
+  differentiable : ∀ p, HasFDerivAt toFun (fderiv ℝ toFun p) p
+  /-- Proof that the derivative is itself differentiable. -/
+  twice_differentiable : ∀ p, DifferentiableAt ℝ (fderiv ℝ toFun) p
 
-Requires: `L` everywhere Fréchet-differentiable (`h_diff`) and `fderiv ℝ L`
-differentiable at `w` (`h_grad_diff`). Both hold for any C² loss function. -/
-theorem hessian_symmetric (L : W ι → ℝ) (w : W ι)
-    (h_diff : ∀ p : W ι, HasFDerivAt L (fderiv ℝ L p) p)
-    (h_grad_diff : HasFDerivAt (fderiv ℝ L) (fderiv ℝ (fderiv ℝ L) w) w) :
-    (hessian L w).toLinearMap.IsSymmetric :=
-  hessian_symmetry_reduction L w (fderiv ℝ (fderiv ℝ L) w)
-    (hessian_def_riesz_comp L w h_grad_diff)
-    (fun x y => second_derivative_symmetric h_diff h_grad_diff x y)
+/-- The Hessian is symmetric (self-adjoint) for C² loss functions.
+Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib. -/
+theorem hessian_symmetric (L : TwiceDifferentiable ι) (w : W ι) :
+    (hessian L.toFun w).toLinearMap.IsSymmetric :=
+  hessian_symmetry_reduction L.toFun w (fderiv ℝ (fderiv ℝ L.toFun) w)
+    (hessian_def_riesz_comp L.toFun w (L.twice_differentiable w).hasFDerivAt)
+    (fun x y => second_derivative_symmetric L.differentiable
+      (L.twice_differentiable w).hasFDerivAt x y)
 
 /-- **Squared Norm of Difference with Scalar Multiple**:
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/

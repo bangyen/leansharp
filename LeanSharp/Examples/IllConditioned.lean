@@ -187,4 +187,15 @@ theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
     ring_nf
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
+/-- Bundled strongly convex objective for the 2D ill-conditioned landscape. -/
+noncomputable def L_advanced_bundled : StronglyConvexObjective (Fin 2) where
+  toFun := L_advanced
+  smoothness := 20
+  differentiable := fun _ => (hasFDerivAt_L_advanced _).differentiableAt
+  lipschitz := by
+    apply LipschitzWith.of_dist_le_mul
+    intro w v; simpa only [dist_eq_norm] using advanced_L_smooth.2 w v
+  μ := 2
+  strongly_convex := advanced_strongly_convex
+
 end LeanSharp.IllConditioned

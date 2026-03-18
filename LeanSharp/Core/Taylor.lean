@@ -17,10 +17,15 @@ import Mathlib.Tactic.Linarith
 This module proves a second-order Taylor bound for L-smooth loss functions,
 which is critical for the convergence analysis of SAM variants.
 
-## Main theorems
+## Theorems
 
 * `smooth_descent`: The standard quadratic upper bound for L-smooth functions.
 * `sam_taylor_bound`: Specifically adapts the descent lemma to the SAM objective.
+
+## Definitions
+
+* `SmoothObjective`: Bundles a function `L` with its smoothness constant `M` and
+  differentiability properties.
 -/
 
 namespace LeanSharp
@@ -28,6 +33,17 @@ namespace LeanSharp
 open Set InnerProductSpace Real NNReal
 
 variable {ι : Type*} [Fintype ι]
+
+/-- A structure bundling a function `L` with its smoothness property. -/
+structure SmoothObjective (ι : Type*) [Fintype ι] where
+  /-- The underlying loss function. -/
+  toFun : W ι → ℝ
+  /-- The L-smoothness constant. -/
+  smoothness : ℝ≥0
+  /-- Proof that the loss is differentiable. -/
+  differentiable : Differentiable ℝ toFun
+  /-- Proof that the gradient is L-Lipschitz. -/
+  lipschitz : LipschitzWith smoothness (gradient toFun)
 
 /-- Auxiliary: the derivative of `t ↦ L(p + t•ε)` is `inner ℝ (∇L) ε`. -/
 private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
@@ -155,18 +171,17 @@ theorem smooth_descent_on_segment (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
 
 /-- **The L-Smooth Descent Lemma**:
 Global differentiability corollary of `smooth_descent_on_segment`. -/
-theorem smooth_descent (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
-    (h_diff : Differentiable ℝ L)
-    (h_smooth : LipschitzWith M (gradient L)) :
-    L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
-  have h_path_cont : ContinuousOn (fun t : ℝ => L (w + t • ε)) (Icc (0 : ℝ) 1) := by
+theorem smooth_descent (L : SmoothObjective ι) (w ε : W ι) :
+    L.toFun (w + ε) ≤
+      L.toFun w + inner ℝ (gradient L.toFun w) ε + (L.smoothness : ℝ) / 2 * ‖ε‖ ^ 2 := by
+  have h_path_cont : ContinuousOn (fun t : ℝ => L.toFun (w + t • ε)) (Icc (0 : ℝ) 1) := by
     exact
-      (h_diff.continuous.comp
+      (L.differentiable.continuous.comp
         (continuous_const.add (continuous_id.smul continuous_const))).continuousOn
-  have h_diff_path : ∀ t ∈ Ico (0 : ℝ) 1, DifferentiableAt ℝ L (w + t • ε) := by
+  have h_diff_path : ∀ t ∈ Ico (0 : ℝ) 1, DifferentiableAt ℝ L.toFun (w + t • ε) := by
     intro t _
-    exact h_diff (w + t • ε)
-  exact smooth_descent_on_segment L w ε M h_path_cont h_diff_path h_smooth
+    exact L.differentiable (w + t • ε)
+  exact smooth_descent_on_segment L.toFun w ε L.smoothness h_path_cont h_diff_path L.lipschitz
 
 /-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
 private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W ι) (h_norm : ‖ε‖ ≤ ρ) :
@@ -177,19 +192,18 @@ private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (
   have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
     apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
       simp only [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
-    positivity
+    apply div_nonneg (NNReal.coe_nonneg M)
+    norm_num
   linarith
 
 /-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
-theorem sam_taylor_bound (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
-    (M : ℝ≥0)
-    (h_smooth : LipschitzWith M (gradient L))
-    (h_diff : Differentiable ℝ L)
+theorem sam_taylor_bound (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
     (hρ : 0 ≤ ρ) :
-    sam_objective L w ρ ≤ L w + ‖gradient L w‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
+    sam_objective L.toFun w ρ ≤
+      L.toFun w + ‖gradient L.toFun w‖ * ρ + (L.smoothness : ℝ) / 2 * ρ ^ 2 := by
   unfold sam_objective perturbation_neighborhood
   apply csSup_le
-  · exact ⟨L w, w, ⟨
+  · exact ⟨L.toFun w, w, ⟨
       0,
       by simpa only [Metric.mem_closedBall, dist_self] using hρ,
       by simp only [add_zero]
@@ -197,25 +211,23 @@ theorem sam_taylor_bound (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
   · rintro v ⟨_, ⟨ε, hε_norm, rfl⟩, rfl⟩
     rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
     -- Step 1: Apply the smooth descent lemma to the perturbation ε
-    have hdescent := smooth_descent L w ε M h_diff h_smooth
+    have hdescent := smooth_descent L w ε
     -- Step 2: Use the SAM Taylor Terms Bound helper lemma
-    have h_terms := sam_taylor_terms_bound M ρ hρ (gradient L w) ε hε_norm
+    have h_terms := sam_taylor_terms_bound L.smoothness ρ hρ (gradient L.toFun w) ε hε_norm
     linarith [hdescent, h_terms]
 
 /-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
 with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
 $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
-theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η : ℝ)
-    (h_diff : Differentiable ℝ L)
-    (h_smooth : LipschitzWith M (gradient L))
+theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
     (h_eta_nonneg : 0 ≤ η)
-    (h_eta_bound : η * (M : ℝ) ≤ 1) :
-    L (w - η • gradient L w) ≤ L w - (η / 2) * ‖gradient L w‖ ^ 2 := by
-  set g := gradient L w
-  have h_descent := smooth_descent L w (-(η • g)) M h_diff h_smooth
+    (h_eta_bound : η * (L.smoothness : ℝ) ≤ 1) :
+    L.toFun (w - η • gradient L.toFun w) ≤ L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 := by
+  set g := gradient L.toFun w
+  have h_descent := smooth_descent L w (-(η • g))
   have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
   -- Step 1: Verify the descent radius bound
-  have h_bound : (M : ℝ) * η ≤ 1 := by
+  have h_bound : (L.smoothness : ℝ) * η ≤ 1 := by
     simpa only [mul_comm] using h_eta_bound
   have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
     rw [
@@ -228,24 +240,24 @@ theorem smooth_one_step_descent (L : W ι → ℝ) (w : W ι) (M : ℝ≥0) (η 
     ]
   have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by
     rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
-  calc L (w - η • g)
-    _ = L (w + -(η • g)) := by rw [h_step]
-    _ ≤ L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
-    _ ≤ L w - (η / 2) * ‖g‖ ^ 2 := by
-      have hquad : (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
+  calc L.toFun (w - η • g)
+    _ = L.toFun (w + -(η • g)) := by rw [h_step]
+    _ ≤ L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
+    _ ≤ L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
+      have hquad : (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
         rw [h_norm_desc]
-        have hMη_norm : ((M : ℝ) * η) * ‖g‖ ^ 2 ≤ ‖g‖ ^ 2 := by
+        have hMη_norm : ((L.smoothness : ℝ) * η) * ‖g‖ ^ 2 ≤ ‖g‖ ^ 2 := by
           nlinarith [h_bound, sq_nonneg ‖g‖]
         calc
-          (M : ℝ) / 2 * (η ^ 2 * ‖g‖ ^ 2)
-              = (η / 2) * (((M : ℝ) * η) * ‖g‖ ^ 2) := by ring
+          (L.smoothness : ℝ) / 2 * (η ^ 2 * ‖g‖ ^ 2)
+              = (η / 2) * (((L.smoothness : ℝ) * η) * ‖g‖ ^ 2) := by ring
           _ ≤ (η / 2) * ‖g‖ ^ 2 :=
             mul_le_mul_of_nonneg_left hMη_norm (by nlinarith [h_eta_nonneg])
       calc
-        L w + inner ℝ g (-(η • g)) + (M : ℝ) / 2 * ‖-(η • g)‖ ^ 2
-            ≤ L w + inner ℝ g (-(η • g)) + (η / 2) * ‖g‖ ^ 2 := by
+        L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2
+            ≤ L.toFun w + inner ℝ g (-(η • g)) + (η / 2) * ‖g‖ ^ 2 := by
               nlinarith [hquad]
-        _ = L w - (η / 2) * ‖g‖ ^ 2 := by
+        _ = L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
           rw [h_inner_desc]
           ring
 

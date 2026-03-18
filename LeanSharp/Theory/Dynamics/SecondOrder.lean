@@ -39,14 +39,19 @@ theorem zsharp_second_order_descent
     (h_smooth : is_L_smooth f L_smooth)
     (h_curv : (L_smooth / 2) * ‖g_f‖ ^ 2 ≤ (κ / 2) * ‖g_base‖ ^ 2) :
     f (w - η • g_f) ≤ f w - η * inner ℝ (gradient f w) g_f + (η^2 / 2) * κ * ‖g_base‖ ^ 2 := by
-  -- Step 1: Start with the standard smooth descent bound from Taylor foundations
   have h_L_nonneg : 0 ≤ L_smooth := h_smooth.1.le
   let L_nnreal : ℝ≥0 := ⟨L_smooth, h_L_nonneg⟩
   have h_lip : LipschitzWith L_nnreal (gradient f) := by
     apply LipschitzWith.of_dist_le_mul
     intro w' v'
     simpa only [dist_eq_norm] using h_smooth.2 w' v'
-  have h_desc := smooth_descent f w (-(η • g_f)) L_nnreal h_diff h_lip
+  let L_smooth_obj : SmoothObjective ι := {
+    toFun := f,
+    smoothness := L_nnreal,
+    differentiable := h_diff,
+    lipschitz := h_lip
+  }
+  have h_desc := smooth_descent L_smooth_obj w (-(η • g_f))
   -- Step 2: Expand the inner product and norm terms
   have h_inner : inner ℝ (gradient f w) (-(η • g_f)) = -η * inner ℝ (gradient f w) g_f := by
     rw [inner_neg_right, inner_smul_right, real_inner_comm]
