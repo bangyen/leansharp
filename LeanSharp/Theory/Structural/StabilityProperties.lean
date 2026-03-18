@@ -30,9 +30,9 @@ variable {ι : Type*} [Fintype ι]
     The norm of the update with a filtered gradient is always less than or equal
     to the norm of the update with the original gradient. -/
 theorem filtered_update_stability (w g : W ι) (η z : ℝ) :
-    ‖(w - η • filtered_gradient g z) - w‖ ≤ ‖(w - η • g) - w‖ := by
+    ‖(w - η • filteredGradient g z) - w‖ ≤ ‖(w - η • g) - w‖ := by
   simp only [sub_sub_cancel_left, norm_neg, norm_smul]
-  apply mul_le_mul_of_nonneg_left (filtered_norm_bound g z)
+  apply mul_le_mul_of_nonneg_left (norm_filteredGradient_le g z)
   positivity
 
 /-- **Localized One-Step Stability Bound**: if the gradient norm at a step is
@@ -42,10 +42,10 @@ arguments. -/
 theorem localized_filtered_update_norm_bound
     (w g : W ι) (η z R : ℝ)
     (hR : ‖g‖ ≤ R) :
-    ‖(w - η • filtered_gradient g z) - w‖ ≤ |η| * R := by
+    ‖(w - η • filteredGradient g z) - w‖ ≤ |η| * R := by
   have h_step := filtered_update_stability w g η z
   calc
-    ‖(w - η • filtered_gradient g z) - w‖
+    ‖(w - η • filteredGradient g z) - w‖
       ≤ ‖(w - η • g) - w‖ := h_step
     _ = |η| * ‖g‖ := by
       simp only [sub_sub_cancel_left, norm_neg, norm_smul]
@@ -60,7 +60,7 @@ theorem localized_filtered_update_norm_bound_of_reference
     (w g g_ref : W ι) (η z R_ref Δ : ℝ)
     (h_ref : ‖g_ref‖ ≤ R_ref)
     (h_loc : ‖g - g_ref‖ ≤ Δ) :
-    ‖(w - η • filtered_gradient g z) - w‖ ≤ |η| * (R_ref + Δ) := by
+    ‖(w - η • filteredGradient g z) - w‖ ≤ |η| * (R_ref + Δ) := by
   have h_norm_g : ‖g‖ ≤ R_ref + Δ := by
     calc
       ‖g‖ = ‖(g - g_ref) + g_ref‖ := by abel_nf
@@ -76,7 +76,7 @@ budget. This is the sequence-level deterministic stability theorem for the
 entire filtered process. -/
 theorem uniform_filtered_process_stability
     (w : ℕ → W ι) (g : ℕ → W ι) (η : ℕ → ℝ) (z R : ℝ)
-    (h_step : ∀ t, w (t + 1) = w t - η t • filtered_gradient (g t) z)
+    (h_step : ∀ t, w (t + 1) = w t - η t • filteredGradient (g t) z)
     (hR : ∀ t, ‖g t‖ ≤ R) :
     ∀ T : ℕ, ‖w T - w 0‖ ≤ Finset.sum (Finset.range T) (fun t => |η t| * R) := by
   intro T
@@ -112,17 +112,17 @@ theorem uniform_filtered_process_stability
 theorem residual_filtered_stability {ι_in : Type} [Fintype ι_in]
     (f : Layer (W ι_in) (W ι_in)) (w g : W f.ParamDim) (x : W ι_in) (η z : ℝ)
     (h_lip : LipschitzWith K (fun w' => f.forward w' x)) :
-    ‖(residual_layer f).forward (w - η • filtered_gradient g z) x -
+    ‖(residual_layer f).forward (w - η • filteredGradient g z) x -
       (residual_layer f).forward w x‖ ≤ K * |η| * ‖g‖ := by
   unfold residual_layer
   rw [add_sub_add_left_eq_sub]
   -- Use Lipschitz property
-  have h_bound := h_lip.norm_sub_le (w - η • filtered_gradient g z) w
+  have h_bound := h_lip.norm_sub_le (w - η • filteredGradient g z) w
   apply h_bound.trans
   rw [sub_sub_cancel_left, norm_neg, norm_smul]
   rw [Real.norm_eq_abs, ← mul_assoc]
   apply mul_le_mul_of_nonneg_left
-  · exact filtered_norm_bound g z
+  · exact norm_filteredGradient_le g z
   · positivity
 
 end LeanSharp

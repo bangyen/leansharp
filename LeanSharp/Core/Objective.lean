@@ -21,14 +21,14 @@ set, and first-order update identities that the rest of LeanSharp builds on.
 
 ## Definitions
 
-* `perturbation_neighborhood`.
-* `sam_objective`.
-* `sam_perturbation`.
+* `perturbationNeighborhood`.
+* `samObjective`.
+* `samPerturbation`.
 
 ## Theorems
 
-* `sam_objective_ge_self`.
-* `has_fderiv_at_sam_perturbation`.
+* `samObjective_ge_self`.
+* `differentiableAt_samPerturbation`.
 -/
 
 open Topology
@@ -39,17 +39,17 @@ variable {ι : Type*} [Fintype ι]
 
 /-- The SAM perturbation neighborhood. We consider all vectors `ε` such that
 the L2 norm metric distance `dist 0 ε ≤ ρ`. -/
-def perturbation_neighborhood (ρ : ℝ) : Set (W ι) :=
+def perturbationNeighborhood (ρ : ℝ) : Set (W ι) :=
   Metric.closedBall 0 ρ
 
 /-- In SAM, the optimal perturbation `ε*(w)` is the one that maximizes `L(w + ε)`.
 To formalize this generically without computing the exact `sup`, we can define
 the SAM objective as the supremum over the closed ball. -/
-noncomputable def sam_objective (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : ℝ :=
-  sSup (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))
+noncomputable def samObjective (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : ℝ :=
+  sSup (L '' ((fun ε => w + ε) '' perturbationNeighborhood ρ))
 
 /-- The first-order SAM perturbation vector. -/
-noncomputable def sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : W ι :=
+noncomputable def samPerturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : W ι :=
   let g := gradient L w
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
@@ -57,10 +57,10 @@ noncomputable def sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : W 
 /-- **SAM Objective Supremum Property**: The SAM objective at point `w` is always
 greater than or equal to the base loss `L w`, provided the neighborhood is
 bounded above. -/
-theorem sam_objective_ge_self (L : W ι → ℝ) (w : W ι) {ρ : ℝ} (hρ : 0 ≤ ρ)
-    (h_bdd : BddAbove (L '' ((fun ε => w + ε) '' perturbation_neighborhood ρ))) :
-    L w ≤ sam_objective L w ρ := by
-  unfold sam_objective perturbation_neighborhood
+theorem samObjective_ge_self (L : W ι → ℝ) (w : W ι) {ρ : ℝ} (hρ : 0 ≤ ρ)
+    (h_bdd : BddAbove (L '' ((fun ε => w + ε) '' perturbationNeighborhood ρ))) :
+    L w ≤ samObjective L w ρ := by
+  unfold samObjective perturbationNeighborhood
   refine le_csSup h_bdd ⟨w, ⟨
     0,
     by simp only [Metric.mem_closedBall, dist_self, hρ],
@@ -69,11 +69,11 @@ theorem sam_objective_ge_self (L : W ι → ℝ) (w : W ι) {ρ : ℝ} (hρ : 0 
 
 /-- **SAM Perturbation Differentiability**: The first-order SAM perturbation is
     Fréchet-differentiable at points where the gradient is non-zero and differentiable. -/
-theorem has_fderiv_at_sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
+theorem differentiableAt_samPerturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
     (h_grad_diff : DifferentiableAt ℝ (gradient L) w)
     (h_nonzero : gradient L w ≠ 0) :
-    DifferentiableAt ℝ (fun p => sam_perturbation L p ρ) w := by
-  unfold sam_perturbation
+    DifferentiableAt ℝ (fun p => samPerturbation L p ρ) w := by
+  unfold samPerturbation
   apply DifferentiableAt.congr_of_eventuallyEq
     (f := fun p => (ρ / ‖gradient L p‖) • gradient L p)
   · show DifferentiableAt ℝ (fun p => (ρ / ‖gradient L p‖) • gradient L p) w
@@ -85,7 +85,7 @@ theorem has_fderiv_at_sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
     have hg : DifferentiableAt ℝ
       (fun p => gradient L p) w := h_grad_diff
     exact DifferentiableAt.smul hc hg
-  · change (fun p => sam_perturbation L p ρ) =ᶠ[𝓝 w]
+  · change (fun p => samPerturbation L p ρ) =ᶠ[𝓝 w]
       (fun p => (ρ / ‖gradient L p‖) • gradient L p)
     have h_nb := h_grad_diff.continuousAt
       (Metric.ball_mem_nhds (gradient L w)
@@ -100,7 +100,7 @@ theorem has_fderiv_at_sam_perturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ)
         h_zero
       ] at hp
       exact (lt_irrefl _) hp
-    unfold sam_perturbation
+    unfold samPerturbation
     simp only [h_p_nonzero, norm_eq_zero, ite_false]
 
 end LeanSharp

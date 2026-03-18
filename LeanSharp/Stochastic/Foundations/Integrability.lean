@@ -65,16 +65,17 @@ structure ZSharpIntegrabilityAssumptions (f : W ι → ℝ) (w : ℕ → Ω → 
 integrability of the stochastic process. This captures all the regulatory conditions
 needed for Robbins-Monro convergence without requiring manual proof in the middle
 of descent lemmas. -/
-structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) where
+structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (z σsq : ℝ) where
   /-- Lipschitz constant of the gradient. -/
   L_smooth : NNReal
   /-- Gradient smoothness hypothesis witness. -/
-  h_smooth : is_smooth f L_smooth
+  h_smooth : IsSmooth f L_smooth
   /-- Global lower bound hypothesis witness. -/
   h_bdd_below : BddBelow (Set.range f)
   /-- Gradient estimator variance hypothesis witness. -/
   h_var :
-    ∀ t, has_bounded_variance f (fun ω => gradient f (w t ω)) (w t ω) σsq
+    ∀ t, HasBoundedVariance f (fun ω => gradient f (w t ω)) (w t ω) σsq
   /-- Objective process is strongly measurable, enabling domination-based
   integrability. -/
   h_f_aemeas : ∀ t, AEStronglyMeasurable (fun ω => f (w t ω))
@@ -101,7 +102,7 @@ structure ZSharpStructuralAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W �
   h_step :
     ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω =
-        stochastic_zsharp_step (w t ω) η t z
+        stochasticZSharpStep (w t ω) η t z
           (fun ω' => gradient f (w t ω')) ω
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
@@ -145,7 +146,8 @@ integrability witnesses from structural assumptions. This theorem is intentional
 retained as a compatibility wrapper for callers that already package assumptions in
 `ZSharpStructuralAssumptions`; minimal new results should prefer
 `zsharp_integrability_of_assumptions`. -/
-theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (z σsq : ℝ)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
     (∀ t, Integrable (fun ω => f (w t ω))) ∧
     (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) := by

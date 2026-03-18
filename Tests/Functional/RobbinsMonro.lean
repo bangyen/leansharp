@@ -26,7 +26,7 @@ open ProbabilityTheory MeasureTheory
 variable {Ω : Type*} [MeasureSpace Ω]
 
 /-- **Martingale Model Interface Verification**: Ensures a concrete
-`robbins_monro_update_martingale_model` immediately provides both the stochastic
+`RobbinsMonroUpdateMartingaleModel` immediately provides both the stochastic
 update recursion and the cumulative-noise martingale witness expected by
 Robbins-Monro convergence proofs. -/
 theorem martingale_model_interface_test
@@ -34,11 +34,11 @@ theorem martingale_model_interface_test
     (w : ℕ → Ω → W (Fin 2))
     (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ) :
+    (h_model : RobbinsMonroUpdateMartingaleModel f w η ℱ) :
     (∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω =
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
-      ∧ Martingale (robbins_monro_partial_noise_sum h_model.ξ) ℱ ℙ := by
+      ∧ Martingale (robbinsMonroPartialNoiseSum h_model.ξ) ℱ ℙ := by
   exact ⟨h_model.h_update, h_model.h_noise_martingale⟩
 
 /-- **Martingale-to-Objective-Limit Wiring Verification**: ensures the new
@@ -51,7 +51,7 @@ theorem martingale_model_objective_limit_interface_test
     (w : ℕ → Ω → W (Fin 2))
     (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_model : robbins_monro_update_martingale_model f w η ℱ)
+    (h_model : RobbinsMonroUpdateMartingaleModel f w η ℱ)
     (R : NNReal)
     (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
@@ -61,7 +61,7 @@ theorem martingale_model_objective_limit_interface_test
     (∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω =
         w t ω - η t • (gradient f (w t ω) + h_model.ξ t ω))
-      ∧ zsharp_objective_as_convergence f w := by
+      ∧ ZSharpObjectiveAsConvergence f w := by
   refine ⟨?_, ?_⟩
   · exact h_model.h_update
   · exact zsharp_robbins_monro_objective_limit_with_martingale_model

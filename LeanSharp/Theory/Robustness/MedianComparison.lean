@@ -29,12 +29,12 @@ open BigOperators
 
 /-- **Mean Non-Robustness**: A single large outlier can move the mean arbitrarily far. -/
 lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (hi0 : i0 ∈ s) (C : ℝ) :
-    ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C := by
+    ∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empiricalMean s g'‖ > C := by
   classical
   let other_sum := ∑ i ∈ s.erase i0, g i
   let n := (s.card : ℝ)
   -- Choose v such that ‖(1/n) * (v + other_sum)‖ > C without sign assumptions on C.
-  let v := (n * (|C| + 1) + ‖other_sum‖) • unit_vector ι
+  let v := (n * (|C| + 1) + ‖other_sum‖) • unitVector ι
   use fun i => if i = i0 then v else g i
   have h_norm_v : ‖v‖ = n * (|C| + 1) + ‖other_sum‖ := by
     rw [
@@ -46,7 +46,7 @@ lemma mean_unbounded [Nonempty ι] (s : Finset α) (g : α → W ι) (i0 : α) (
     ]
   constructor
   · intro i hi; simp only [if_neg hi]
-  · unfold empirical_mean
+  · unfold empiricalMean
     rw [
       ← Finset.insert_erase hi0,
       Finset.sum_insert (fun h => absurd rfl (Finset.mem_erase.mp h).left),
@@ -80,7 +80,7 @@ This is a precursor to the 50% breakdown point. -/
 theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finset α)
     (h_sub : s_fixed ⊆ s) (h_maj : 2 * s_fixed.card > s.card) :
     ∃ R_med : ℝ, ∀ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) →
-      ‖geometric_median s g'‖ ≤ R_med := by
+      ‖geometricMedian s g'‖ ≤ R_med := by
   classical
   have hs_nonempty : s.Nonempty := by
     by_contra h
@@ -105,12 +105,12 @@ theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finse
     exact sub_pos.mpr H
   use ‖g i0‖ + C_fixed / K
   intro g' hg'
-  let m := geometric_median s g'
+  let m := geometricMedian s g'
   have h_min : (fun x => ∑ i ∈ s, ‖g' i - x‖) m ≤ (∑ i ∈ s, ‖g' i - g i0‖) := by
-    rw [show m = geometric_median s g' from rfl]
+    rw [show m = geometricMedian s g' from rfl]
     have H : ∀ x ∈ Set.univ, (fun m => ∑ i ∈ s, ‖g' i - m‖)
-        (geometric_median s g') ≤ (fun m => ∑ i ∈ s, ‖g' i - m‖) x := by
-      unfold geometric_median; rw [dif_pos hs_nonempty]
+        (geometricMedian s g') ≤ (fun m => ∑ i ∈ s, ‖g' i - m‖) x := by
+      unfold geometricMedian; rw [dif_pos hs_nonempty]
       exact Classical.choose_spec (exists_isMin_on_finite_sum_norm s g')
     exact H (g i0) (Set.mem_univ (g i0))
   let s_out := s \ s_fixed
@@ -126,7 +126,8 @@ theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finse
   -- From h_min, bound ‖m - g i0‖
   have h_dist_bound : K * ‖m - g i0‖ ≤ C_fixed := by
     -- ‖g i - m‖ ≥ ‖m - g i0‖ - ‖g i - g i0‖
-    have h1 : ∑ i ∈ s_fixed, ‖g i - m‖ ≥ nf * ‖m - g i0‖ - (∑ i ∈ s_fixed, ‖g i - g i0‖) := by
+    have h1 : ∑ i ∈ s_fixed, ‖g i - m‖ ≥
+        nf * ‖m - g i0‖ - (∑ i ∈ s_fixed, ‖g i - g i0‖) := by
       calc (∑ i ∈ s_fixed, ‖g i - m‖) ≥ ∑ i ∈ s_fixed, (‖m - g i0‖ - ‖g i - g i0‖) :=
             Finset.sum_le_sum (fun i _ => by
               have H := norm_sub_norm_le (m - g i0) (g i - g i0)
@@ -150,7 +151,7 @@ theorem median_bounded_subset (s : Finset α) (g : α → W ι) (s_fixed : Finse
           Nat.cast_sub (Finset.card_le_card h_sub)]
     rw [h_out_card] at h2
     linarith
-  calc ‖geometric_median s g'‖ = ‖m‖ := by rw [show m = geometric_median s g' from rfl]
+  calc ‖geometricMedian s g'‖ = ‖m‖ := by rw [show m = geometricMedian s g' from rfl]
     _ ≤ ‖m - g i0‖ + ‖g i0‖ := by rw [add_comm]; apply norm_le_insert'
     _ ≤ C_fixed / K + ‖g i0‖ := by
       have hdiv : ‖m - g i0‖ ≤ C_fixed / K := by
@@ -169,7 +170,7 @@ has arbitrarily large norm. Together with `median_bounded_subset` this character
 the 50% breakdown point: the median stays bounded iff more than half the points are fixed. -/
 theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixed : Finset α)
     (h_sub : s_fixed ⊆ s) (h_break : 2 * s_fixed.card < s.card) (C : ℝ) :
-    ∃ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) ∧ ‖geometric_median s g'‖ > C := by
+    ∃ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) ∧ ‖geometricMedian s g'‖ > C := by
   classical
   have hs_nonempty : s.Nonempty := by
     by_contra h
@@ -199,30 +200,30 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
     unfold R
     have h1 := le_max_right (|C| + 2) ((n_out * C + B) / (n_out - n_fixed) + 1)
     linarith
-  use fun i => if i ∈ s_out then R • unit_vector ι else g i
+  use fun i => if i ∈ s_out then R • unitVector ι else g i
   constructor
   · intro i hi
     split_ifs with h
     · exact absurd hi (Finset.mem_sdiff.1 h).2
     · rfl
-  · set g' := fun i => if i ∈ s_out then R • unit_vector ι else g i
-    set m := geometric_median s g'
+  · set g' := fun i => if i ∈ s_out then R • unitVector ι else g i
+    set m := geometricMedian s g'
     have hg'_fixed : ∀ i ∈ s_fixed, g' i = g i := by
       intro i hi; simp only [g']; split_ifs with h
       · exact absurd hi (Finset.mem_sdiff.1 h).2
       · rfl
-    have hg'_out : ∀ i ∈ s_out, g' i = R • unit_vector ι := by
+    have hg'_out : ∀ i ∈ s_out, g' i = R • unitVector ι := by
       intro i hi; simp only [g']; rw [if_pos hi]
     have hm_min : ∀ x : W ι, ∑ i ∈ s, ‖g' i - m‖ ≤ ∑ i ∈ s, ‖g' i - x‖ := by
       intro x
       have h_m_choice : m = Classical.choose (exists_isMin_on_finite_sum_norm s g') :=
-        geometric_median_eq_choose s g' hs_nonempty
+        geometricMedian_eq_choose s g' hs_nonempty
       rw [h_m_choice]
       exact Classical.choose_spec
         (exists_isMin_on_finite_sum_norm s g') (Set.mem_univ x)
     by_contra h_norm_le
     push_neg at h_norm_le
-    set v := R • unit_vector ι
+    set v := R • unitVector ι
     have h_sum_at_m : ∑ i ∈ s, ‖g' i - m‖ =
         (∑ i ∈ s_fixed, ‖g i - m‖) + ∑ i ∈ s_out, ‖v - m‖ := by
       rw [← Finset.sdiff_union_of_subset h_sub,
@@ -233,7 +234,8 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
       · refine Finset.sum_congr rfl (fun i hi => congr_arg (‖· - m‖) (hg'_out i hi))
     have h_norm_v : ‖v‖ = R := by
       rw [norm_smul, norm_unit_vector, mul_one, Real.norm_eq_abs, abs_of_nonneg hR_ge]
-    have h_lower : ∑ i ∈ s_fixed, ‖g i - m‖ + ∑ i ∈ s_out, ‖v - m‖ ≥ (n_out : ℝ) * (R - C) := by
+    have h_lower : ∑ i ∈ s_fixed, ‖g i - m‖ + ∑ i ∈ s_out, ‖v - m‖ ≥
+        (n_out : ℝ) * (R - C) := by
       have h1 : ∑ i ∈ s_out, ‖v - m‖ ≥ (n_out : ℝ) * (R - C) := by
         have h1' : ∑ i ∈ s_out, ‖v - m‖ ≥ ∑ i ∈ s_out, (R - C) := by
           apply Finset.sum_le_sum; intro i _
@@ -258,7 +260,8 @@ theorem median_breakdown [Nonempty ι] (s : Finset α) (g : α → W ι) (s_fixe
       trans ∑ i ∈ s_fixed, (‖g i‖ + ‖v‖)
       · exact Finset.sum_le_sum (fun i _ => norm_sub_le (g i) v)
       · rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, h_norm_v]
-    have h_eq : ∑ i ∈ s, ‖g' i - m‖ = (∑ i ∈ s_fixed, ‖g i - m‖) + ∑ i ∈ s_out, ‖v - m‖ :=
+    have h_eq : ∑ i ∈ s, ‖g' i - m‖ =
+        (∑ i ∈ s_fixed, ‖g i - m‖) + ∑ i ∈ s_out, ‖v - m‖ :=
       h_sum_at_m
     have h_m_le_v := hm_min v
     have h_sum_at_v : ∑ i ∈ s, ‖g' i - v‖ = ∑ i ∈ s_fixed, ‖g i - v‖ + 0 := by

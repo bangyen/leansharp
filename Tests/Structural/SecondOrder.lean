@@ -38,7 +38,7 @@ on a quadratic objective where L_smooth = 1 and curvature κ = 1. -/
 theorem quadratic_bowl_descent_test
     (w g_base g_f : W ι) (η : ℝ)
     (h_diff : Differentiable ℝ (quadratic_bowl ι))
-    (h_smooth : is_L_smooth (quadratic_bowl ι) 1)
+    (h_smooth : IsLSmooth (quadratic_bowl ι) 1)
     (h_curv : (1 / 2 : ℝ) * ‖g_f‖ ^ 2 ≤ (1 / 2 : ℝ) * ‖g_base‖ ^ 2) :
     quadratic_bowl ι (w - η • g_f) ≤
       quadratic_bowl ι w - η * inner ℝ (gradient (quadratic_bowl ι) w) g_f +

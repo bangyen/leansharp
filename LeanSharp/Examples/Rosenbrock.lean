@@ -19,7 +19,7 @@ gradient formulas, enabling end-to-end validation beyond quadratic toy models.
 ## Definitions
 
 * `L_rosenbrock`.
-* `exact_gradient_rosenbrock`.
+* `exactGradientRosenbrock`.
 
 ## Theorems
 
@@ -36,7 +36,7 @@ noncomputable def L_rosenbrock (x : W (Fin 2)) : ℝ :=
   (1 - x₀)^2 + 100 * (x₁ - x₀^2)^2
 
 /-- Analytical gradient of the Rosenbrock function. -/
-noncomputable def exact_gradient_rosenbrock (x : W (Fin 2)) : W (Fin 2) :=
+noncomputable def exactGradientRosenbrock (x : W (Fin 2)) : W (Fin 2) :=
   let x₀ := x.ofLp 0
   let x₁ := x.ofLp 1
   (WithLp.equiv 2 _).symm fun i =>
@@ -50,9 +50,9 @@ noncomputable def exact_gradient_rosenbrock (x : W (Fin 2)) : W (Fin 2) :=
 theorem hasFDerivAt_rosenbrock (x : W (Fin 2)) :
     HasFDerivAt L_rosenbrock
     (InnerProductSpace.toDual ℝ (W (Fin 2))
-    (exact_gradient_rosenbrock x)) x := by
+    (exactGradientRosenbrock x)) x := by
   dsimp only [
-    exact_gradient_rosenbrock,
+    exactGradientRosenbrock,
     Fin.isValue,
     WithLp.equiv_symm_apply
   ]
@@ -149,7 +149,7 @@ theorem hasFDerivAt_rosenbrock (x : W (Fin 2)) :
 
 /-- Formal theorem confirming the correctness of the analytical gradient. -/
 theorem gradient_rosenbrock_eq (x : W (Fin 2)) :
-    gradient L_rosenbrock x = exact_gradient_rosenbrock x := by
+    gradient L_rosenbrock x = exactGradientRosenbrock x := by
   have h := hasFDerivAt_rosenbrock x
   rw [
     gradient,

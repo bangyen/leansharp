@@ -19,12 +19,12 @@ It includes:
 
 ## Definitions
 
-* `patch_embedding`.
-* `vit_architecture`.
+* `patchEmbedding`.
+* `vitArchitecture`.
 -/
 
 /-- Patch Embedding Layer: Maps an image (C x H x W) to a sequence (S x D). -/
-noncomputable def patch_embedding (nc nh nw np ns nd : ℕ)
+noncomputable def patchEmbedding (nc nh nw np ns nd : ℕ)
     [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
     Layer (LeanSharp.W (Fin nc × Fin nh × Fin nw)) (LeanSharp.W (Fin ns × Fin nd)) where
   ParamDim := (Fin nc × Fin np × Fin np) × Fin nd
@@ -57,11 +57,11 @@ noncomputable def patch_embedding (nc nh nw np ns nd : ℕ)
     (g_w, g_x)
 
 /-- Full Vision Transformer (ViT) architecture. -/
-noncomputable def vit_architecture (nc nh nw np ns nd nd_ff : ℕ)
+noncomputable def vitArchitecture (nc nh nw np ns nd nd_ff : ℕ)
     [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
     Chain (LeanSharp.W (Fin nc × Fin nh × Fin nw)) (LeanSharp.W (Fin ns × Fin nd)) :=
-  let patch := patch_embedding nc nh nw np ns nd
-  let transformer := transformer_encoder_block ns nd nd_ff
+  let patch := patchEmbedding nc nh nw np ns nd
+  let transformer := transformerEncoderBlock ns nd nd_ff
   Chain.concat (Chain.single patch) transformer
 
 end LeanSharp

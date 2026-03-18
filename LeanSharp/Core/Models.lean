@@ -91,14 +91,14 @@ noncomputable def backprop_chain {In Out : Type} {c : Chain In Out}
       match p with
       | .single _ w =>
           let (g_w, g_in) := L.backward w x g_out
-          (.single L (filtered_gradient g_w z), g_in)
+          (.single L (filteredGradient g_w z), g_in)
   | .append _ L =>
       match p with
       | .append p_prev w =>
           let mid_in := forward_chain p_prev x
           let (g_w_L, g_mid) := L.backward w mid_in g_out
           let (g_prevs, g_in) := backprop_chain z p_prev x g_mid
-          (.append g_prevs (filtered_gradient g_w_L z), g_in)
+          (.append g_prevs (filteredGradient g_w_L z), g_in)
 
 /-- Recursive backpropagation through a chain without filtering.
     Used for stability proofs. -/

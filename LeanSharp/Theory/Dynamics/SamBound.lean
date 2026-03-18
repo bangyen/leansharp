@@ -18,7 +18,7 @@ within a $\rho$-neighborhood plus a complexity pacing function $h$.
 ## Main definitions
 
 * `sam_empirical_max`: The maximum empirical risk in a $\rho$-neighborhood.
-* `sam_generalization_bound_holds`: Predicate for the SAM generalization bound.
+* `SamGeneralizationBoundHolds`: Predicate for the SAM generalization bound.
 
 ## Main theorems
 
@@ -32,9 +32,9 @@ variable {ι : Type*} [Fintype ι]
 
 /-- The SAM Generalization Bound Theorem condition.
 States that with high probability, the population risk is bounded by the SAM objective. -/
-def sam_generalization_bound_holds (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) (ρ : ℝ) : Prop :=
+def SamGeneralizationBoundHolds (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) (ρ : ℝ) : Prop :=
   ∀ w : W ι, ρ > 0 →
-    L_D w ≤ sam_objective L_S w ρ + h (‖w‖^2 / ρ^2)
+    L_D w ≤ samObjective L_S w ρ + h (‖w‖^2 / ρ^2)
 
 /-- **SAM Bound from Gap**: The SAM generalization bound holds given a standard
 generalization gap assumption.
@@ -46,10 +46,10 @@ theorem sam_bound_from_gap (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
         L_D w ≤ L_S w + h (‖w‖ ^ 2 / ρ ^ 2))
     (h_bdd : ∀ (w : W ι), BddAbove
         (L_S '' ((fun ε => w + ε) '' Metric.closedBall 0 ρ))) :
-    sam_generalization_bound_holds L_D L_S h ρ := by
+    SamGeneralizationBoundHolds L_D L_S h ρ := by
   intro w hρ
-  have h_sam_ge : L_S w ≤ sam_objective L_S w ρ :=
-    sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w)
+  have h_sam_ge : L_S w ≤ samObjective L_S w ρ :=
+    samObjective_ge_self L_S w (le_of_lt hρ) (h_bdd w)
   have h_gap_spec := h_gap w hρ
   linarith [h_gap_spec, h_sam_ge]
 

@@ -19,7 +19,7 @@ ZSharp convergence holds even when curvature is non-uniform.
 ## Definitions
 
 * `L_advanced`.
-* `exact_gradient_advanced`.
+* `exactGradientAdvanced`.
 
 ## Theorems
 
@@ -41,7 +41,7 @@ noncomputable def L_advanced (w : W2) : ℝ :=
   10 * (w 0) ^ 2 + (w 1) ^ 2
 
 /-- The analytical gradient is $\nabla L(w) = [20w_0, 2w_1]$. -/
-noncomputable def exact_gradient_advanced (w : W2) : W2 :=
+noncomputable def exactGradientAdvanced (w : W2) : W2 :=
   WithLp.equiv 2 (Fin 2 → ℝ) |>.symm fun i =>
     if i = 0 then 20 * w 0
     else 2 * w 1
@@ -100,14 +100,14 @@ lemma coordinate_dual_apply (g : W2 →L[ℝ] ℝ) (i : Fin 2) :
   rw [← hv, InnerProductSpace.toDual_symm_apply]
 
 theorem gradient_advanced_eq (w : W2) :
-    gradient L_advanced w = exact_gradient_advanced w := by
+    gradient L_advanced w = exactGradientAdvanced w := by
   let g_analytical : W2 →L[ℝ] ℝ := ((20 : ℝ) * w 0) • EuclideanSpace.proj 0 +
     ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
   have hL : HasFDerivAt L_advanced g_analytical w := hasFDerivAt_L_advanced w
   unfold gradient
   rw [hL.fderiv]
   ext i
-  unfold exact_gradient_advanced
+  unfold exactGradientAdvanced
   rw [coordinate_dual_apply g_analytical i]
   fin_cases i
   · simp only [
@@ -132,19 +132,19 @@ theorem gradient_advanced_eq (w : W2) :
     norm_num
 
 /-- **L-Smoothness**: The gradient is Lipschitz with $L_{smooth} = 20$. -/
-theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
+theorem advanced_L_smooth : IsLSmooth L_advanced 20 := by
   constructor
   · norm_num
   · intro w v
     rw [gradient_advanced_eq, gradient_advanced_eq]
-    have h1 : 0 ≤ ‖exact_gradient_advanced w - exact_gradient_advanced v‖ := norm_nonneg _
+    have h1 : 0 ≤ ‖exactGradientAdvanced w - exactGradientAdvanced v‖ := norm_nonneg _
     have h2 : 0 ≤ 20 * ‖w - v‖ := mul_nonneg (by norm_num) (norm_nonneg _)
     rw [← abs_of_nonneg h1, ← abs_of_nonneg h2, ← sq_le_sq]
     rw [mul_pow, EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two,
         Fin.sum_univ_two]
     simp only [
       Fin.isValue,
-      exact_gradient_advanced,
+      exactGradientAdvanced,
       WithLp.equiv_symm_apply,
       PiLp.sub_apply,
       ↓reduceIte,
@@ -156,7 +156,7 @@ theorem advanced_L_smooth : is_L_smooth L_advanced 20 := by
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
 /-- **Strong Convexity**: The function is $\mu$-strongly convex with $\mu = 2$. -/
-theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
+theorem advanced_strongly_convex : IsStronglyConvex L_advanced 2 := by
   constructor
   · norm_num
   · intro w v
@@ -165,7 +165,7 @@ theorem advanced_strongly_convex : is_strongly_convex L_advanced 2 := by
       Fin.isValue,
       inner,
       gradient_advanced_eq,
-      exact_gradient_advanced,
+      exactGradientAdvanced,
       WithLp.equiv_symm_apply,
       PiLp.sub_apply,
       RCLike.inner_apply,

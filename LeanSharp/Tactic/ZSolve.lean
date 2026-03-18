@@ -23,8 +23,8 @@ syntax "zsharp_solve" : tactic
 macro_rules
   | `(tactic| zsharp_solve) => `(tactic| (
     simp (config := {zeta := false}) only [
-      filtered_gradient,
-      z_score_mask,
+      filteredGradient,
+      zScoreMask,
       hadamard,
       ge_iff_le,
       gt_iff_lt

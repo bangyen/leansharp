@@ -16,9 +16,9 @@ loss landscape and the statistical Z-score gradient filter.
 
 ## Main definitions
 
-* `hessian_quadratic_form`: Computes the curvature $v^T H v$.
-* `local_curvature_matrix`: Names the Hessian as the local curvature operator.
-* `generalized_filter_condition`: Abstract curvature contract for filtered directions.
+* `hessianQuadraticForm`: Computes the curvature $v^T H v$.
+* `localCurvatureMatrix`: Names the Hessian as the local curvature operator.
+* `GeneralizedFilterCondition`: Abstract curvature contract for filtered directions.
 
 ## Main theorems
 
@@ -35,20 +35,20 @@ open Real ContinuousLinearMap
 variable {ι : Type*} [Fintype ι]
 
 /-- The quadratic form $v^T H v$ for some vector $v$ and Hessian $H$. -/
-noncomputable def hessian_quadratic_form (L : W ι → ℝ) (w v : W ι) : ℝ :=
+noncomputable def hessianQuadraticForm (L : W ι → ℝ) (w v : W ι) : ℝ :=
   @inner ℝ (W ι) _ v ((hessian L w) v)
 
 /-- The local curvature matrix/operator at `w`.
 This wrapper exists so downstream statements can depend on a stable curvature symbol
 without committing to Hessian-specific implementation details in every theorem. -/
-noncomputable def local_curvature_matrix (L : W ι → ℝ) (w : W ι) : W ι →L[ℝ] W ι :=
+noncomputable def localCurvatureMatrix (L : W ι → ℝ) (w : W ι) : W ι →L[ℝ] W ι :=
   hessian L w
 
 /-- Generalized filter condition for curvature-aware descent:
 the filtered direction `g_filtered` must satisfy a curvature upper bound relative to
 the baseline direction `g_base`. This contract exists to decouple filter design from
 the specific spectral argument used to certify it. -/
-def generalized_filter_condition
+def GeneralizedFilterCondition
     (H : W ι →L[ℝ] W ι) (g_base g_filtered : W ι) (κ : ℝ) : Prop :=
   @inner ℝ (W ι) _ g_filtered (H g_filtered) ≤ κ * ‖g_base‖ ^ 2
 
@@ -65,7 +65,7 @@ structure CurvatureCertificate (ι : Type*) [Fintype ι] where
   /-- Proof that the sharpness is non-negative. -/
   sharpness_nonneg : 0 ≤ sharpness_val
   /-- Proof that the quadratic form is bounded by sharpness. -/
-  spectral_bound : ∀ v, hessian_quadratic_form L w v ≤ sharpness_val * ‖v‖ ^ 2
+  spectral_bound : ∀ v, hessianQuadraticForm L w v ≤ sharpness_val * ‖v‖ ^ 2
 
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.
@@ -73,9 +73,9 @@ Z-score filtered gradient's direction is strictly bounded.
 The bound is `sharpness * ‖g‖²`, connecting the geometric sharpness to
 the statistical filter. -/
 theorem zsharp_curvature_bound (C : CurvatureCertificate ι) (g : W ι) (z : ℝ) :
-    hessian_quadratic_form C.L C.w (filtered_gradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
+    hessianQuadraticForm C.L C.w (filteredGradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
   apply (C.spectral_bound _).trans
-  apply mul_le_mul_of_nonneg_left (filtered_gradient_norm_sq_le g z) C.sharpness_nonneg
+  apply mul_le_mul_of_nonneg_left (norm_sq_filteredGradient_le g z) C.sharpness_nonneg
 
 /-- Lifts a spectral curvature bound plus a norm-contraction witness into the
 generalized filter condition. This theorem exists so new filters only need to provide
@@ -85,8 +85,8 @@ theorem generalized_filter_condition_of_spectral_bound
     (h_spectral : ∀ v : W ι, @inner ℝ (W ι) _ v (H v) ≤ κ * ‖v‖ ^ 2)
     (hκ_nonneg : 0 ≤ κ)
     (h_contract : ‖g_filtered‖ ^ 2 ≤ ‖g_base‖ ^ 2) :
-    generalized_filter_condition H g_base g_filtered κ := by
-  unfold generalized_filter_condition
+    GeneralizedFilterCondition H g_base g_filtered κ := by
+  unfold GeneralizedFilterCondition
   exact (h_spectral g_filtered).trans (mul_le_mul_of_nonneg_left h_contract hκ_nonneg)
 
 end LeanSharp

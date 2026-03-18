@@ -42,24 +42,24 @@ Z-score filtered version also has variance bounded by $\sigma^2$
 (plus the squared norm of the true gradient).
 This holds because the filter is a component-wise contraction toward zero. -/
 theorem filtered_variance_bound (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) (z : ℝ)
-    (h_stoch : is_stochastic_gradient L g w)
-    (h_var : has_bounded_variance L g w σsq)
+    (h_stoch : IsStochasticGradient L g w)
+    (h_var : HasBoundedVariance L g w σsq)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2))
-    (h_meas_f : AEStronglyMeasurable (fun ω => filtered_gradient (g ω) z))
-    (h_int_f : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2)) :
-    𝔼[fun ω => ‖filtered_gradient (g ω) z - 𝔼[fun ω' => filtered_gradient (g ω') z]‖ ^ 2] ≤
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z))
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2)) :
+    𝔼[fun ω => ‖filteredGradient (g ω) z - 𝔼[fun ω' => filteredGradient (g ω') z]‖ ^ 2] ≤
       σsq + ‖gradient L w‖ ^ 2 := by
-  let g_f (ω : Ω) := filtered_gradient (g ω) z
+  let g_f (ω : Ω) := filteredGradient (g ω) z
   have h_int_g : Integrable g := h_stoch.1
   -- Step 1: Integrability of g_f
   -- Since g_f is bounded by g and is measurable, it is integrable.
   have h_int_gf : Integrable g_f :=
-    h_int_g.mono h_meas_f (Filter.Eventually.of_forall (fun ω => filtered_norm_bound (g ω) z))
+    h_int_g.mono h_meas_f (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
   -- Step 2: Use the L2 Bias-Variance Decomposition for g_f
   have h_gf_decomp := l2_bias_variance_decomposition g_f h_int_f h_int_gf
   -- Step 3: Bound 𝔼[‖g_f‖^2] by 𝔼[‖g‖^2]
   have h_norm_le : 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-    integral_mono h_int_f h_int (fun ω => filtered_gradient_norm_sq_le (g ω) z)
+    integral_mono h_int_f h_int (fun ω => norm_sq_filteredGradient_le (g ω) z)
   -- Step 4: Use the decomposition of the original gradient g
   have h_raw_decomp := l2_bias_variance_decomposition g h_int h_stoch.1
   -- Step 5: Final calculation
@@ -78,7 +78,7 @@ theorem filtered_variance_bound (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) 
 
 /-- A function is $L$-smooth if its gradient is $L$-Lipschitz.
 This implies the Taylor-like bound used in the descent lemma. -/
-def is_smooth (f : W ι → ℝ) (L : ℝ) : Prop :=
+def IsSmooth (f : W ι → ℝ) (L : ℝ) : Prop :=
   ∀ x y, f y ≤ f x + inner ℝ (gradient f x) (y - x) + (L / 2) * ‖y - x‖ ^ 2
 
 /-- **Stochastic Taylor Descent**:
@@ -87,8 +87,8 @@ For an $L$-smooth function $f$, a single step of SGD with step size $\eta \le 1/
 satisfies an expected decrease proportional to the gradient norm, scaled by the
 variance of the estimator. -/
 theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η : ℝ)
-    (h_smooth : is_smooth f L_smooth)
-    (h_stoch : is_stochastic_gradient f g w)
+    (h_smooth : IsSmooth f L_smooth)
+    (h_stoch : IsStochasticGradient f g w)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
     (h_η : 0 < η ∧ η ≤ 1 / L_smooth)
     (h_int_f : Integrable (fun ω => f (w - η • g ω)) ℙ) :
@@ -125,8 +125,8 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
         apply h_int_inner.congr
         exact (Filter.Eventually.of_forall fun ω => real_inner_comm _ _)
     · exact Integrable.const_mul h_int (η ^ 2 * L_smooth / 2)
-  have h_int_le : 𝔼[fun ω => f (w - η • g ω)] ≤ 𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω) +
-      (η^2 * L_smooth / 2) * ‖g ω‖ ^ 2] :=
+  have h_int_le : 𝔼[fun ω => f (w - η • g ω)] ≤
+      𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω) + (η^2 * L_smooth / 2) * ‖g ω‖ ^ 2] :=
     integral_mono h_int_f h_int_rhs h_simp
   -- Step 4: Linearity of expectation
   have h_exp_rhs : 𝔼[fun ω => f w - η * inner ℝ (gradient f w) (g ω)
@@ -189,32 +189,34 @@ theorem stochastic_taylor_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω �
 
 /-- **Z-Score Descent Lemma**:
 The final descent lemma for Z-score filtered gradients. -/
-theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η z : ℝ) (σsq : ℝ)
-    (h_smooth : is_smooth f L_smooth)
-    (h_stoch : is_stochastic_gradient f g w)
-    (h_var : has_bounded_variance f g w σsq)
+theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι)
+    (η z : ℝ) (σsq : ℝ)
+    (h_smooth : IsSmooth f L_smooth)
+    (h_stoch : IsStochasticGradient f g w)
+    (h_var : HasBoundedVariance f g w σsq)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
     (h_η : 0 < η ∧ η ≤ 1 / L_smooth)
-    (h_meas_f : AEStronglyMeasurable (fun ω => filtered_gradient (g ω) z) ℙ)
-    (h_int_f : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2) ℙ)
-    (h_int_f_val : Integrable (fun ω => f (w - η • filtered_gradient (g ω) z)) ℙ)
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable (fun ω => f (w - η • filteredGradient (g ω) z)) ℙ)
     (h_align : ‖gradient f w‖ ^ 2 ≤
-      2 * inner ℝ (gradient f w) (𝔼[fun ω => filtered_gradient (g ω) z])) :
-    𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)] ≤
+      2 * inner ℝ (gradient f w) (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => f (w - η • filteredGradient (g ω) z)] ≤
       f w - (η / 2) * ‖gradient f w‖ ^ 2 +
       (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := by
-  let g_f_loc (ω : Ω) := filtered_gradient (g ω) z
+  let g_f_loc (ω : Ω) := filteredGradient (g ω) z
   -- Step 1: Filtered gradient contraction
   have h_norm_le : 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-    integral_mono h_int_f h_int (fun ω => filtered_gradient_norm_sq_le (g ω) z)
+    integral_mono h_int_f h_int (fun ω => norm_sq_filteredGradient_le (g ω) z)
   -- Step 2: Bound 𝔼[‖g‖^2] by σsq + ‖grad‖^2
   have h_raw_decomp := l2_bias_variance_decomposition g h_int h_stoch.1
   rw [h_stoch.2] at h_raw_decomp
   have h_input_bound : 𝔼[fun ω => ‖g ω‖ ^ 2] ≤ σsq + ‖gradient f w‖ ^ 2 := by
-    rw [h_raw_decomp]; unfold has_bounded_variance at h_var; linarith [h_var]
+    rw [h_raw_decomp]; unfold HasBoundedVariance at h_var; linarith [h_var]
   -- Step 3: Integrate the Taylor bound for the filtered gradient
   have h_int_gf : Integrable g_f_loc ℙ :=
-    h_stoch.1.mono h_meas_f (Filter.Eventually.of_forall (fun ω => filtered_norm_bound (g ω) z))
+    h_stoch.1.mono h_meas_f
+      (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
   have h_int_inner : Integrable (fun ω => η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ := by
     apply (Integrable.inner_const h_int_gf (gradient f w)).const_mul η |>.congr
     apply Filter.Eventually.of_forall; intro ω; dsimp only; rw [real_inner_comm]

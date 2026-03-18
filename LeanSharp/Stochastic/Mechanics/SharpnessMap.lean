@@ -19,11 +19,11 @@ where gradients are observed with zero-mean noise.
 
 ## Main definitions
 
-* `is_stochastic_gradient`: Predicate for a random vector being an unbiased
+* `IsStochasticGradient`: Predicate for a random vector being an unbiased
   estimator of the true gradient.
-* `has_bounded_variance`: Assumption that the stochastic gradient has variance
+* `HasBoundedVariance`: Assumption that the stochastic gradient has variance
   bounded by $\sigma^2$.
-* `stochastic_zsharp_step`: The stochastic parameter update rule for ZSharp.
+* `stochasticZSharpStep`: The stochastic parameter update rule for ZSharp.
 
 ## Theorems
 
@@ -39,19 +39,19 @@ variable {Ω : Type*} [MeasureSpace Ω]
 
 /-- A stochastic gradient is a random vector `W ι`.
 We typically assume it is based on a true gradient plus some noise `ξ`. -/
-def is_stochastic_gradient (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) : Prop :=
+def IsStochasticGradient (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) : Prop :=
   Integrable g ∧ 𝔼[g] = gradient L w
 
 /-- Bounded variance assumption for the stochastic gradient. -/
-def has_bounded_variance (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) : Prop :=
+def HasBoundedVariance (L : W ι → ℝ) (g : Ω → W ι) (w : W ι) (σsq : ℝ) : Prop :=
   𝔼[fun ω => ‖g ω - gradient L w‖^2] ≤ σsq
 
 /-- The Stochastic ZSharp update rule with a learning rate schedule.
-`w_{t+1} = w_t - η_t * filtered_gradient(g_adv, z)`
+`w_{t+1} = w_t - η_t * filteredGradient(g_adv, z)`
 where `g_adv` is a stochastic adversarial gradient. -/
-noncomputable def stochastic_zsharp_step (w : W ι) (η : ℕ → ℝ) (t : ℕ) (z : ℝ)
+noncomputable def stochasticZSharpStep (w : W ι) (η : ℕ → ℝ) (t : ℕ) (z : ℝ)
     (g_adv : Ω → W ι) (ω : Ω) : W ι :=
-  let g_f := filtered_gradient (g_adv ω) z
+  let g_f := filteredGradient (g_adv ω) z
   w - (η t) • g_f
 
 /-- **L2 Bias-Variance Decomposition**: The standard identity

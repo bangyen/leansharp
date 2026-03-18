@@ -27,8 +27,8 @@ abbrev NormParam (ι : Type) := ι ⊕ ι
 /-- Layer Normalization forward pass: y = γ * (x - μ) / σ + β.
     Note: We assume σ > 0 for the formal definition. -/
 noncomputable def layernorm_forward (w : W (NormParam ι)) (x : W ι) : W ι :=
-  let μ := vector_mean x
-  let σ := vector_std x
+  let μ := vectorMean x
+  let σ := vectorStd x
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     let x_i := (WithLp.equiv 2 (ι → ℝ) x) i
     let γ_i := (WithLp.equiv 2 _ w) (Sum.inl i)
@@ -38,8 +38,8 @@ noncomputable def layernorm_forward (w : W (NormParam ι)) (x : W ι) : W ι :=
 /-- Layer Normalization backward pass. -/
 noncomputable def layernorm_backward (w : W (NormParam ι)) (x : W ι) (g_out : W ι) :
     W (NormParam ι) × W ι :=
-  let μ := vector_mean x
-  let σ := vector_std x
+  let μ := vectorMean x
+  let σ := vectorStd x
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl i => (WithLp.equiv 2 _ g_out) i * (((WithLp.equiv 2 _ x) i - μ) / σ)
     | Sum.inr i => (WithLp.equiv 2 _ g_out) i

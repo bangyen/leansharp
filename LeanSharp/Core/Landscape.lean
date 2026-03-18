@@ -99,16 +99,16 @@ structure TwiceDifferentiable (ι : Type*) [Fintype ι] where
   /-- Proof that the function is differentiable everywhere. -/
   differentiable : ∀ p, HasFDerivAt toFun (fderiv ℝ toFun p) p
   /-- Proof that the derivative is itself differentiable. -/
-  twice_differentiable : ∀ p, DifferentiableAt ℝ (fderiv ℝ toFun) p
+  twiceDifferentiable : ∀ p, DifferentiableAt ℝ (fderiv ℝ toFun) p
 
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
 Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib. -/
 theorem hessian_symmetric (L : TwiceDifferentiable ι) (w : W ι) :
     (hessian L.toFun w).toLinearMap.IsSymmetric :=
   hessian_symmetry_reduction L.toFun w (fderiv ℝ (fderiv ℝ L.toFun) w)
-    (hessian_def_riesz_comp L.toFun w (L.twice_differentiable w).hasFDerivAt)
+    (hessian_def_riesz_comp L.toFun w (L.twiceDifferentiable w).hasFDerivAt)
     (fun x y => second_derivative_symmetric L.differentiable
-      (L.twice_differentiable w).hasFDerivAt x y)
+      (L.twiceDifferentiable w).hasFDerivAt x y)
 
 /-- **Squared Norm of Difference with Scalar Multiple**:
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/
@@ -128,7 +128,8 @@ lemma norm_sub_smul_sq (a b : W ι) (η : ℝ) :
 /-- **Descent Step Quadratic Expansion**: The standard squared norm identity for a
 descent step $w - ηg$ relative to a target $w^*$. -/
 lemma norm_descent_step_sq (w w_star g : W ι) (η : ℝ) :
-    ‖(w - η • g) - w_star‖^2 = ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
+  ‖(w - η • g) - w_star‖^2 =
+    ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
   have : (w - η • g) - w_star = (w - w_star) - η • g := by abel
   rw [this, norm_sub_smul_sq]
 

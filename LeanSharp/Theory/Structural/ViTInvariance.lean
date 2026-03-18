@@ -33,7 +33,7 @@ theorem patch_embedding_eq_strided_conv (nc nh nw np ns nd : ℕ)
     (h_nh_div : np ∣ nh) (h_nw_div : np ∣ nw) :
     ∀ (w : W ((Fin nc × Fin np × Fin np) × Fin nd))
       (x : W (Fin nc × Fin nh × Fin nw)),
-    (patch_embedding nc nh nw np ns nd).forward w x =
+    (patchEmbedding nc nh nw np ns nd).forward w x =
     let w_conv : W (ConvMultiParam nc np np nd) :=
       WithLp.equiv 2 _ |>.symm fun
         | Sum.inl (d, c, ph, pw) => (WithLp.equiv 2 _ w) ((c, ph, pw), d)
@@ -74,7 +74,7 @@ theorem patch_embedding_eq_strided_conv (nc nh nw np ns nd : ℕ)
   ext p
   obtain ⟨s, d⟩ := p
   simp only [WithLp.equiv_symm_apply, WithLp.equiv_apply]
-  unfold patch_embedding conv2d_strided_forward
+  unfold patchEmbedding conv2d_strided_forward
   dsimp only [Layer.forward]
   simp only [WithLp.equiv_symm_apply, WithLp.equiv_apply]
   rw [add_zero]

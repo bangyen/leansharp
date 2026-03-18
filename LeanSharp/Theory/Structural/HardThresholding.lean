@@ -15,8 +15,8 @@ non-Lipschitz behavior used in deterministic stability analysis.
 
 ## Definitions
 
-* `hard_threshold_scalar`.
-* `hard_threshold`.
+* `hardThresholdScalar`.
+* `hardThreshold`.
 
 ## Theorems
 
@@ -31,36 +31,36 @@ namespace LeanSharp
 variable {ι : Type*} [Fintype ι]
 
 /-- Scalar hard-thresholding at radius `τ`. -/
-noncomputable def hard_threshold_scalar (x τ : ℝ) : ℝ :=
+noncomputable def hardThresholdScalar (x τ : ℝ) : ℝ :=
   if |x| < τ then 0 else x
 
 /-- Coordinate-wise hard-thresholding on vectors. -/
-noncomputable def hard_threshold (w : W ι) (τ : ℝ) : W ι :=
+noncomputable def hardThreshold (w : W ι) (τ : ℝ) : W ι :=
   WithLp.equiv 2 (ι → ℝ) |>.symm
-    (fun i => hard_threshold_scalar ((WithLp.equiv 2 (ι → ℝ) w) i) τ)
+    (fun i => hardThresholdScalar ((WithLp.equiv 2 (ι → ℝ) w) i) τ)
 
 /-- Hard-thresholding never increases absolute value. -/
 theorem hard_threshold_scalar_abs_le (x τ : ℝ) :
-    |hard_threshold_scalar x τ| ≤ |x| := by
+    |hardThresholdScalar x τ| ≤ |x| := by
   by_cases h : |x| < τ
-  · simp only [hard_threshold_scalar, h, ↓reduceIte, abs_zero, abs_nonneg]
-  · simp only [hard_threshold_scalar, h, ↓reduceIte, le_refl]
+  · simp only [hardThresholdScalar, h, ↓reduceIte, abs_zero, abs_nonneg]
+  · simp only [hardThresholdScalar, h, ↓reduceIte, le_refl]
 
 /-- Hard-thresholding is idempotent in the scalar case. -/
 theorem hard_threshold_scalar_idempotent (x τ : ℝ) :
-    hard_threshold_scalar (hard_threshold_scalar x τ) τ =
-      hard_threshold_scalar x τ := by
+    hardThresholdScalar (hardThresholdScalar x τ) τ =
+      hardThresholdScalar x τ := by
   by_cases h : |x| < τ
-  · simp only [hard_threshold_scalar, h, ↓reduceIte, abs_zero, ite_self]
-  · simp only [hard_threshold_scalar, h, ↓reduceIte]
+  · simp only [hardThresholdScalar, h, ↓reduceIte, abs_zero, ite_self]
+  · simp only [hardThresholdScalar, h, ↓reduceIte]
 
 omit [Fintype ι] in
 /-- Hard-thresholding is idempotent coordinate-wise on vectors. -/
 theorem hard_threshold_idempotent (w : W ι) (τ : ℝ) :
-    hard_threshold (hard_threshold w τ) τ = hard_threshold w τ := by
+    hardThreshold (hardThreshold w τ) τ = hardThreshold w τ := by
   ext i
   simp only [
-    hard_threshold,
+    hardThreshold,
     WithLp.equiv_apply,
     WithLp.equiv_symm_apply,
     hard_threshold_scalar_idempotent
@@ -68,7 +68,7 @@ theorem hard_threshold_idempotent (w : W ι) (τ : ℝ) :
 
 /-- Hard-thresholding is not globally Lipschitz for positive thresholds. -/
 theorem hard_threshold_scalar_not_lipschitz (τ : ℝ) (hτ : 0 < τ) :
-    ∀ K : NNReal, ¬ LipschitzWith K (fun x : ℝ => hard_threshold_scalar x τ) := by
+    ∀ K : NNReal, ¬ LipschitzWith K (fun x : ℝ => hardThresholdScalar x τ) := by
   intro K hLip
   let k : ℝ := (K : ℝ)
   let δ : ℝ := τ / (2 * (k + 1))
@@ -96,10 +96,10 @@ theorem hard_threshold_scalar_not_lipschitz (τ : ℝ) (hτ : 0 < τ) :
   have hτ_not_lt : ¬ |τ| < τ := by
     rw [abs_of_pos hτ]
     exact lt_irrefl τ
-  have hx_eval : hard_threshold_scalar x0 τ = 0 := by
-    simp only [hard_threshold_scalar, hx0_abs_lt, ↓reduceIte]
-  have hτ_eval : hard_threshold_scalar τ τ = τ := by
-    simp only [hard_threshold_scalar, hτ_not_lt, ↓reduceIte]
+  have hx_eval : hardThresholdScalar x0 τ = 0 := by
+    simp only [hardThresholdScalar, hx0_abs_lt, ↓reduceIte]
+  have hτ_eval : hardThresholdScalar τ τ = τ := by
+    simp only [hardThresholdScalar, hτ_not_lt, ↓reduceIte]
   have hbound := hLip.norm_sub_le x0 τ
   rw [hx_eval, hτ_eval] at hbound
   have hnorm_right : ‖x0 - τ‖ = δ := by

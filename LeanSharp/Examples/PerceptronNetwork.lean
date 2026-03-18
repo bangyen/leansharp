@@ -19,7 +19,7 @@ It also establishes Lipschitz stability markers for the architecture.
 
 ## Definitions
 
-* `mlp_2_layer`.
+* `mlp2Layer`.
 
 ## Theorems
 
@@ -31,7 +31,7 @@ namespace LeanSharp
 variable {ι_in ι_mid ι_out : Type} [Fintype ι_in] [Fintype ι_mid] [Fintype ι_out]
 
 /-- A standard 2-layer MLP: Linear -> ReLU -> Linear. -/
-noncomputable def mlp_2_layer (ι_in ι_mid ι_out : Type)
+noncomputable def mlp2Layer (ι_in ι_mid ι_out : Type)
     [Fintype ι_in] [Fintype ι_mid] [Fintype ι_out] :
     Chain (W ι_in) (W ι_out) :=
   Chain.append (Chain.append (Chain.single (linear_layer ι_in ι_mid))
@@ -39,7 +39,7 @@ noncomputable def mlp_2_layer (ι_in ι_mid ι_out : Type)
 
 /-- **MLP Forward Stability**: The 2-layer MLP is Lipschitz continuous in its input
     for fixed parameters. Proved via composition of Lipschitz layers. -/
-theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) :
+theorem mlp_forward_stability (p : ChainData (mlp2Layer ι_in ι_mid ι_out)) :
     ∃ K, LipschitzWith K (fun x => forward_chain p x) := by
   match p with
   | .append p_relu_linear w2 =>
@@ -162,7 +162,7 @@ theorem mlp_forward_stability (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) 
         · rw [mul_one, one_mul]
 
 /-- Verification that the MLP chain can be evaluated. -/
-noncomputable example (p : ChainData (mlp_2_layer ι_in ι_mid ι_out)) (x : W ι_in) : W ι_out :=
+noncomputable example (p : ChainData (mlp2Layer ι_in ι_mid ι_out)) (x : W ι_in) : W ι_out :=
   forward_chain p x
 
 end LeanSharp

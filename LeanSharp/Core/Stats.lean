@@ -23,19 +23,19 @@ gradient vectors so filtering proofs can share a common statistical foundation.
 
 ## Definitions
 
-* `vector_mean`.
-* `vector_variance`.
-* `vector_std`.
-* `geometric_median`.
+* `vectorMean`.
+* `vectorVariance`.
+* `vectorStd`.
+* `geometricMedian`.
 
 ## Theorems
 
-* `vector_mean_smul`.
-* `vector_std_smul`.
+* `vectorMean_smul`.
+* `vectorStd_smul`.
 * `continuous_sum_distances`.
 * `tendsto_sum_distances_cocompact`.
 * `exists_isMin_on_finite_sum_norm`.
-* `geometric_median_eq_choose`.
+* `geometricMedian_eq_choose`.
 -/
 
 namespace LeanSharp
@@ -45,23 +45,23 @@ open BigOperators
 variable {ι : Type*} [Fintype ι]
 
 /-- The mean of a vector in `W = ℝ^d`. -/
-noncomputable def vector_mean (g : W ι) : ℝ :=
+noncomputable def vectorMean (g : W ι) : ℝ :=
   (∑ i : ι, (WithLp.equiv 2 (ι → ℝ) g) i) / (Fintype.card ι : ℝ)
 
 /-- The variance of a vector in $W = ℝ^d$. -/
-noncomputable def vector_variance (g : W ι) : ℝ :=
-  let μ := vector_mean g
+noncomputable def vectorVariance (g : W ι) : ℝ :=
+  let μ := vectorMean g
   (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - μ)^2) / (Fintype.card ι : ℝ)
 
 /-- The standard deviation `σ` is the square root of the variance. -/
-noncomputable def vector_std (g : W ι) : ℝ :=
-  Real.sqrt (vector_variance g)
+noncomputable def vectorStd (g : W ι) : ℝ :=
+  Real.sqrt (vectorVariance g)
 
 /-- The mean of a scalar-multiple vector is the scalar multiple of the original mean. -/
 @[simp]
-lemma vector_mean_smul (k : ℝ) (g : W ι) :
-    vector_mean (k • g) = k * vector_mean g := by
-  unfold vector_mean
+lemma vectorMean_smul (k : ℝ) (g : W ι) :
+    vectorMean (k • g) = k * vectorMean g := by
+  unfold vectorMean
   have h_smul (i : ι) :
     (WithLp.equiv 2 (ι → ℝ) (k • g)) i = k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
   simp only [h_smul, ← Finset.mul_sum]
@@ -69,19 +69,19 @@ lemma vector_mean_smul (k : ℝ) (g : W ι) :
 
 /-- The standard deviation scales with the absolute value of the scalar. -/
 @[simp]
-lemma vector_std_smul (k : ℝ) (g : W ι) :
-    vector_std (k • g) = |k| * vector_std g := by
-  unfold vector_std
-  have h_var_smul : vector_variance (k • g) = k^2 * vector_variance g := by
-    unfold vector_variance; rw [vector_mean_smul]
-    have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vector_mean g)^2 =
-      k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vector_mean g)^2 := by
+lemma vectorStd_smul (k : ℝ) (g : W ι) :
+    vectorStd (k • g) = |k| * vectorStd g := by
+  unfold vectorStd
+  have h_var_smul : vectorVariance (k • g) = k^2 * vectorVariance g := by
+    unfold vectorVariance; rw [vectorMean_smul]
+    have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vectorMean g)^2 =
+      k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 := by
       have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i = k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
       rw [this, ← mul_sub, mul_pow]
     simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
   rw [h_var_smul]
-  have h_nonneg : 0 ≤ vector_variance g := by
-    unfold vector_variance
+  have h_nonneg : 0 ≤ vectorVariance g := by
+    unfold vectorVariance
     positivity
   rw [Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq_eq_abs]
 
@@ -128,16 +128,16 @@ lemma exists_isMin_on_finite_sum_norm {α : Type*} (s : Finset α) (g : α → W
     exact hx
 
 /-- The Multivariate (Geometric) Median minimizes the sum of Euclidean distances. -/
-noncomputable def geometric_median {α : Type*} (s : Finset α) (g : α → W ι) : W ι :=
+noncomputable def geometricMedian {α : Type*} (s : Finset α) (g : α → W ι) : W ι :=
   if _ : s.Nonempty then
     Classical.choose (exists_isMin_on_finite_sum_norm s g)
   else
     0
 
-/-- When `s` is nonempty, `geometric_median` equals the chosen minimizer; used to apply
+/-- When `s` is nonempty, `geometricMedian` equals the chosen minimizer; used to apply
 `Classical.choose_spec` in robustness proofs. -/
-lemma geometric_median_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
-    geometric_median s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
-  unfold geometric_median; rw [dif_pos h]
+lemma geometricMedian_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
+    geometricMedian s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
+  unfold geometricMedian; rw [dif_pos h]
 
 end LeanSharp

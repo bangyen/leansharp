@@ -16,13 +16,13 @@ to establish optimality lower bounds and custom Central Limit Theorems (CLT).
 
 ## Main definitions
 
-* `filtered_distribution`: The probability measure of the filtered gradient
+* `filteredDistribution`: The probability measure of the filtered gradient
   given a base noise distribution and a z-score threshold.
-* `filtered_char_fun`: Characteristic function of the filtered distribution.
+* `filteredCharFun`: Characteristic function of the filtered distribution.
 
 ## Main contracts
 
-* `filtered_distribution_symmetric`: Distribution-level symmetry interface used
+* `FilteredDistributionSymmetric`: Distribution-level symmetry interface used
   by downstream universality arguments.
 -/
 
@@ -35,18 +35,18 @@ variable [MeasurableSpace (W ι)]
 
 /-- **Filtered Gradient Distribution**:
 Given a measurable space of parameters and a base probability measure `μ` on the
-noise (e.g., Gaussian or Cauchy), the `filtered_distribution` is the pushforward
+noise (e.g., Gaussian or Cauchy), the `filteredDistribution` is the pushforward
 measure under the filtering transformation. -/
-noncomputable def filtered_distribution
+noncomputable def filteredDistribution
     (μ : Measure (W ι)) (z : ℝ) : Measure (W ι) :=
-  μ.map (filtered_gradient · z)
+  μ.map (filteredGradient · z)
 
 /-- **Filtered Characteristic Function**:
 The characteristic function of the filtered distribution, crucial for proving
 the custom CLT for Z-score SAM. -/
-noncomputable def filtered_char_fun
+noncomputable def filteredCharFun
     (μ : Measure (W ι)) (z : ℝ) (t : W ι) : ℂ :=
-  ∫ x, Complex.exp (Complex.I * inner ℝ t (filtered_gradient x z)) ∂μ
+  ∫ x, Complex.exp (Complex.I * inner ℝ t (filteredGradient x z)) ∂μ
 
 section Universality
 
@@ -54,9 +54,9 @@ section Universality
 This predicate exists to separate distribution-level invariance assumptions from
 downstream universality arguments, so CLT-style theorems can depend on a stable
 interface instead of a specific base-noise construction. -/
-def filtered_distribution_symmetric (μ : Measure (W ι)) (z : ℝ) : Prop :=
+def FilteredDistributionSymmetric (μ : Measure (W ι)) (z : ℝ) : Prop :=
   ∀ (A : Set (W ι)), MeasurableSet A →
-    filtered_distribution μ z A = filtered_distribution μ z (Neg.neg '' A)
+    filteredDistribution μ z A = filteredDistribution μ z (Neg.neg '' A)
 
 end Universality
 

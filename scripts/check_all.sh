@@ -12,6 +12,7 @@ SCRIPTS=(
     "scripts/check_copyright.sh"
     "scripts/check_description.sh"
     "scripts/check_long_file.sh"
+    "scripts/check_naming.sh"
     "scripts/format_lean.sh --check"
 )
 

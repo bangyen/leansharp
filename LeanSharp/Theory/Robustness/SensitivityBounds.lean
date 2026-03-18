@@ -18,7 +18,7 @@ gradient components in the presence of stochastic noise.
 ## Main definitions
 
 * `signal_noise_model`: A stochastic gradient model $g = g_{true} + \xi$.
-* `preservation_event`: The event that a specific gradient component $i$ is preserved.
+* `PreservationEvent`: The event that a specific gradient component $i$ is preserved.
 
 ## Theorems
 
@@ -51,30 +51,30 @@ noncomputable def SignalNoiseModel.observed (m : SignalNoiseModel ι Ω) (ω : �
 
 /-- **Mean Stability**: Difference between observed and true mean is bounded by noise mean. -/
 lemma vector_mean_stability (m : SignalNoiseModel ι Ω) (ω : Ω) [Nonempty ι] :
-    |vector_mean (m.observed ω) - vector_mean m.g_true| ≤
-    vector_mean (WithLp.equiv 2 _ |>.symm fun i => |(WithLp.equiv 2 _ (m.noise ω)) i|) := by
+    |vectorMean (m.observed ω) - vectorMean m.g_true| ≤
+    vectorMean (WithLp.equiv 2 _ |>.symm fun i => |(WithLp.equiv 2 _ (m.noise ω)) i|) := by
   have h_card : (0 : ℝ) < Fintype.card ι := Nat.cast_pos.mpr Fintype.card_pos
-  have h_diff : vector_mean (m.observed ω) - vector_mean m.g_true = vector_mean (m.noise ω) := by
-    dsimp only [SignalNoiseModel.observed, vector_mean]
+  have h_diff : vectorMean (m.observed ω) - vectorMean m.g_true = vectorMean (m.noise ω) := by
+    dsimp only [SignalNoiseModel.observed, vectorMean]
     field_simp [h_card.ne.symm]
     rw [← Finset.sum_sub_distrib]
     refine Finset.sum_congr rfl (fun i _ => ?_)
     change (m.g_true i + m.noise ω i) - m.g_true i = m.noise ω i
     abel
-  rw [h_diff, vector_mean, abs_div, abs_of_pos h_card]
+  rw [h_diff, vectorMean, abs_div, abs_of_pos h_card]
   apply div_le_div_of_nonneg_right _ h_card.le
   exact Finset.abs_sum_le_sum_abs _ _
 
 /-- Bounded variance assumption for the noise vector components. -/
-def noise_variance_bound (m : SignalNoiseModel ι Ω) (σsq : ℝ) : Prop :=
+def NoiseVarianceBound (m : SignalNoiseModel ι Ω) (σsq : ℝ) : Prop :=
   ∀ i : ι, 𝔼[fun ω => ((m.noise ω) i)^2] ≤ σsq
 
 /-- **Noise Energy Bound**: The expectation of the squared norm of the noise vector. -/
 lemma noise_expected_norm_sq (m : SignalNoiseModel ι Ω) (σsq : ℝ)
-    (h_noise : noise_variance_bound m σsq)
+    (h_noise : NoiseVarianceBound m σsq)
     (h_int_sq : ∀ i, Integrable (fun ω => ((m.noise ω) i) ^ 2)) :
     𝔼[fun ω => ‖m.noise ω‖ ^ 2] ≤ Fintype.card ι * σsq := by
-  dsimp only [noise_variance_bound, W] at *
+  dsimp only [NoiseVarianceBound, W] at *
   simp_rw [EuclideanSpace.norm_sq_eq]
   simp only [Real.norm_eq_abs, sq_abs]
   rw [integral_finset_sum]
@@ -84,13 +84,13 @@ lemma noise_expected_norm_sq (m : SignalNoiseModel ι Ω) (σsq : ℝ)
   · intro i _; exact h_int_sq i
 
 /-- The event that the $i$-th component is preserved by the Z-score filter. -/
-def preservation_event (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι) : Set Ω :=
-  {ω | |(WithLp.equiv 2 (ι → ℝ) (m.observed ω)) i - vector_mean (m.observed ω)| ≥
-    z * vector_std (m.observed ω)}
+def PreservationEvent (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι) : Set Ω :=
+  {ω | |(WithLp.equiv 2 (ι → ℝ) (m.observed ω)) i - vectorMean (m.observed ω)| ≥
+    z * vectorStd (m.observed ω)}
 
 /-- **Noise Norm Tail Bound**: Probability that noise norm exceeds a threshold. -/
 lemma noise_norm_sq_tail_prob (m : SignalNoiseModel ι Ω) (σsq : ℝ) (l : ℝ) (hl : 0 < l)
-    (h_noise : noise_variance_bound m σsq)
+    (h_noise : NoiseVarianceBound m σsq)
     (h_int_sq : ∀ i, Integrable (fun ω => ((m.noise ω) i) ^ 2)) :
     (volume {ω | ‖m.noise ω‖ ^ 2 ≥ l}).toReal ≤ (Fintype.card ι * σsq) / l := by
   have h_int_norm_sq : Integrable (fun ω => ‖m.noise ω‖ ^ 2) := by
@@ -107,13 +107,13 @@ section Probability
 variable [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- The probability of the preservation event. -/
-noncomputable def preservation_prob (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι) : ℝ :=
-  (ℙ (preservation_event m z i)).toReal
+noncomputable def preservationProb (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι) : ℝ :=
+  (ℙ (PreservationEvent m z i)).toReal
 
 /-- **Mean Deviation Bound**: The expectation of the error in vector mean is zero. -/
 lemma vector_mean_observed_expected (m : SignalNoiseModel ι Ω) [Nonempty ι] :
-    𝔼[fun ω => vector_mean (m.observed ω)] = vector_mean m.g_true := by
-  dsimp only [SignalNoiseModel.observed, vector_mean]
+    𝔼[fun ω => vectorMean (m.observed ω)] = vectorMean m.g_true := by
+  dsimp only [SignalNoiseModel.observed, vectorMean]
   have h_card : (0 : ℝ) < Fintype.card ι := Nat.cast_pos.mpr Fintype.card_pos
   rw [MeasureTheory.integral_div]
   congr 1
@@ -144,14 +144,14 @@ lemma vector_mean_observed_expected (m : SignalNoiseModel ι Ω) [Nonempty ι] :
 If the noise energy is bounded, the component is preserved with high probability
 provided the signal strength is sufficient (captured by `h_impl`). -/
 theorem preservation_prob_lower_bound (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι)
-    (σ_sq : ℝ) (h_noise : noise_variance_bound m σ_sq)
+    (σ_sq : ℝ) (h_noise : NoiseVarianceBound m σ_sq)
     (h_int_sq : ∀ i, Integrable (fun ω => ((m.noise ω) i) ^ 2))
     (threshold : ℝ) (h_t : 0 < threshold)
-    (h_impl : ∀ ω, ‖m.noise ω‖ ^ 2 < threshold → ω ∈ preservation_event m z i) :
-    preservation_prob m z i ≥ 1 - (Fintype.card ι * σ_sq / threshold) := by
-  simp only [preservation_prob]
+    (h_impl : ∀ ω, ‖m.noise ω‖ ^ 2 < threshold → ω ∈ PreservationEvent m z i) :
+    preservationProb m z i ≥ 1 - (Fintype.card ι * σ_sq / threshold) := by
+  simp only [preservationProb]
   have h_mono : (ℙ {ω | ‖m.noise ω‖ ^ 2 < threshold}).toReal
-    ≤ (ℙ (preservation_event m z i)).toReal :=
+    ≤ (ℙ (PreservationEvent m z i)).toReal :=
     (ENNReal.toReal_le_toReal (measure_ne_top _ _)
     (measure_ne_top _ _)).mpr (measure_mono h_impl)
   have h_tail := noise_norm_sq_tail_prob m σ_sq threshold h_t h_noise h_int_sq

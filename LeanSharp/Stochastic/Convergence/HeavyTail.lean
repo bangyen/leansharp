@@ -31,17 +31,18 @@ If the stochastic update process satisfies the oracle-based descent hypotheses
 (which includes a polynomial-tail bound on the noise), then the objective
 converges almost surely to a limit.
 
-This theorem bridges the `non_gaussian_probability_oracle` to the
+This theorem bridges the `NonGaussianProbabilityOracle` to the
 supermartingale convergence machinery. -/
 theorem zsharp_heavy_tail_convergence
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_oracle : zsharp_oracle_descent_hypotheses f w η ℱ ℱfil)
+    (h_oracle : ZSharpOracleDescentHypotheses f w η ℱ ℱfil)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ) :
-    zsharp_objective_as_convergence f w := by
-  rcases h_oracle with ⟨_h_rm, ⟨_C, _p, _hC, _hp, _h_tail⟩, ⟨R, h_adapted, h_step, hbdd⟩, _h_meas⟩
+    ZSharpObjectiveAsConvergence f w := by
+  rcases h_oracle with
+    ⟨_h_rm, ⟨_C, _p, _hC, _hp, _h_tail⟩, ⟨R, h_adapted, h_step, hbdd⟩, _h_meas⟩
   have h_adapted_neg : StronglyAdapted ℱfil (fun t ω => -f (w t ω)) := h_adapted.neg
   have h_step_neg (t : ℕ) : (fun ω => -f (w t ω)) ≤ᵐ[ℙ]
       ℙ[fun ω => -f (w (t + 1) ω) | ℱfil t] := by

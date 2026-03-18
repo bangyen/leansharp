@@ -44,7 +44,7 @@ theorem zsharp_robbins_monro_objective_limit_with_martingale_model
     (h_step :
       ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    zsharp_objective_as_convergence f w := by
+    ZSharpObjectiveAsConvergence f w := by
   have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
     submartingale_nat h_adapted h_int h_step
   exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
@@ -54,16 +54,16 @@ theorem zsharp_objective_as_convergence_of_bridge
     (L_smooth : NNReal) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
-    (hη : robbins_monro_stepsize η)
-    (h_bridge : zsharp_supermartingale_as_bridge L_smooth f w η σsq)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (hη : RobbinsMonroStepsize η)
+    (h_bridge : ZSharpSupermartingaleAsBridge L_smooth f w η σsq)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
-    zsharp_objective_as_convergence f w := by
+    ZSharpObjectiveAsConvergence f w := by
   have h_env : ∀ T : ℕ,
       (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
@@ -84,9 +84,9 @@ theorem zsharp_robbins_monro_almost_sure_convergence
       ∀ t, (fun ω => -f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => -f (w (t + 1) ω) | ℱfil t])
     (R : NNReal)
     (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
@@ -95,7 +95,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence
       (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
-      ∧ zsharp_objective_as_convergence f w := by
+      ∧ ZSharpObjectiveAsConvergence f w := by
   refine ⟨?_, ?_⟩
   · intro T
     exact stochastic_zsharp_sequence_descent L_smooth f w η z σsq T g_adv ℱ
@@ -131,12 +131,12 @@ theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_model :
-      zsharp_model_descent_hypotheses L_smooth f w η z σsq ℱ ℱfil) :
+      ZSharpModelDescentHypotheses L_smooth f w η z σsq ℱ ℱfil) :
     (∀ T : ℕ,
       (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
         𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
         (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
-      ∧ zsharp_objective_as_convergence f w := by
+      ∧ ZSharpObjectiveAsConvergence f w := by
   rcases h_model with ⟨_, ⟨h_struct⟩, ⟨R_obj, h_adapted_obj, h_step_obj, hbdd_obj⟩,
     h_meas, h_desc_step⟩
   let g_adv (t : ℕ) (ω : Ω) := gradient f (w t ω)

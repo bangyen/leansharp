@@ -30,16 +30,16 @@ variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
 /-- **Cauchy Noise Test Witness**:
-A simulated process that satisfies the `non_gaussian_probability_oracle`.
+A simulated process that satisfies the `NonGaussianProbabilityOracle`.
 This test verifies the wiring of almost-sure convergence. -/
 theorem cauchy_process_convergence_test
     (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (h_oracle : zsharp_oracle_descent_hypotheses f w η ℱ ℱfil)
+    (h_oracle : ZSharpOracleDescentHypotheses f w η ℱ ℱfil)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ) :
-    zsharp_objective_as_convergence f w := by
+    ZSharpObjectiveAsConvergence f w := by
   -- The theorem is designed to compose directly with the oracle hypotheses.
   -- This test verifies that no additional hidden assumptions (like finite variance)
   -- are required to state or prove the result.

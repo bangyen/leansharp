@@ -57,7 +57,7 @@ noncomputable def feature_norm_forward (w : W (NormParam (Fin D))) (x : W (Fin S
     γ_d * ((row d - μ_s) / σ_s) + β_d
 
 /-- Feature-wise Layer Normalized backward pass. -/
-noncomputable def feature_norm_backward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D))
+noncomputable def featureNormBackward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D))
     (g_out : W (Fin S × Fin D)) : W (NormParam (Fin D)) × W (Fin S × Fin D) :=
   let D_r := (D : ℝ)
   let x_f := WithLp.equiv 2 _ x
@@ -80,7 +80,7 @@ noncomputable def feature_norm_backward (w : W (NormParam (Fin D))) (x : W (Fin 
   (g_w, g_x)
 
 /-- The Attention Block: Residual(LN + MHA) -/
-noncomputable def transformer_attn_block (S D : ℕ) :
+noncomputable def transformerAttnBlock (S D : ℕ) :
     Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   ParamDim := (NormParam (Fin D)) ⊕ (ATTParam (Fin D))
   fintypeParamDim := inferInstance
@@ -97,14 +97,14 @@ noncomputable def transformer_attn_block (S D : ℕ) :
     let w_mha := WithLp.equiv 2 _ |>.symm (fun i => w_f (Sum.inr i))
     let ln := feature_norm_forward w_ln x
     let (g_w_mha, g_ln) := (mha_layer S D).backward w_mha ln g_out
-    let (g_w_ln, g_x_ln) := feature_norm_backward w_ln x g_ln
+    let (g_w_ln, g_x_ln) := featureNormBackward w_ln x g_ln
     let g_w := WithLp.equiv 2 _ |>.symm fun
       | Sum.inl i => (WithLp.equiv 2 _ g_w_ln) i
       | Sum.inr i => (WithLp.equiv 2 _ g_w_mha) i
     (g_w, g_out + g_x_ln)
 
 /-- The MLP Block: Residual(LN + Linear + ReLU + Linear) -/
-noncomputable def transformer_mlp_block (S D D_ff : ℕ) :
+noncomputable def transformerMlpBlock (S D D_ff : ℕ) :
     Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   ParamDim := (NormParam (Fin D)) ⊕ (Fin D × Fin D_ff) ⊕ (Fin D_ff × Fin D)
   fintypeParamDim := inferInstance
@@ -148,7 +148,7 @@ noncomputable def transformer_mlp_block (S D D_ff : ℕ) :
     let g_w1 := fun (d : Fin D) (df : Fin D_ff) => ∑ s, g_mlp1_f s df * x_ln_f (s, d)
     -- Backward pass for LayerNorm
     let g_ln := WithLp.equiv 2 _ |>.symm fun p => g_ln_f p.1 p.2
-    let (g_w_ln_vec, g_x_ln) := feature_norm_backward w_ln x g_ln
+    let (g_w_ln_vec, g_x_ln) := featureNormBackward w_ln x g_ln
     let g_w := WithLp.equiv 2 _ |>.symm fun
       | Sum.inl i => (WithLp.equiv 2 _ g_w_ln_vec) i
       | Sum.inr (Sum.inl i) => g_w1 i.1 i.2
@@ -156,10 +156,10 @@ noncomputable def transformer_mlp_block (S D D_ff : ℕ) :
     (g_w, g_out + g_x_ln)
 
 /-- A full Transformer Encoder Block (composed of Attn + MLP blocks). -/
-noncomputable def transformer_encoder_block (S D D_ff : ℕ) :
+noncomputable def transformerEncoderBlock (S D D_ff : ℕ) :
     Chain (W (Fin S × Fin D)) (W (Fin S × Fin D)) :=
-  let attn := transformer_attn_block S D
-  let mlp := transformer_mlp_block S D D_ff
+  let attn := transformerAttnBlock S D
+  let mlp := transformerMlpBlock S D D_ff
   Chain.append (Chain.single attn) mlp
 
 end LeanSharp

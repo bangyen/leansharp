@@ -37,13 +37,13 @@ example (ι : Type) [Fintype ι] (p : ℝ) :
 
 /-- Test: Transformer MLP Block Parameter Dimensions. -/
 example (S D D_ff : ℕ) [NeZero S] [NeZero D] :
-    (transformer_mlp_block S D D_ff).ParamDim =
+    (transformerMlpBlock S D D_ff).ParamDim =
     ((NormParam (Fin D)) ⊕ (Fin D × Fin D_ff) ⊕ (Fin D_ff × Fin D)) := by
   rfl
 
 /-- Test: Patch Embedding Layer Parameter Dimensions. -/
 example (nc nh nw np ns nd : ℕ) [NeZero nh] [NeZero nw] [NeZero np] [NeZero ns] :
-    (patch_embedding nc nh nw np ns nd).ParamDim =
+    (patchEmbedding nc nh nw np ns nd).ParamDim =
     ((Fin nc × Fin np × Fin np) × Fin nd) := by
   rfl
 

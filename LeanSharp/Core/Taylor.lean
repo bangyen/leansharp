@@ -48,7 +48,8 @@ structure SmoothObjective (ι : Type*) [Fintype ι] where
 /-- Auxiliary: the derivative of `t ↦ L(p + t•ε)` is `inner ℝ (∇L) ε`. -/
 private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
     (h_diff_at : DifferentiableAt ℝ L (p + t • ε)) :
-    HasDerivAt (fun (t : ℝ) => L (p + t • ε)) (inner ℝ (gradient L (p + t • ε)) ε) t := by
+    HasDerivAt (fun (t : ℝ) => L (p + t • ε))
+      (inner ℝ (gradient L (p + t • ε)) ε) t := by
   have hf : HasDerivAt (fun (s : ℝ) => p + s • ε) ε t := by
     simpa only [hasDerivAt_const_add_iff, id_eq, one_smul]
       using (hasDerivAt_id t).smul_const ε |>.const_add p
@@ -57,7 +58,8 @@ private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
 
 /-- **MVT Comparison Step**: Auxiliary lemma for the smooth descent bound. Concludes
 $\phi(1) \le \phi(0)$ given that the derivative of $\phi$ is non-positive. -/
-private lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ} (hφ_cont : ContinuousOn φ (Icc 0 1))
+private lemma smooth_descent_mvt_step {φ : ℝ → ℝ} {f' : ℝ → ℝ}
+    (hφ_cont : ContinuousOn φ (Icc 0 1))
     (hφ' : ∀ t ∈ Ico 0 1, HasDerivWithinAt φ (f' t) (Ici t) t)
     (hf'_nonpos : ∀ t ∈ Ico 0 1, f' t ≤ 0) :
     φ 1 ≤ φ 0 := by
@@ -93,7 +95,8 @@ private lemma smooth_descent_phi_deriv_nonpos (L : W ι → ℝ) (w ε : W ι) (
       (M : ℝ) * t * ‖ε‖ ^ 2 := by
     calc inner ℝ (gradient L (w + t • ε) - gradient L w) ε
         ≤ ‖gradient L (w + t • ε) - gradient L w‖ * ‖ε‖ := hcs
-      _ ≤ ((M : ℝ) * t * ‖ε‖) * ‖ε‖ := mul_le_mul_of_nonneg_right hlip (norm_nonneg ε)
+      _ ≤ ((M : ℝ) * t * ‖ε‖) * ‖ε‖ :=
+        mul_le_mul_of_nonneg_right hlip (norm_nonneg ε)
       _ = (M : ℝ) * t * ‖ε‖ ^ 2 := by ring
   linarith [h_bound, h_2tm]
 
@@ -184,7 +187,8 @@ theorem smooth_descent (L : SmoothObjective ι) (w ε : W ι) :
   exact smooth_descent_on_segment L.toFun w ε L.smoothness h_path_cont h_diff_path L.lipschitz
 
 /-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
-private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W ι) (h_norm : ‖ε‖ ≤ ρ) :
+private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W ι)
+    (h_norm : ‖ε‖ ≤ ρ) :
     inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
   have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
     calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
@@ -196,12 +200,12 @@ private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (
     norm_num
   linarith
 
-/-- **SAM Taylor Bound**: `sam_objective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
+/-- **SAM Taylor Bound**: `samObjective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
 theorem sam_taylor_bound (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
     (hρ : 0 ≤ ρ) :
-    sam_objective L.toFun w ρ ≤
+    samObjective L.toFun w ρ ≤
       L.toFun w + ‖gradient L.toFun w‖ * ρ + (L.smoothness : ℝ) / 2 * ρ ^ 2 := by
-  unfold sam_objective perturbation_neighborhood
+  unfold samObjective perturbationNeighborhood
   apply csSup_le
   · exact ⟨L.toFun w, w, ⟨
       0,
@@ -222,7 +226,8 @@ $L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
 theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
     (h_eta_nonneg : 0 ≤ η)
     (h_eta_bound : η * (L.smoothness : ℝ) ≤ 1) :
-    L.toFun (w - η • gradient L.toFun w) ≤ L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 := by
+    L.toFun (w - η • gradient L.toFun w) ≤
+      L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 := by
   set g := gradient L.toFun w
   have h_descent := smooth_descent L w (-(η • g))
   have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
@@ -242,7 +247,8 @@ theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
     rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
   calc L.toFun (w - η • g)
     _ = L.toFun (w + -(η • g)) := by rw [h_step]
-    _ ≤ L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 := h_descent
+    _ ≤ L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 :=
+      h_descent
     _ ≤ L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
       have hquad : (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
         rw [h_norm_desc]

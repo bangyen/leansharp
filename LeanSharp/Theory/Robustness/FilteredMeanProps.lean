@@ -17,9 +17,9 @@ other robustness proofs can depend on a compact, reusable mean-aggregation API.
 
 ## Definitions
 
-* `unit_vector`.
-* `empirical_mean`.
-* `z_filtered_empirical_mean`.
+* `unitVector`.
+* `empiricalMean`.
+* `zFilteredEmpiricalMean`.
 * `RobustSample`: Bundles a sample set `s`, a mapping `g`, and fixed-subset/radius
   bounds for robustness analysis.
 
@@ -57,11 +57,11 @@ structure RobustSample (α ι : Type*) [Fintype ι] [DecidableEq α] where
 open BigOperators
 
 /-- A constant unit vector in $W$. -/
-noncomputable def unit_vector (ι : Type*) [Fintype ι] : W ι :=
+noncomputable def unitVector (ι : Type*) [Fintype ι] : W ι :=
   WithLp.equiv 2 (ι → ℝ) |>.symm fun _ => 1 / Real.sqrt (Fintype.card ι)
 
-lemma norm_unit_vector (ι : Type*) [Fintype ι] [Nonempty ι] : ‖unit_vector ι‖ = 1 := by
-  unfold unit_vector
+lemma norm_unit_vector (ι : Type*) [Fintype ι] [Nonempty ι] : ‖unitVector ι‖ = 1 := by
+  unfold unitVector
   rw [EuclideanSpace.norm_eq]
   simp only [WithLp.equiv_symm_apply, Real.norm_eq_abs, sq_abs]
   have card_pos : (0 : ℝ) ≤ Fintype.card ι := Nat.cast_nonneg _
@@ -74,30 +74,30 @@ lemma norm_unit_vector (ι : Type*) [Fintype ι] [Nonempty ι] : ‖unit_vector 
   rw [mul_one_div_cancel card_ne_zero, Real.sqrt_one]
 
 /-- The empirical mean of a collection of vectors. -/
-noncomputable def empirical_mean (s : Finset α) (g : α → W ι) : W ι :=
+noncomputable def empiricalMean (s : Finset α) (g : α → W ι) : W ι :=
   (1 / (s.card : ℝ)) • ∑ i ∈ s, g i
 
 /-- The empirical mean after applying coordinate-wise Z-score filtering to each vector.
 This estimator starts the bridge between classical outlier robustness and Z-score gating. -/
-noncomputable def z_filtered_empirical_mean (s : Finset α) (g : α → W ι) (z : ℝ) : W ι :=
-  empirical_mean s (fun i => filtered_gradient (g i) z)
+noncomputable def zFilteredEmpiricalMean (s : Finset α) (g : α → W ι) (z : ℝ) : W ι :=
+  empiricalMean s (fun i => filteredGradient (g i) z)
 
 /-- **Filtered mean norm control**: the norm of the Z-filtered empirical mean is bounded
 by the average unfiltered norm over the sample. This gives a direct quantitative handle
 for robust bounds that combine filtering with aggregation. -/
 theorem z_filtered_empirical_mean_norm_le
     (s : Finset α) (g : α → W ι) (z : ℝ) (hs : s.Nonempty) :
-    ‖z_filtered_empirical_mean s g z‖ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
-  unfold z_filtered_empirical_mean empirical_mean
+    ‖zFilteredEmpiricalMean s g z‖ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
+  unfold zFilteredEmpiricalMean empiricalMean
   have hn_pos : 0 < (s.card : ℝ) := by exact_mod_cast hs.card_pos
   rw [norm_smul, Real.norm_eq_abs, abs_of_pos (one_div_pos.mpr hn_pos)]
   calc
-    (1 / (s.card : ℝ)) * ‖∑ i ∈ s, filtered_gradient (g i) z‖
-      ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖filtered_gradient (g i) z‖) := by
+    (1 / (s.card : ℝ)) * ‖∑ i ∈ s, filteredGradient (g i) z‖
+      ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖filteredGradient (g i) z‖) := by
         exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
         apply mul_le_mul_of_nonneg_left
-        · exact Finset.sum_le_sum (fun i _ => filtered_norm_bound (g i) z)
+        · exact Finset.sum_le_sum (fun i _ => norm_filteredGradient_le (g i) z)
         · positivity
 
 /-- **Uniform-input bound for filtered mean**: if every sample gradient has norm at most
@@ -106,7 +106,7 @@ reusable step toward deciding when filtered-mean aggregation is safe. -/
 theorem z_filtered_empirical_mean_norm_le_of_pointwise_bound
     (s : Finset α) (g : α → W ι) (z R : ℝ) (hs : s.Nonempty)
     (hR : ∀ i ∈ s, ‖g i‖ ≤ R) :
-    ‖z_filtered_empirical_mean s g z‖ ≤ R := by
+    ‖zFilteredEmpiricalMean s g z‖ ≤ R := by
   have h_base := z_filtered_empirical_mean_norm_le s g z hs
   have hn_pos : 0 < (s.card : ℝ) := by exact_mod_cast hs.card_pos
   refine h_base.trans ?_
@@ -128,14 +128,15 @@ theorem z_filtered_empirical_mean_bounded_subset [DecidableEq α]
     (S : RobustSample α ι) (z : ℝ) (hs : S.s.Nonempty) :
     ∀ g' : α → W ι, (∀ i ∈ S.s_fixed, g' i = S.g i) →
       (∀ i ∈ S.s \ S.s_fixed, ‖g' i‖ ≤ S.R_out) →
-      ‖z_filtered_empirical_mean S.s g' z‖ ≤
+      ‖zFilteredEmpiricalMean S.s g' z‖ ≤
         (1 / (S.s.card : ℝ)) *
           (((S.s_fixed.card : ℝ) * S.R_fixed) + (((S.s \ S.s_fixed).card : ℝ) * S.R_out)) := by
   intro g' hg_fixed hg_out
   let s_out := S.s \ S.s_fixed
   have h_base := z_filtered_empirical_mean_norm_le S.s g' z hs
   have h_sum_split_raw :
-      ∑ i ∈ S.s, ‖g' i‖ = (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ S.s \ S.s_fixed, ‖g' i‖) := by
+      ∑ i ∈ S.s, ‖g' i‖ =
+        (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ S.s \ S.s_fixed, ‖g' i‖) := by
     have h_filter_eq : S.s.filter (fun i => i ∈ S.s_fixed) = S.s_fixed := by
       ext i
       constructor
@@ -149,7 +150,8 @@ theorem z_filtered_empirical_mean_bounded_subset [DecidableEq α]
     simpa only [Finset.sum_filter, h_filter_eq, h_filter_not_eq] using
       (Finset.sum_filter_add_sum_filter_not
         (s := S.s) (f := fun i => ‖g' i‖) (p := fun i => i ∈ S.s_fixed)).symm
-  have h_sum_split : ∑ i ∈ S.s, ‖g' i‖ = (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ s_out, ‖g' i‖) := by
+  have h_sum_split : ∑ i ∈ S.s, ‖g' i‖ = (∑ i ∈ S.s_fixed, ‖g' i‖) + (∑ i ∈ s_out, ‖g' i‖) :=
+    by
     simpa only [s_out] using h_sum_split_raw
   have h_fixed_sum : (∑ i ∈ S.s_fixed, ‖g' i‖) ≤ ∑ i ∈ S.s_fixed, S.R_fixed := by
     refine Finset.sum_le_sum (fun i hi => ?_)
@@ -159,7 +161,8 @@ theorem z_filtered_empirical_mean_bounded_subset [DecidableEq α]
     refine Finset.sum_le_sum (fun i hi => ?_)
     exact hg_out i (by simpa only [s_out] using hi)
   have h_sum_bound : (1 / (S.s.card : ℝ)) * (∑ i ∈ S.s, ‖g' i‖)
-      ≤ (1 / (S.s.card : ℝ)) * ((∑ i ∈ S.s_fixed, S.R_fixed) + (∑ i ∈ s_out, S.R_out)) := by
+      ≤ (1 / (S.s.card : ℝ)) *
+        ((∑ i ∈ S.s_fixed, S.R_fixed) + (∑ i ∈ s_out, S.R_out)) := by
     apply mul_le_mul_of_nonneg_left
     · rw [h_sum_split]
       exact add_le_add h_fixed_sum h_out_sum
@@ -175,7 +178,8 @@ theorem z_filtered_empirical_mean_bounded_subset [DecidableEq α]
           (((S.s_fixed.card : ℝ) * S.R_fixed) + ((s_out.card : ℝ) * S.R_out)) := by
             rw [Finset.sum_const, nsmul_eq_mul, Finset.sum_const, nsmul_eq_mul]
       _ = (1 / (S.s.card : ℝ)) *
-            (((S.s_fixed.card : ℝ) * S.R_fixed) + (((S.s \ S.s_fixed).card : ℝ) * S.R_out)) := by
+            (((S.s_fixed.card : ℝ) * S.R_fixed) +
+              (((S.s \ S.s_fixed).card : ℝ) * S.R_out)) := by
             simp only [one_div, s_out]
   exact h_base.trans h_sum_bound'
 
@@ -186,7 +190,8 @@ theorem z_filtered_empirical_mean_bounded_subset_max [DecidableEq α]
     (S : RobustSample α ι) (z : ℝ) (hs : S.s.Nonempty) :
     ∀ g' : α → W ι, (∀ i ∈ S.s_fixed, g' i = S.g i) →
       (∀ i ∈ S.s \ S.s_fixed, ‖g' i‖ ≤ S.R_out) →
-      ‖z_filtered_empirical_mean S.s g' z‖ ≤ max S.R_fixed S.R_out := by
+      ‖zFilteredEmpiricalMean S.s g' z‖ ≤ max S.R_fixed S.R_out :=
+    by
   intro g' hg_fixed hg_out
   have h_weighted := z_filtered_empirical_mean_bounded_subset S z hs g' hg_fixed hg_out
   have hn_pos : 0 < (S.s.card : ℝ) := by exact_mod_cast hs.card_pos

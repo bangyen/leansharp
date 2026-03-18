@@ -14,8 +14,8 @@ to prove baseline lower/upper bounds for mean and geometric-median estimators.
 
 ## Definitions
 
-* `is_bounded_at_outlier_count`.
-* `finite_sample_breakdown_point`.
+* `IsBoundedAtOutlierCount`.
+* `finiteSampleBreakdownPoint`.
 
 ## Theorems
 
@@ -32,17 +32,17 @@ open BigOperators
 
 /-- An estimator is bounded at outlier count `k` if the estimate remains in a bounded set
 whenever at most `k` points are moved from the original dataset `g`. -/
-def is_bounded_at_outlier_count (s : Finset α) (g : α → W ι)
+def IsBoundedAtOutlierCount (s : Finset α) (g : α → W ι)
     (k : ℕ) (est : (α → W ι) → W ι) : Prop :=
   ∃ R : ℝ, ∀ g' : α → W ι, (s.filter (fun i => g' i ≠ g i)).card ≤ k →
     ‖est g'‖ ≤ R
 
 /-- The finite-sample breakdown point is the smallest fraction $k/n$ of outliers
 that can move the estimate arbitrarily far. -/
-noncomputable def finite_sample_breakdown_point (s : Finset α) (g : α → W ι)
+noncomputable def finiteSampleBreakdownPoint (s : Finset α) (g : α → W ι)
     (est : (α → W ι) → W ι) : ℝ := by
   classical
-  exact if h : ∃ k : ℕ, ¬ is_bounded_at_outlier_count s g k est then
+  exact if h : ∃ k : ℕ, ¬ IsBoundedAtOutlierCount s g k est then
     (Nat.find h : ℕ) / (s.card : ℝ)
   else
     1
@@ -50,11 +50,11 @@ noncomputable def finite_sample_breakdown_point (s : Finset α) (g : α → W ι
 /-- **Mean Breakdown Point is Zero**: Moving a single point can break the empirical mean. -/
 theorem mean_breakdown_point_zero [Nonempty ι] (s : Finset α) (g : α → W ι)
     (hs : s.Nonempty) :
-    finite_sample_breakdown_point s g (empirical_mean s) ≤ 1 / (s.card : ℝ) := by
+    finiteSampleBreakdownPoint s g (empiricalMean s) ≤ 1 / (s.card : ℝ) := by
   classical
-  unfold finite_sample_breakdown_point
-  have h_one : ¬ is_bounded_at_outlier_count s g 1 (empirical_mean s) := by
-    unfold is_bounded_at_outlier_count
+  unfold finiteSampleBreakdownPoint
+  have h_one : ¬ IsBoundedAtOutlierCount s g 1 (empiricalMean s) := by
+    unfold IsBoundedAtOutlierCount
     push_neg
     intro R
     let i0 := hs.choose
@@ -74,7 +74,7 @@ theorem mean_breakdown_point_zero [Nonempty ι] (s : Finset α) (g : α → W ι
         unfold C
         linarith [le_max_left R 0]
       exact lt_trans hRC h_norm
-  let h_exists : ∃ k : ℕ, ¬ is_bounded_at_outlier_count s g k (empirical_mean s) := ⟨1, h_one⟩
+  let h_exists : ∃ k : ℕ, ¬ IsBoundedAtOutlierCount s g k (empiricalMean s) := ⟨1, h_one⟩
   rw [dif_pos h_exists]
   apply div_le_div_of_nonneg_right
   · exact_mod_cast Nat.find_min' h_exists h_one
@@ -83,18 +83,18 @@ theorem mean_breakdown_point_zero [Nonempty ι] (s : Finset α) (g : α → W ι
 /-- **Geometric Median Breakdown point is at least Half**. -/
 theorem geometric_median_breakdown_point_ge_half
     (s : Finset α) (g : α → W ι) (hs : s.Nonempty) :
-    finite_sample_breakdown_point s g (geometric_median s) ≥ 1 / 2 := by
+    finiteSampleBreakdownPoint s g (geometricMedian s) ≥ 1 / 2 := by
   classical
-  unfold finite_sample_breakdown_point
-  by_cases h_non : ∃ k : ℕ, ¬ is_bounded_at_outlier_count s g k (geometric_median s)
+  unfold finiteSampleBreakdownPoint
+  by_cases h_non : ∃ k : ℕ, ¬ IsBoundedAtOutlierCount s g k (geometricMedian s)
   · rw [dif_pos h_non]
     let k0 := Nat.find h_non
-    have hk0_not_bounded : ¬ is_bounded_at_outlier_count s g k0 (geometric_median s) :=
+    have hk0_not_bounded : ¬ IsBoundedAtOutlierCount s g k0 (geometricMedian s) :=
       Nat.find_spec h_non
     have h_bounded_lt_half :
-        ∀ k : ℕ, 2 * k < s.card → is_bounded_at_outlier_count s g k (geometric_median s) := by
+        ∀ k : ℕ, 2 * k < s.card → IsBoundedAtOutlierCount s g k (geometricMedian s) := by
       intro k hk
-      unfold is_bounded_at_outlier_count
+      unfold IsBoundedAtOutlierCount
       let B : Finset α → ℝ := fun sf =>
         if hsf : sf ⊆ s ∧ 2 * sf.card > s.card then
           |Classical.choose (median_bounded_subset s g sf hsf.1 hsf.2)|
@@ -124,7 +124,7 @@ theorem geometric_median_breakdown_point_ge_half
               simpa only [sf, Finset.mem_union, Finset.mem_filter] using hmem'
         omega
       let R_sf := Classical.choose (median_bounded_subset s g sf hsf_sub hsf_maj)
-      have h_med_le : ‖geometric_median s g'‖ ≤ R_sf := by
+      have h_med_le : ‖geometricMedian s g'‖ ≤ R_sf := by
         have H := Classical.choose_spec (median_bounded_subset s g sf hsf_sub hsf_maj)
         apply H g'
         intro i hi

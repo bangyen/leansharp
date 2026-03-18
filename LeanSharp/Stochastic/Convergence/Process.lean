@@ -28,7 +28,7 @@ the Z-score filter.
 
 ## Main definitions
 
-* `stochastic_alignment_condition`: Generalization of the alignment condition
+* `StochasticAlignmentCondition`: Generalization of the alignment condition
   to the expectation of the filtered stochastic gradient.
 
 ## Main theorems
@@ -46,9 +46,9 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 
 /-- **Stochastic Alignment Condition**: A generalization of the alignment condition
 to the stochastic setting, supporting learning rate schedules. -/
-def stochastic_alignment_condition (w_star w : W ι) (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
+def StochasticAlignmentCondition (w_star w : W ι) (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
     (g_adv : Ω → W ι) : Prop :=
-  let g_f (ω : Ω) := filtered_gradient (g_adv ω) z
+  let g_f (ω : Ω) := filteredGradient (g_adv ω) z
   Integrable g_f ∧
   Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
   2 * (η t) * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
@@ -77,9 +77,11 @@ private lemma stochastic_dist_expansion (A : W ι) (B : Ω → W ι) (η : ℝ)
   calc 𝔼[fun ω => ‖A - η • B ω‖ ^ 2]
     _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A + η^2 * ‖B ω‖ ^ 2] := by
         simp_rw [norm_sub_smul_sq]
-    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] + 𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
+    _ = 𝔼[fun ω => ‖A‖ ^ 2 - 2 * η * inner ℝ (B ω) A] +
+        𝔼[fun ω => η^2 * ‖B ω‖ ^ 2] :=
         integral_add h_int_1 h_int_2
-    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
+    _ = ‖A‖ ^ 2 - 2 * η * 𝔼[fun ω => inner ℝ (B ω) A] +
+        η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
         rw [integral_sub (integrable_const _) (h_int_B.inner_const A |>.const_mul (2 * η)),
             integral_const, probReal_univ, one_smul, integral_const_mul, integral_const_mul]
     _ = ‖A‖ ^ 2 - 2 * η * inner ℝ (𝔼[B]) A + η ^ 2 * 𝔼[fun ω => ‖B ω‖ ^ 2] := by
@@ -92,9 +94,9 @@ theorem stochastic_expected_descent_step
     (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (t : ℕ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
-    (h_step_t : ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_step_t : ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step_t : ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     (h_int_t : Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad_t : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
@@ -104,18 +106,19 @@ theorem stochastic_expected_descent_step
       (η t ^ 2 * L_smooth / 2) * σsq := by
   rw [← integral_condExp h_meas_t]
   have h_step_ae : ∀ᵐ ω ∂ℙ, f (w (t + 1) ω)
-      = f (stochastic_zsharp_step (w t ω) η t z (g_adv t) ω) := by
+      = f (stochasticZSharpStep (w t ω) η t z (g_adv t) ω) := by
     filter_upwards [h_step_t] with ω h
     rw [h]
   have h_cond_exp_eq : volume[fun ω' => f (w (t + 1) ω') | ℱ t] =ᵐ[ℙ]
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] := by
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] := by
     apply condExp_congr_ae h_step_ae
   have h_bound_ae : volume[fun ω' => f (w (t + 1) ω') | ℱ t] ≤ᵐ[ℙ]
       (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
       + (η t ^ 2 * L_smooth / 2) * σsq) := by
     apply h_cond_exp_eq.trans_le h_desc_step_t
   have h_int1 : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) ℙ :=
-    h_int_t.sub (h_int_grad_t.const_mul _)
+    h_int_t.sub
+      (h_int_grad_t.const_mul _)
   have h_int2 : Integrable (fun (_ : Ω) => (η t ^ 2 * L_smooth / 2) * σsq) ℙ :=
     integrable_const _
   have h_int_rhs : Integrable (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2
@@ -132,13 +135,13 @@ condition and standard assumptions, the distance to the optimum decreases in
 expectation under a learning rate schedule. -/
 theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w : W ι)
     (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
-    (h_align : stochastic_alignment_condition w_star w η t z μ g_adv) :
-    𝔼[fun ω => ‖stochastic_zsharp_step w η t z g_adv ω - w_star‖ ^ 2] ≤
+    (h_align : StochasticAlignmentCondition w_star w η t z μ g_adv) :
+    𝔼[fun ω => ‖stochasticZSharpStep w η t z g_adv ω - w_star‖ ^ 2] ≤
       (1 - (η t) * μ) * ‖w - w_star‖ ^ 2 := by
   let A : W ι := w - w_star
-  let B (ω : Ω) : W ι := filtered_gradient (g_adv ω) z
-  have hrw : ∀ ω, stochastic_zsharp_step w η t z g_adv ω - w_star = A - (η t) • B ω := by
-    intro ω; unfold stochastic_zsharp_step A B
+  let B (ω : Ω) : W ι := filteredGradient (g_adv ω) z
+  have hrw : ∀ ω, stochasticZSharpStep w η t z g_adv ω - w_star = A - (η t) • B ω := by
+    intro ω; unfold stochasticZSharpStep A B
     simp only [sub_eq_add_neg, add_assoc, add_comm, add_left_comm]
   -- Step 1: Expand the squared distance using the helper lemma
   have h_expansion := stochastic_dist_expansion A B (η t) h_align.1 h_align.2.1
@@ -150,19 +153,19 @@ theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w :
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
 
-theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι) (η z : ℝ)
-    (σsq : ℝ)
-    (h_smooth : is_smooth f L_smooth)
-    (h_stoch : is_stochastic_gradient f g w)
-    (h_var : has_bounded_variance f g w σsq)
+theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι)
+    (η z : ℝ) (σsq : ℝ)
+    (h_smooth : IsSmooth f L_smooth)
+    (h_stoch : IsStochasticGradient f g w)
+    (h_var : HasBoundedVariance f g w σsq)
     (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
     (h_η : 0 < η ∧ η ≤ 1 / (2 * L_smooth))
-    (h_meas_f : AEStronglyMeasurable (fun ω => filtered_gradient (g ω) z) ℙ)
-    (h_int_f : Integrable (fun ω => ‖filtered_gradient (g ω) z‖ ^ 2) ℙ)
-    (h_int_f_val : Integrable (fun ω => f (w - η • filtered_gradient (g ω) z)) ℙ)
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable (fun ω => f (w - η • filteredGradient (g ω) z)) ℙ)
     (h_align : ‖gradient f w‖ ^ 2 ≤
-      2 * inner ℝ (gradient f w) (𝔼[fun ω => filtered_gradient (g ω) z])) :
-    𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)] ≤
+      2 * inner ℝ (gradient f w) (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => f (w - η • filteredGradient (g ω) z)] ≤
       f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
   have h_η_pos := h_η.1
   have h_η_le := h_η.2
@@ -178,7 +181,7 @@ theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W 
     h_η_le.trans (by apply one_div_le_one_div_of_le h_L_pos; linarith)
   have h_descent := z_score_descent L_smooth f g w η z σsq
     h_smooth h_stoch h_var h_int ⟨h_η_pos, h_η_orig⟩ h_meas_f h_int_f h_int_f_val h_align
-  calc 𝔼[fun ω => f (w - η • filtered_gradient (g ω) z)]
+  calc 𝔼[fun ω => f (w - η • filteredGradient (g ω) z)]
     _ ≤ f w - (η / 2) * ‖gradient f w‖ ^ 2 +
         (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := h_descent
     _ = f w - (η / 2 - η ^ 2 * L_smooth / 2) * ‖gradient f w‖ ^ 2 +
@@ -200,9 +203,10 @@ This is the fundamental lemma used to prove the $O(1/\sqrt{T})$ convergence rate
 theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ) (T : ℕ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
-    (h_step : ∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochastic_zsharp_step (w t ω) η t z (g_adv t) ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
@@ -215,7 +219,8 @@ theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
       simp only [Finset.range_zero, Finset.sum_empty, sub_self, add_zero]
       exact le_refl _
   | succ t ih =>
-      have h_sum1 : (∑ k ∈ Finset.range (t + 1), (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) =
+      have h_sum1 :
+          (∑ k ∈ Finset.range (t + 1), (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) =
           (∑ k ∈ Finset.range t, (η k / 4) * ∫ ω, ‖gradient f (w k ω)‖ ^ 2 ∂ℙ) +
           (η t / 4) * ∫ ω, ‖gradient f (w t ω)‖ ^ 2 ∂ℙ := Finset.sum_range_succ _ _
       have h_sum2 : (∑ k ∈ Finset.range (t + 1), (η k ^ 2 * L_smooth / 2) * σsq) =

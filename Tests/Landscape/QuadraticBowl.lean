@@ -26,28 +26,28 @@ open LeanSharp.QuadraticBowl
 
 /-- Verifies the fundamental L2 contraction property of the Z-score filter on the toy model. -/
 theorem test_toy_filter_contraction :
-    ‖filtered_gradient (exact_gradient_toy w_init) 1‖ ≤ ‖exact_gradient_toy w_init‖ := by
-  apply filtered_norm_bound
+    ‖filteredGradient (exactGradientToy wInit) 1‖ ≤ ‖exactGradientToy wInit‖ := by
+  apply norm_filteredGradient_le
 
 /-- Verifies that for the toy gradient, the Z-score filter (z=1) is an identity. -/
 theorem test_toy_filter_identity :
-    filtered_gradient (exact_gradient_toy w_init) 1 = (exact_gradient_toy w_init) := by
-  have h_mean : vector_mean (exact_gradient_toy w_init) = 4 := by
-    unfold vector_mean exact_gradient_toy w_init
+    filteredGradient (exactGradientToy wInit) 1 = (exactGradientToy wInit) := by
+  have h_mean : vectorMean (exactGradientToy wInit) = 4 := by
+    unfold vectorMean exactGradientToy wInit
     rw [Equiv.apply_symm_apply]
     norm_num
-  have h_std : vector_std (exact_gradient_toy w_init) = 2 := by
-    have h_var : vector_variance (exact_gradient_toy w_init) = 4 := by
-      unfold vector_variance
+  have h_std : vectorStd (exactGradientToy wInit) = 2 := by
+    have h_var : vectorVariance (exactGradientToy wInit) = 4 := by
+      unfold vectorVariance
       rw [h_mean]
-      unfold exact_gradient_toy w_init
+      unfold exactGradientToy wInit
       rw [Equiv.apply_symm_apply]
       norm_num
-    unfold vector_std
+    unfold vectorStd
     rw [h_var]
     have h_sq : (2 : ℝ) ^ 2 = 4 := by norm_num
     rw [← h_sq, Real.sqrt_sq (by norm_num)]
-  unfold filtered_gradient z_score_mask hadamard
+  unfold filteredGradient zScoreMask hadamard
   rw [h_mean, h_std]
   ext i
   dsimp only [
@@ -57,14 +57,14 @@ theorem test_toy_filter_identity :
     WithLp.equiv_apply
   ]
   fin_cases i <;> {
-    unfold exact_gradient_toy w_init
+    unfold exactGradientToy wInit
     split_ifs with h <;> norm_num at *
   }
 
 /-- Verifies that the toy model's gradient at the initial point is non-zero. -/
 theorem test_toy_gradient_nonzero :
-    exact_gradient_toy w_init ≠ 0 := by
-  unfold exact_gradient_toy w_init
+    exactGradientToy wInit ≠ 0 := by
+  unfold exactGradientToy wInit
   intro h
   have h0 : (WithLp.equiv 2 (Fin 2 → ℝ) ((WithLp.equiv 2 (Fin 2 → ℝ)).symm fun i =>
       2 * (WithLp.equiv 2 (Fin 2 → ℝ)) ((WithLp.equiv 2 (Fin 2 → ℝ)).symm fun i =>

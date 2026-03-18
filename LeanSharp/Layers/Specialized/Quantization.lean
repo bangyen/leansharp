@@ -17,8 +17,8 @@ along with theorems regarding their stability.
 
 ## Main definitions
 
-* `prune_weights`: Zeros out weights below a threshold.
-* `uniform_quantize`: Maps weights to the nearest level in a grid.
+* `pruneWeights`: Zeros out weights below a threshold.
+* `uniformQuantize`: Maps weights to the nearest level in a grid.
 
 ## Theorems
 
@@ -31,13 +31,13 @@ along with theorems regarding their stability.
 variable {ι : Type*} [Fintype ι]
 
 /-- Pruning operator: Zeros out weights with absolute value < ε. -/
-noncomputable def prune_weights (ε : ℝ) (w : W ι) : W ι :=
+noncomputable def pruneWeights (ε : ℝ) (w : W ι) : W ι :=
   (WithLp.equiv 2 _).symm fun i =>
     let val := (WithLp.equiv 2 _ w) i
     if |val| < ε then 0 else val
 
 /-- Uniform Quantization: Maps a value to the nearest Level * step. -/
-noncomputable def uniform_quantize (step : ℝ) (w : W ι) : W ι :=
+noncomputable def uniformQuantize (step : ℝ) (w : W ι) : W ι :=
   if step = 0 then w else
   (WithLp.equiv 2 _).symm fun i =>
     let val := (WithLp.equiv 2 _ w) i
@@ -46,13 +46,13 @@ noncomputable def uniform_quantize (step : ℝ) (w : W ι) : W ι :=
 /-- **Pruning Bound**: The squared difference between a weight and its pruned version
     is bounded by the number of pruned elements times ε^2. -/
 theorem pruning_error_bound (ε : ℝ) (w : W ι) :
-    ‖w - prune_weights ε w‖^2 ≤ (Fintype.card ι : ℝ) * ε^2 := by
+    ‖w - pruneWeights ε w‖^2 ≤ (Fintype.card ι : ℝ) * ε^2 := by
   -- Convert norm squared difference into a sum
   rw [EuclideanSpace.norm_sq_eq]
-  let pruned := prune_weights ε w
+  let pruned := pruneWeights ε w
   have h_bound (i : ι) : ‖(w - pruned).ofLp i‖^2 ≤ ε^2 := by
     dsimp only [
-      prune_weights,
+      pruneWeights,
       WithLp.equiv_apply,
       Lean.Elab.WF.paramLet,
       WithLp.equiv_symm_apply,
@@ -85,9 +85,9 @@ theorem pruning_error_bound (ε : ℝ) (w : W ι) :
 theorem pruning_forward_stability {ι_in ι_out : Type} [Fintype ι_out]
     (f : Layer (W ι_in) (W ι_out)) (w : W f.ParamDim) (x : W ι_in) (ε : ℝ)
     (h_lip : LipschitzWith K (fun w' => f.forward w' x)) :
-    ‖f.forward w x - f.forward (prune_weights ε w) x‖ ≤
+    ‖f.forward w x - f.forward (pruneWeights ε w) x‖ ≤
     K * (Real.sqrt (Fintype.card f.ParamDim) * |ε|) := by
-  have h_diff := h_lip.norm_sub_le w (prune_weights ε w)
+  have h_diff := h_lip.norm_sub_le w (pruneWeights ε w)
   apply h_diff.trans
   have h_sq := pruning_error_bound ε w
   have h_sqrt := Real.sqrt_le_sqrt h_sq
@@ -101,11 +101,11 @@ theorem pruning_forward_stability {ι_in ι_out : Type} [Fintype ι_out]
 quantized version is bounded by the number of elements times `(|step|/2)^2`.
 This formulation is sign-robust and also covers the degenerate `step = 0` case. -/
 theorem uniform_quantize_error_bound (step : ℝ) (w : W ι) :
-    ‖w - uniform_quantize step w‖^2 ≤ (Fintype.card ι : ℝ) * (|step| / 2)^2 := by
+    ‖w - uniformQuantize step w‖^2 ≤ (Fintype.card ι : ℝ) * (|step| / 2)^2 := by
   by_cases h_step0 : step = 0
   · subst h_step0
     simp only [
-      uniform_quantize,
+      uniformQuantize,
       ↓reduceIte,
       sub_self,
       norm_zero,
@@ -118,13 +118,13 @@ theorem uniform_quantize_error_bound (step : ℝ) (w : W ι) :
       mul_zero,
       le_refl
     ]
-  · let quantized := uniform_quantize step w
+  · let quantized := uniformQuantize step w
     rw [EuclideanSpace.norm_sq_eq]
     refine (@Finset.sum_le_sum ι ℝ _ _ (fun i => ‖(w - quantized).ofLp i‖^2)
       (fun _ => (|step| / 2)^2) Finset.univ _ ?_).trans ?_
     · intro i _
       dsimp only [PiLp.sub_apply, Real.norm_eq_abs]
-      simp only [quantized, uniform_quantize, h_step0, if_false]
+      simp only [quantized, uniformQuantize, h_step0, if_false]
       let x := (WithLp.equiv 2 (ι → ℝ) w) i
       change |x - round (x / step) * step| ^ 2 ≤ (|step| / 2) ^ 2
       have h_rw : x - round (x / step) * step = step * (x / step - round (x / step)) := by
@@ -147,9 +147,9 @@ theorem uniform_quantize_error_bound (step : ℝ) (w : W ι) :
 theorem quantization_forward_stability {ι_in ι_out : Type} [Fintype ι_out]
     (f : Layer (W ι_in) (W ι_out)) (w : W f.ParamDim) (x : W ι_in) (step : ℝ)
     (h_lip : LipschitzWith K (fun w' => f.forward w' x)) :
-    ‖f.forward w x - f.forward (uniform_quantize step w) x‖ ≤
+    ‖f.forward w x - f.forward (uniformQuantize step w) x‖ ≤
     K * (Real.sqrt (Fintype.card f.ParamDim) * (|step| / 2)) := by
-  have h_diff := h_lip.norm_sub_le w (uniform_quantize step w)
+  have h_diff := h_lip.norm_sub_le w (uniformQuantize step w)
   apply h_diff.trans
   have h_sq := uniform_quantize_error_bound step w
   have h_sqrt := Real.sqrt_le_sqrt h_sq

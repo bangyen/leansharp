@@ -28,22 +28,22 @@ variable {ι : Type*} [Fintype ι]
 
 /-- Unit test for `zsharp_solve` on identity-level filtered gradient properties. -/
 theorem test_zsolve_identity (g : W ι) (z : ℝ) (i : ι)
-    (h_mask : (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i = 1) :
-    (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
+    (h_mask : (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1) :
+    (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i =
     (WithLp.equiv 2 (ι → ℝ) g) i := by
   zsharp_solve
 
 /-- Unit test for `zsharp_solve` on zero-masking behavior. -/
 theorem test_zsolve_zero (g : W ι) (z : ℝ) (i : ι)
-    (h_mask : (WithLp.equiv 2 (ι → ℝ) (z_score_mask g z)) i = 0) :
-    (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i = 0 := by
+    (h_mask : (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 0) :
+    (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i = 0 := by
   zsharp_solve
 
 /-- Unit test for `zsharp_solve` with explicit mean-zero outlier logic. -/
 theorem test_zsolve_outlier (g : W ι) (z : ℝ) (i : ι)
-    (h_μ : vector_mean g = 0)
-    (h_out : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vector_std g) :
-    (WithLp.equiv 2 (ι → ℝ) (filtered_gradient g z)) i =
+    (h_μ : vectorMean g = 0)
+    (h_out : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vectorStd g) :
+    (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i =
     (WithLp.equiv 2 (ι → ℝ) g) i := by
   zsharp_solve
 

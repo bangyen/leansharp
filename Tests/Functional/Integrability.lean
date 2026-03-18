@@ -36,7 +36,7 @@ theorem structural_descent_envelope_test
     (h_struct : ZSharpStructuralAssumptions f w η z σsq)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z
         (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
     (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
@@ -59,17 +59,17 @@ theorem integrability_interface_test
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_struct : ZSharpStructuralAssumptions f w η z σsq)
-    (h_rm : robbins_monro_stepsize η)
+    (h_rm : RobbinsMonroStepsize η)
     (h_bridge : ∃ R : NNReal,
       StronglyAdapted ℱfil (fun t ω => f (w t ω))
         ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
         ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochastic_zsharp_step (w t ω') η t z
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z
         (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
       f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq) :
-    zsharp_objective_as_convergence f w := by
+    ZSharpObjectiveAsConvergence f w := by
   -- This should now be a one-liner call to the structural interface
   exact (zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
     L_smooth f w η z σsq ℱ ℱfil

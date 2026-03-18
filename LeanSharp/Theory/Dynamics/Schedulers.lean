@@ -16,7 +16,7 @@ starting with the popular Cosine Decay schedule.
 ## Main definitions
 
 * `Schedule`: A type alias for `ℕ → ℝ`, mapping a step index to a learning rate.
-* `cosine_decay_schedule`: Implements the cosine annealing decay.
+* `cosineDecaySchedule`: Implements the cosine annealing decay.
 
 ## Theorems
 
@@ -39,7 +39,7 @@ def Schedule := ℕ → ℝ
 $\eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 + \cos(\frac{t\pi}{T}))$
 for $t < T$, and $\eta_t = \eta_{min}$ for $t \ge T$.
 -/
-noncomputable def cosine_decay_schedule (η_max η_min : ℝ) (T : ℕ) : Schedule := fun t =>
+noncomputable def cosineDecaySchedule (η_max η_min : ℝ) (T : ℕ) : Schedule := fun t =>
   if t < T then
     η_min + (1 / 2) * (η_max - η_min) * (1 + cos (t * π / T))
   else
@@ -68,8 +68,8 @@ theorem cosine_argument_mono {t₁ t₂ T : ℕ} (ht : t₁ ≤ t₂) (hT : T �
 
 /-- The Cosine Decay schedule starts at `η_max` when `t = 0`. -/
 theorem cosine_decay_zero (η_max η_min : ℝ) (T : ℕ) (hT : 0 < T) :
-    cosine_decay_schedule η_max η_min T 0 = η_max := by
-  unfold cosine_decay_schedule
+    cosineDecaySchedule η_max η_min T 0 = η_max := by
+  unfold cosineDecaySchedule
   rw [if_pos hT]
   norm_cast
   rw [
@@ -84,15 +84,15 @@ theorem cosine_decay_zero (η_max η_min : ℝ) (T : ℕ) (hT : 0 < T) :
 This theorem exists as a canonical simplification rule for endpoint and
 post-horizon schedule evaluations. -/
 @[simp] theorem cosine_decay_schedule_of_ge (η_max η_min : ℝ) (T t : ℕ) (ht : T ≤ t) :
-    cosine_decay_schedule η_max η_min T t = η_min := by
-  unfold cosine_decay_schedule
+    cosineDecaySchedule η_max η_min T t = η_min := by
+  unfold cosineDecaySchedule
   rw [if_neg (Nat.not_lt.mpr ht)]
 
 /-- **Monotonicity of Cosine Decay**: The schedule is non-increasing for `η_min ≤ η_max`. -/
 theorem cosine_decay_antitone (η_max η_min : ℝ) (T : ℕ) (h_le : η_min ≤ η_max) :
-    Antitone (cosine_decay_schedule η_max η_min T) := by
+    Antitone (cosineDecaySchedule η_max η_min T) := by
   intro t₁ t₂ ht
-  unfold cosine_decay_schedule
+  unfold cosineDecaySchedule
   split_ifs with h₂ h₁
   · -- t₂ < T, t₁ < T
     have h_arg : cos (↑t₂ * π / ↑T) ≤ cos (↑t₁ * π / ↑T) := by

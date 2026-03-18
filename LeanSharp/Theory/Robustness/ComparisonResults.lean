@@ -35,8 +35,8 @@ theorem median_bounded_mean_unbounded_one_outlier_of_majority [Nonempty ι]
     (h_maj : 2 * (s.erase i0).card > s.card)
     (C : ℝ) :
     (∃ R : ℝ, ∀ g' : α → W ι, (∀ i ≠ i0, g' i = g i) →
-        ‖geometric_median s g'‖ ≤ R) ∧
-    (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empirical_mean s g'‖ > C) := by
+        ‖geometricMedian s g'‖ ≤ R) ∧
+    (∃ g' : α → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empiricalMean s g'‖ > C) := by
   classical
   constructor
   · obtain ⟨R, hR⟩ := median_bounded_subset s g (s.erase i0) (Finset.erase_subset i0 s) h_maj
@@ -55,8 +55,8 @@ theorem median_and_zfiltered_mean_bounded_subset
     (h_fixed_bound : ∀ i ∈ s_fixed, ‖g i‖ ≤ R_fixed) :
     ∃ R_med : ℝ, ∀ g' : α → W ι, (∀ i ∈ s_fixed, g' i = g i) →
       (∀ i ∈ s \ s_fixed, ‖g' i‖ ≤ R_out) →
-      ‖geometric_median s g'‖ ≤ R_med
-        ∧ ‖z_filtered_empirical_mean s g' z‖ ≤ max R_fixed R_out := by
+      ‖geometricMedian s g'‖ ≤ R_med
+        ∧ ‖zFilteredEmpiricalMean s g' z‖ ≤ max R_fixed R_out := by
   obtain ⟨R_med, h_med⟩ := median_bounded_subset s g s_fixed h_sub h_maj
   refine ⟨R_med, ?_⟩
   intro g' hg_fixed hg_out
@@ -78,17 +78,17 @@ This theorem exists to expose the exact regime where filtered aggregation reduce
 the classical mean and therefore inherits its robustness profile. -/
 @[simp] theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
     (s : Finset α) (g : α → W ι) {z : ℝ} (hz : z ≤ 0) :
-    z_filtered_empirical_mean s g z = empirical_mean s g := by
-  unfold z_filtered_empirical_mean
+    zFilteredEmpiricalMean s g z = empiricalMean s g := by
+  unfold zFilteredEmpiricalMean
   congr 1
   funext i
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext j
   apply filtered_gradient_coord_preservation
-  unfold z_score_mask
+  unfold zScoreMask
   rw [Equiv.apply_symm_apply]
-  have h_keep : |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vector_mean (g i)| ≥ z * vector_std (g i) := by
-    have hzσ : z * vector_std (g i) ≤ 0 :=
+  have h_keep : |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vectorMean (g i)| ≥ z * vectorStd (g i) := by
+    have hzσ : z * vectorStd (g i) ≤ 0 :=
       mul_nonpos_of_nonpos_of_nonneg hz (Real.sqrt_nonneg _)
     exact le_trans hzσ (abs_nonneg _)
   exact by simpa only [
