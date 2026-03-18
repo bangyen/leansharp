@@ -39,10 +39,10 @@ The following items represent the planned evolution of LeanSharp, categorized by
 
 ### Immediate Roadmap (Verification & Refinement)
 
-#### Promoted from Extensions (Near-Term)
-* Prove robustness bounds compared to mean/Z-score baselines (mean unbounded / median bounded already in `Theory/Robustness.lean`). **[Medium-High]**
-* Define the local curvature matrix and the generalized filter condition. **[Medium]**
-* Define Cauchy/non-Gaussian probability oracles. **[Medium-High]**
+* Prove infinite-variance convergence bounds using the new Cauchy/non-Gaussian oracle interfaces. **[High]**
+* Integrate probability-oracle assumptions into stochastic convergence bundles and bridge theorems. **[Medium-High]**
+* Prove the second-order descent lemma using the local curvature matrix and generalized filter condition. **[Medium-High]**
+* Formalize the probability distribution of filtered gradients as a reusable object for downstream universality results. **[High]**
 
 ---
 
@@ -51,13 +51,11 @@ The following items represent the planned evolution of LeanSharp, categorized by
 These items represent specialized research directions or are currently limited by foundational gaps in Mathlib.
 
 #### Z-Score Universality
-* Formalize the probability distribution of the filtered gradients. **[High]**
 * Prove a custom Central Limit Theorem (CLT) applicable to this specific filtered distribution. **[Extreme]**
 * Establish the statistical optimality lower bound. **[Extreme]**
 
 #### Hessian-Aware Filtering
 * Formalize second-order Fréchet derivatives in Mathlib. **[High]**
-* Prove the descent lemma utilizing the second-order information. **[Medium-High]**
 
 #### Neural Tangent Kernels
 * Define the analytical limit as layer width $D \to \infty$. **[High]**
@@ -68,7 +66,7 @@ These items represent specialized research directions or are currently limited b
 * Prove the score-matching stability objective. **[Extreme]**
 
 #### Heavy-Tailed Noise
-* Prove bounds under infinite variance conditions. **[High]**
+* Extend oracle-based infinite-variance guarantees to explicit $\alpha$-stable families. **[High]**
 
 #### Third-Order Descent
 * Formalize third-order Fréchet derivatives. **[High]**

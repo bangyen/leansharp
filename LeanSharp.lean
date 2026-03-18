@@ -46,6 +46,7 @@ import LeanSharp.Stochastic.Mechanics.DescentSteps
 import LeanSharp.Stochastic.Mechanics.SampleErrors
 import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.Martingale
+import LeanSharp.Stochastic.Foundations.Oracles
 import LeanSharp.Stochastic.Foundations.Schedules
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 import LeanSharp.Stochastic.Mechanics.SharpnessMap
