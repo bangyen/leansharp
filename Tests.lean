@@ -4,21 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-/- Functional tests: assumptions and theorem-level behavior checks. -/
-import Tests.Functional.HeavyTail
-import Tests.Functional.Integrability
-import Tests.Functional.RobbinsMonro
-
-/- Landscape tests: concrete objective/optimizer examples and sanity checks. -/
-import Tests.Landscape.CosineDecays
-import Tests.Landscape.IllConditioned
-import Tests.Landscape.QuadraticBowl
-
-/- Structural tests: layer architecture contracts and stability regressions. -/
-import Tests.Structural.LearningRates
-import Tests.Structural.NetworkLayers
-import Tests.Structural.SecondOrder
-import Tests.Structural.TacticSystems
+/- Folder-level aggregators for all test suites. -/
+import Tests.Functional
+import Tests.Landscape
+import Tests.Structural
 
 /-!
 # Test Suite Aggregator
