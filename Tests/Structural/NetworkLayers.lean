@@ -26,8 +26,8 @@ This module collects regression tests for core layer and architecture behavior.
 
 ## Theorems
 
-* Dimension checks for dropout, transformer MLP blocks, and patch embeddings.
-* Behavioral checks for forward and backward passes of major layers.
+* Dimension checks for dropout, transformer MLP blocks, patch embeddings, and the full ViT.
+* Behavioral checks for forward and backward passes of major layers, including quantization.
 -/
 
 /-- Test: Dropout Layer Parameter Dimensions. -/
@@ -38,7 +38,7 @@ example (ι : Type) [Fintype ι] (p : ℝ) :
 /-- Test: Transformer MLP Block Parameter Dimensions. -/
 example (S D D_ff : ℕ) [NeZero S] [NeZero D] :
     (transformerMlpBlock S D D_ff).ParamDim =
-    ((NormParam (Fin D)) ⊕ (Fin D × Fin D_ff) ⊕ (Fin D_ff × Fin D)) := by
+    (((NormParam (Fin D)) ⊕ (Fin D × Fin D_ff) ⊕ (Fin D_ff × Fin D))) := by
   rfl
 
 /-- Test: Patch Embedding Layer Parameter Dimensions. -/
@@ -195,5 +195,20 @@ theorem test_chain_composition_forward {ι_in ι_out : Type} [Fintype ι_in] [Fi
     Lean.Elab.WF.paramLet
   ]
   rfl
+
+/-- Test: Quantization Error Bound on a unit identity weight. -/
+theorem test_quantization_unit_bound (ι : Type) [Fintype ι] (w : W ι) (step : ℝ) :
+    ‖w - uniformQuantize step w‖^2 ≤ (Fintype.card ι : ℝ) * (|step| / 2)^2 := by
+  apply uniform_quantize_error_bound
+
+/-- Test: Pruning Stability on a dummy identity-Lipschitz layer. -/
+theorem test_pruning_stability (ι : Type) [Fintype ι] (w : W ι) (ε : ℝ) :
+    ‖pruneWeights ε w - w‖ ≤ Real.sqrt (Fintype.card ι) * |ε| := by
+  have h := pruning_error_bound ε w
+  have h_sqrt := Real.sqrt_le_sqrt h
+  rw [Real.sqrt_mul (by positivity)] at h_sqrt
+  simp only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] at h_sqrt
+  rw [norm_sub_rev]
+  exact h_sqrt
 
 end LeanSharp.Tests
