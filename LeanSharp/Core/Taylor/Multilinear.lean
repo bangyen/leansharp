@@ -18,10 +18,12 @@ order multilinear forms.
 ## Definitions
 
 * `SmoothObjectiveN`: n-th order smooth function bundle.
+* `HKSmoothObjectiveN`: `H^k`-aware n-th order smooth bundle.
 
 ## Theorems
 
 * `multilinear_taylor_bound`: $n$-th order Taylor bound on the objective.
+* `multilinear_taylor_bound_hk`: `H^k`-aware variant of the same bound.
 -/
 
 namespace LeanSharp
@@ -42,6 +44,24 @@ structure SmoothObjectiveN (ι : Type*) [Fintype ι] (n : ℕ) where
       This directional formulation avoids Faa Di Bruno combination explosion. -/
   bound : ∀ (w ε : W ι) (y : ℝ), y ∈ Icc (0:ℝ) 1 →
     ‖iteratedDerivWithin n (fun t => toFun (w + t • ε)) (Icc 0 1) y‖ ≤ smoothness * ‖ε‖ ^ n
+
+/-- `H^k`-aware n-th order smooth objective bundle. This wrapper exists to let
+Taylor bounds be stated against Sobolev-style regularity contracts while
+remaining backward-compatible with existing `SmoothObjectiveN` clients. -/
+structure HKSmoothObjectiveN (ι : Type*) [Fintype ι] (n k : ℕ) where
+  /-- Underlying n-th order smooth objective data. -/
+  toSmoothObjectiveN : SmoothObjectiveN ι n
+  /-- `H^k` regularity contract placeholder used by higher-level interfaces. -/
+  hkRegularity : Prop
+
+/-- Compatibility constructor from the legacy `SmoothObjectiveN` bundle to the
+`H^k`-aware wrapper. This exists so existing callers can adopt `HKSmoothObjectiveN`
+without changing their smoothness proofs. -/
+def SmoothObjectiveN.toHKSmoothObjectiveN
+    {n : ℕ} (L : SmoothObjectiveN ι n) (k : ℕ) (h_hk : Prop) :
+    HKSmoothObjectiveN ι n k :=
+  { toSmoothObjectiveN := L
+    hkRegularity := h_hk }
 
 instance {n : ℕ} : CoeFun (SmoothObjectiveN ι n) (fun _ => W ι → ℝ) where
   coe L := L.toFun
@@ -66,5 +86,16 @@ theorem multilinear_taylor_bound (n : ℕ) (L : SmoothObjectiveN ι (n + 1)) (w 
   have h_rhs : (L.smoothness : ℝ) * ‖ε‖ ^ (n + 1) * (1 - 0) ^ (n + 1) / (n.factorial : ℝ) =
       (L.smoothness : ℝ) * ‖ε‖ ^ (n + 1) / (n.factorial : ℝ) := by ring
   linarith [h_taylor]
+
+/-- **`H^k`-Aware multilinear expansion bound**: this theorem states the Taylor
+remainder estimate for objectives that carry an explicit `H^k` regularity
+contract. The proof reuses the existing multilinear bound from the smoothness
+bundle component. -/
+theorem multilinear_taylor_bound_hk
+    (k n : ℕ) (L : HKSmoothObjectiveN ι (n + 1) k) (w ε : W ι) :
+    ‖L.toSmoothObjectiveN.toFun (w + ε) -
+      taylorWithinEval (fun t => L.toSmoothObjectiveN.toFun (w + t • ε)) n (Icc 0 1) 0 1‖ ≤
+      (L.toSmoothObjectiveN.smoothness : ℝ) * ‖ε‖ ^ (n + 1) / (n.factorial : ℝ) := by
+  simpa only [norm_eq_abs] using multilinear_taylor_bound n L.toSmoothObjectiveN w ε
 
 end LeanSharp

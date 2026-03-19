@@ -29,6 +29,9 @@ analyses.
 ## Theorems
 
 * `zsharp_strongly_convex_rate`: explicit `O(1/T)` rate under contraction assumptions.
+* `weight_sequence_step_eventually`: recursion identity for `weightSequence`.
+* `weight_sequence_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses`:
+  almost-sure convergence for the concrete `weightSequence` process.
 -/
 
 namespace LeanSharp
@@ -110,5 +113,48 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
       rw [hval]
       exact strongly_convex_induction_step t μ C η w_star w0 g_adv ℱ h_le h_cond_bound h_int
         (ih (Nat.pos_of_ne_zero ht)) (h_step t) hμ (Nat.pos_of_ne_zero ht)
+
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- Recursion identity for `weightSequence` as an almost-everywhere update rule.
+This lemma exists so concrete-sequence convergence theorems can provide the exact
+step contract expected by Robbins-Monro interfaces. -/
+theorem weight_sequence_step_eventually
+    (w0 : W ι) (η : ℕ → ℝ) (z : ℝ) (g_adv : ℕ → Ω → W ι) :
+    ∀ t, ∀ᵐ ω ∂ℙ,
+      weightSequence w0 η z g_adv (t + 1) ω =
+        stochasticZSharpStep (weightSequence w0 η z g_adv t ω) η t z (g_adv t) ω := by
+  intro t
+  exact Filter.Eventually.of_forall (fun ω => by
+    simp only [weightSequence])
+
+/-- **Concrete Robbins-Monro a.s. convergence for `weightSequence`**:
+specializes the model-level convergence interface to the recursively defined
+Z-score iterate process. This theorem exists to expose an explicit sequence-level
+almost-sure convergence result for the concrete SGD recursion. -/
+theorem weight_sequence_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+    (L_smooth : NNReal) (f : W ι → ℝ)
+    (w0 : W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model :
+      ZSharpModelDescentHypotheses L_smooth f (weightSequence w0 η z g_adv) η z σsq ℱ ℱfil) :
+    (∀ t, ∀ᵐ ω ∂ℙ,
+      weightSequence w0 η z g_adv (t + 1) ω =
+        stochasticZSharpStep (weightSequence w0 η z g_adv t ω) η t z (g_adv t) ω)
+      ∧
+    (∀ T : ℕ,
+      (∑ t ∈ Finset.range T,
+        (η t / 4) * 𝔼[fun ω => ‖gradient f (weightSequence w0 η z g_adv t ω)‖ ^ 2]) ≤
+        𝔼[fun ω => f (weightSequence w0 η z g_adv 0 ω)] -
+          𝔼[fun ω => f (weightSequence w0 η z g_adv T ω)] +
+        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
+      ∧ ZSharpObjectiveAsConvergence f (weightSequence w0 η z g_adv) := by
+  have h_step := weight_sequence_step_eventually (w0 := w0) (η := η) (z := z) (g_adv := g_adv)
+  have h_core :=
+    zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+      (L_smooth := L_smooth) (f := f) (w := weightSequence w0 η z g_adv)
+      (η := η) (z := z) (σsq := σsq) (ℱ := ℱ) (ℱfil := ℱfil) h_model
+  exact ⟨h_step, h_core.1, h_core.2⟩
 
 end LeanSharp

@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 
 import LeanSharp.Stochastic.Foundations.Martingale
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
+import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
 
 /-!
 # Robbins-Monro Martingale Interface Tests
@@ -17,6 +18,8 @@ downstream theorem statements.
 
 * `martingale_model_interface_test`.
 * `martingale_model_objective_limit_interface_test`.
+* `weight_sequence_robbins_monro_interface_test`.
+* `bridge_contract_interface_test`.
 -/
 
 namespace LeanSharp
@@ -66,5 +69,41 @@ theorem martingale_model_objective_limit_interface_test
   · exact h_model.h_update
   · exact zsharp_robbins_monro_objective_limit_with_martingale_model
       f w ℱ R h_adapted h_int h_step hbdd
+
+/-- **Concrete Weight-Sequence Interface Verification**: confirms that the
+`weightSequence` specialization exposes both the explicit recursion identity and
+the almost-sure objective convergence contracts for downstream callers. -/
+theorem weight_sequence_robbins_monro_interface_test
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L_smooth : NNReal) (f : W (Fin 2) → ℝ)
+    (w0 : W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W (Fin 2))
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_model : ZSharpModelDescentHypotheses
+      L_smooth f (weightSequence w0 η z g_adv) η z σsq ℱ ℱfil) :
+    (∀ t, ∀ᵐ ω ∂ℙ,
+      weightSequence w0 η z g_adv (t + 1) ω =
+        stochasticZSharpStep (weightSequence w0 η z g_adv t ω) η t z (g_adv t) ω)
+      ∧ ZSharpObjectiveAsConvergence f (weightSequence w0 η z g_adv) := by
+  have h_result :=
+    weight_sequence_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
+      (L_smooth := L_smooth) (f := f) (w0 := w0)
+      (η := η) (z := z) (σsq := σsq) (g_adv := g_adv) (ℱ := ℱ) (ℱfil := ℱfil) h_model
+  exact ⟨h_result.1, h_result.2.2⟩
+
+/-- **Bridge API Wiring Verification**: checks that the project-level bridge
+contract wrappers remain directly usable from theorem clients. -/
+theorem bridge_contract_interface_test
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (f : W (Fin 2) → ℝ)
+    (w : ℕ → Ω → W (Fin 2))
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ)
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    ZSharpObjectiveAsConvergence f w := by
+  exact zsharp_objective_as_convergence_of_submartingale_bridge_contract
+    f w ℱ R h_sub hbdd
 
 end LeanSharp

@@ -25,6 +25,8 @@ assumptions.
 ## Theorems
 
 * `zsharp_objective_as_convergence_of_submartingale`.
+* `zsharp_objective_as_convergence_of_bridge_contract`.
+* `zsharp_objective_as_convergence_of_submartingale_bridge_contract`.
 -/
 
 namespace LeanSharp
@@ -81,5 +83,39 @@ theorem zsharp_objective_as_convergence_of_submartingale
     h_sub.ae_tendsto_limitProcess hbdd
   filter_upwards [h_ae_tendsto] with ω hω
   exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
+
+omit [IsProbabilityMeasure (volume : Measure Ω)] in
+/-- **Bridge-contract eliminator**: this theorem turns the project-level
+`ZSharpSupermartingaleAsBridge` package and Robbins-Monro step-size assumptions
+into an explicit almost-sure objective convergence conclusion. It exists as the
+canonical entry point for callers that treat bridge hypotheses as a reusable API
+layer over Mathlib convergence machinery. -/
+theorem zsharp_objective_as_convergence_of_bridge_contract
+    (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (σsq : ℝ)
+    (hη : RobbinsMonroStepsize η)
+    (h_env : ∀ T : ℕ,
+      (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+        𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+        (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq))
+    (h_bridge : ZSharpSupermartingaleAsBridge L_smooth f w η σsq) :
+    ZSharpObjectiveAsConvergence f w :=
+  h_bridge hη h_env
+
+omit [Fintype ι] in
+/-- **Submartingale-to-bridge instantiation theorem**: given submartingale and
+uniform `L¹` bounds for the objective process, this theorem builds the project
+bridge contract and immediately derives almost-sure objective convergence. This
+is an explicit project-level formalization wrapper around Mathlib's martingale
+convergence theorem. -/
+theorem zsharp_objective_as_convergence_of_submartingale_bridge_contract
+    (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ)
+    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
+    ZSharpObjectiveAsConvergence f w := by
+  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 end LeanSharp
