@@ -8,6 +8,7 @@ Authors: Bangyen Pham
 import Tests.Functional
 import Tests.Landscape
 import Tests.Structural
+import Tests.Theory
 
 /-!
 # Test Suite Aggregator

@@ -16,10 +16,10 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 
 ## Key Accomplishments
 
-- **Heavy-Tailed Analysis**: Proved $O(1/T)$ convergence rates for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
-- **Verified Vision Architectures**: Formalized Transformer and ViT layers, including a rigorous proof of patch-embedding to 2D-convolution equivalence.
-- **Generalized Taylor Theory**: Developed a library for **arbitrary-degree multilinear Taylor expansions** and H^k-aware descent lemmas.
-- **Infinite Width Foundations**: Established the topological dimension sequence limits ($|ι| \to \infty$) for formal NTK and generalization analysis.
+- **Heavy-Tailed Analysis**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
+- **Verified Layer Library**: Formalized the full stack of modern ML—from core Linear/BatchNorm units to Vision Transformers (ViT) and Attention mechanisms.
+- **Generalized Taylor Theory**: Developed a library for **arbitrary-degree multilinear Taylor expansions** and $H^k$-aware descent lemmas.
+- **Infinite Width Regime**: Established topological dimension sequence limits ($|ι| \to \infty$) for formal NTK and infinite-width analysis.
 - **Automation Engine**: Hardened the `zsharp_solve` tactic to automate complex SAM algebraic normalization and Z-score inequality splitting.
 
 
