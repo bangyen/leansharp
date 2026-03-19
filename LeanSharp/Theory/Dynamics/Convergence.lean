@@ -54,8 +54,10 @@ def IsStronglyConvex (L : W ι → ℝ) (μ : ℝ) : Prop :=
 
 /-- A structure bundling a smooth objective with strong convexity. -/
 structure StronglyConvexObjective (ι : Type*) [Fintype ι] extends SmoothObjective ι where
+
   /-- The strong convexity constant. -/
   μ : ℝ
+
   /-- Proof that the loss is μ-strongly convex. -/
   strongly_convex : IsStronglyConvex toFun μ
 
@@ -90,14 +92,19 @@ def AlignmentCondition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
 
 /-- A structure bundling the full set of assumptions for ZSharp convergence. -/
 structure ZSharpModel (ι : Type*) [Fintype ι] where
+
   /-- The strongly convex and smooth objective. -/
   L : StronglyConvexObjective ι
+
   /-- The global optimum point. -/
   w_star : W ι
+
   /-- The SAM perturbation radius. -/
   ρ : ℝ
+
   /-- The Z-score filter threshold. -/
   z : ℝ
+
   /-- The foundational alignment condition connecting geometry to filtering. -/
   alignment : ∀ w : W ι,
     let ε := samPerturbation L.toFun w ρ

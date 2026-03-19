@@ -94,10 +94,13 @@ private lemma hessian_symmetry_reduction (L : W ι → ℝ) (w : W ι)
 
 /-- A structure bundling a function $L$ with its second-order regularity properties. -/
 structure TwiceDifferentiable (ι : Type*) [Fintype ι] where
+
   /-- The underlying loss function. -/
   toFun : W ι → ℝ
+
   /-- Proof that the function is differentiable everywhere. -/
   differentiable : ∀ p, HasFDerivAt toFun (fderiv ℝ toFun p) p
+
   /-- Proof that the derivative is itself differentiable. -/
   twiceDifferentiable : ∀ p, DifferentiableAt ℝ (fderiv ℝ toFun) p
 

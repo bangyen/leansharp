@@ -54,16 +54,22 @@ def GeneralizedFilterCondition
 
 /-- Bundles a local curvature operator (Hessian) with its spectral characteristics. -/
 structure CurvatureCertificate (ι : Type*) [Fintype ι] where
+
   /-- The loss function. -/
   L : W ι → ℝ
+
   /-- The point at which the curvature is evaluated. -/
   w : W ι
+
   /-- Proof that the Hessian is symmetric. -/
   h_symm : (hessian L w).toLinearMap.IsSymmetric
+
   /-- The sharpness (max eigenvalue) at this point. -/
   sharpness_val : ℝ
+
   /-- Proof that the sharpness is non-negative. -/
   sharpness_nonneg : 0 ≤ sharpness_val
+
   /-- Proof that the quadratic form is bounded by sharpness. -/
   spectral_bound : ∀ v, hessianQuadraticForm L w v ≤ sharpness_val * ‖v‖ ^ 2
 

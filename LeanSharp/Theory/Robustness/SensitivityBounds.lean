@@ -38,8 +38,10 @@ variable {Ω : Type*} [MeasureSpace Ω]
 
 /-- Stochastic model for gradient observations: $g(\omega) = g_{true} + \xi(\omega)$. -/
  structure SignalNoiseModel (ι : Type*) [Fintype ι] (Ω : Type*) [MeasureSpace Ω] where
+
   /-- The ground truth (true mean) of the signal. -/
   g_true : W ι
+
   /-- The zero-mean stochastic noise vector. -/
   noise : Ω → W ι
   h_mean : 𝔼[noise] = 0

@@ -4,8 +4,9 @@ set -euo pipefail
 
 # Format Lean files by:
 # 1) collapsing repeated blank lines
-# 2) sorting the first contiguous import block alphabetically
-# 3) removing trailing whitespace
+# 2) ensuring a blank line before declaration docstrings (/--)
+# 3) sorting the first contiguous import block alphabetically
+# 4) removing trailing whitespace
 # By default, this targets all tracked .lean files.
 # Use --check (or --dry-run) to report files that would change.
 
@@ -32,17 +33,42 @@ format_file() {
     temp_file="$(mktemp)"
     sorted_file="$(mktemp)"
     awk '
+        function is_blank(line) {
+            return line ~ /^[[:space:]]*$/
+        }
+        function is_docstring(line) {
+            return line ~ /^[[:space:]]*\/--/
+        }
+        function ends_with_in(line) {
+            return line ~ /[[:space:]]in[[:space:]]*$/
+        }
         {
             sub(/[[:space:]]+$/, "", $0)
-            if ($0 ~ /^[[:space:]]*$/) {
-                blank_count += 1
-                if (blank_count <= 1) {
-                    print
-                }
-            } else {
-                blank_count = 0
-                print
+
+            # Keep declaration docstrings visually separated from prior code,
+            # except immediately after command headers like `omit ... in`.
+            if (is_docstring($0) && prev_was_blank == 0 && emitted_any == 1 &&
+                prev_nonblank_ends_in == 0) {
+                print ""
+                prev_was_blank = 1
             }
+
+            if (is_blank($0)) {
+                if (prev_nonblank_ends_in == 1) {
+                    next
+                }
+                if (prev_was_blank == 0) {
+                    print
+                    prev_was_blank = 1
+                    emitted_any = 1
+                }
+                next
+            }
+
+            print
+            prev_was_blank = 0
+            emitted_any = 1
+            prev_nonblank_ends_in = ends_with_in($0)
         }
     ' "$file_path" > "$temp_file"
 

@@ -7,10 +7,12 @@
 # - MAX_LEAN_FILE_LINES: hard maximum line count (default: 300)
 # - SOFT_LEAN_FILE_MIN_LINES: advisory minimum line count (default: 20)
 # - SOFT_LEAN_FILE_MAX_LINES: advisory maximum line count (default: 250)
+# - SOFT_SKIP_AGGREGATORS: if 1, skip soft checks for aggregator files (default: 1)
 
-HARD_MAX_LINES="${MAX_LEAN_FILE_LINES:-300}"
+HARD_MAX_LINES="${MAX_LEAN_FILE_LINES:-250}"
 SOFT_MIN_LINES="${SOFT_LEAN_FILE_MIN_LINES:-25}"
-SOFT_MAX_LINES="${SOFT_LEAN_FILE_MAX_LINES:-250}"
+SOFT_MAX_LINES="${SOFT_LEAN_FILE_MAX_LINES:-200}"
+SOFT_SKIP_AGGREGATORS="${SOFT_SKIP_AGGREGATORS:-1}"
 
 for value_name in HARD_MAX_LINES SOFT_MIN_LINES SOFT_MAX_LINES; do
     value="${!value_name}"
@@ -30,9 +32,20 @@ if [ "$SOFT_MAX_LINES" -ge "$HARD_MAX_LINES" ]; then
     exit 1
 fi
 
+if ! [[ "$SOFT_SKIP_AGGREGATORS" =~ ^[01]$ ]]; then
+    echo "ERROR: SOFT_SKIP_AGGREGATORS must be 0 or 1."
+    exit 1
+fi
+
 HARD_MATCHES=()
 SOFT_LOW_MATCHES=()
 SOFT_HIGH_MATCHES=()
+
+is_aggregator_file() {
+    file_path="$1"
+    aggregator_dir="${file_path%.lean}"
+    [ -d "$aggregator_dir" ]
+}
 
 while IFS= read -r file_path; do
     [ -z "$file_path" ] && continue
@@ -40,6 +53,10 @@ while IFS= read -r file_path; do
     line_count="$(wc -l < "$file_path" | tr -d ' ')"
     if [ "$line_count" -gt "$HARD_MAX_LINES" ]; then
         HARD_MATCHES+=("$file_path:$line_count")
+    fi
+
+    if [ "$SOFT_SKIP_AGGREGATORS" -eq 1 ] && is_aggregator_file "$file_path"; then
+        continue
     fi
 
     if [ "$line_count" -lt "$SOFT_MIN_LINES" ]; then

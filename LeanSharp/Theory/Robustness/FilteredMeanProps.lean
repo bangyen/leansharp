@@ -39,18 +39,25 @@ variable {α : Type*}
 
 /-- A structure bundling a sample model with fixed and outlier radius bounds. -/
 structure RobustSample (α ι : Type*) [Fintype ι] [DecidableEq α] where
+
   /-- The set of data point indices. -/
   s : Finset α
+
   /-- The mapping from indices to weight vectors. -/
   g : α → W ι
+
   /-- The subset of fixed (uncorrupted) data points. -/
   s_fixed : Finset α
+
   /-- Proof that the fixed subset is indeed part of the sample. -/
   h_sub : s_fixed ⊆ s
+
   /-- Radius bound for uncorrupted points. -/
   R_fixed : ℝ
+
   /-- Radius bound for outliers. -/
   R_out : ℝ
+
   /-- Proof that uncorrupted points satisfy the radius bound. -/
   h_fixed_bound : ∀ i ∈ s_fixed, ‖g i‖ ≤ R_fixed
 

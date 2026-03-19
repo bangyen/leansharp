@@ -30,12 +30,16 @@ namespace LeanSharp
 /-- A Neural Network Layer is characterized by its input/output spaces,
     its parameter space, and its forward/backward maps. -/
 structure Layer (Input : Type) (Output : Type) where
+
   /-- The index type for the parameter space. -/
   ParamDim : Type
+
   /-- The Fintype instance for the parameter index type. -/
   fintypeParamDim : Fintype ParamDim
+
   /-- Forward pass: maps parameters and input to an output. -/
   forward : W ParamDim → Input → Output
+
   /-- Backward pass: takes params, input, and gradient w.r.t output.
       Returns (gradient w.r.t params, gradient w.r.t input). -/
   backward : W ParamDim → Input → Output → W ParamDim × Input

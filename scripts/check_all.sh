@@ -5,6 +5,7 @@
 
 set -euo pipefail
 
+# Keep format check last so style fixes do not hide earlier semantic failures.
 SCRIPTS=(
     "scripts/check_banned.sh"
     "scripts/check_import.sh"
@@ -12,8 +13,8 @@ SCRIPTS=(
     "scripts/check_copyright.sh"
     "scripts/check_description.sh"
     "scripts/check_long_file.sh"
+    "scripts/check_proof_length.sh"
     "scripts/check_naming.sh"
-    "scripts/check_long_file.sh"
     "scripts/format_lean.sh --check"
 )
 
