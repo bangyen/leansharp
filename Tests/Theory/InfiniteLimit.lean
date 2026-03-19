@@ -7,10 +7,10 @@ import LeanSharp.Theory.InfiniteLimit
 import Mathlib.Data.Fintype.Basic
 
 /-!
-# Infinite Width Limit Tests
+# Infinite Limit Tests
 
- This module verifies that standard dimension sequences (like Fin(n)) correctly
- satisfy the `IsInfiniteWidth` property.
+This module verifies that standard dimension sequences (like Fin(n)) correctly
+satisfy the `IsInfiniteWidth` property.
 
  ## Main Definitions
 

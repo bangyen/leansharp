@@ -8,25 +8,25 @@ import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 
 /-!
-# Integrability Interface Tests
+# Integrability Tests
+
 This file verifies that the structural integrability derivations in
 `LeanSharp.Stochastic.Integrability` correctly interface with the
 Robbins-Monro convergence theorems.
 
-## Theorems
+## Examples
 
-* `structural_descent_envelope_test`.
 * `integrability_interface_test`.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 open ProbabilityTheory MeasureTheory
 
 /-- **Structural Envelope Wiring Verification**: This test ensures the sequence
 descent envelope can be instantiated from structural assumptions by deriving
 integrability through `zsharp_structural_integrability`. -/
-theorem structural_descent_envelope_test
+example
     {Ω : Type*}
     [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
@@ -50,7 +50,7 @@ theorem structural_descent_envelope_test
 /-- **Integrability Verification**: This "test" ensures that the structural
 hypothesis bundle can be instantiated and used to state a convergence result
 without manually providing integrability for every iterate. -/
-theorem integrability_interface_test
+example
     {Ω : Type*}
     [MeasureSpace Ω]
     [IsProbabilityMeasure (volume : Measure Ω)]
@@ -75,4 +75,4 @@ theorem integrability_interface_test
     L_smooth f w η z σsq ℱ ℱfil
     ⟨h_rm, ⟨h_struct⟩, h_bridge, h_meas, h_desc_step⟩).2
 
-end LeanSharp
+end LeanSharp.Tests

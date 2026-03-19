@@ -14,16 +14,16 @@ import LeanSharp.Theory.Dynamics.Schedulers
 This module exists to verify that scheduler-specific assumptions integrate with
 the generic convergence theorem in representative toy settings.
 
-## Theorems
+## Examples
 
 * `toy_cosine_convergence`.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 /-- **Schedule Convergence Verification**: A toy example demonstrating that
 the generalized convergence theorem can be applied to `cosineDecaySchedule`. -/
-theorem toy_cosine_convergence (T : ℕ) (hT : T > 0)
+example (T : ℕ) (hT : T > 0)
     (L : StronglyConvexObjective (Fin 2)) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * (L.smoothness : ℝ) ^ 2 ≤ L.μ ∧
       η0 ≤ 1 / (L.smoothness : ℝ) ∧ L.μ < (L.smoothness : ℝ))
@@ -52,4 +52,4 @@ theorem toy_cosine_convergence (T : ℕ) (hT : T > 0)
       _ ≤ M.L.μ := h_bounds.2.1
   · exact h_bounds.2.2.2
 
-end LeanSharp
+end LeanSharp.Tests

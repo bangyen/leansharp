@@ -9,21 +9,21 @@ import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Schedulers
 
 /-!
-# Advanced Verification Tests
+# Ill-Conditioned Landscape Tests
 
 This module exists to validate that convergence theorems instantiate correctly
 on harder example landscapes and schedule assumptions.
 
-## Theorems
+## Examples
 
 * `advanced_schedule_convergence`.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 /-- **Advanced Verification**: Proves that the generalized convergence theorem
 holds for the ill-conditioned landscape with a cosine decay schedule. -/
-theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
+example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
     (h_align : ∀ w : W (Fin 2), let ε := samPerturbation IllConditioned.L_advanced w ρ;
                 AlignmentCondition IllConditioned.L_advanced w 0 ε z 2 20) :
@@ -49,4 +49,4 @@ theorem advanced_schedule_convergence (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
       _ = M.L.μ := rfl
   · change (2 : ℝ) < 20; norm_num
 
-end LeanSharp
+end LeanSharp.Tests

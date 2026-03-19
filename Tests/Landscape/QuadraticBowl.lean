@@ -8,12 +8,12 @@ import LeanSharp.Examples.QuadraticBowl
 import LeanSharp.Theory.Dynamics.Convergence
 
 /-!
-# Example Model Tests
+# Quadratic Bowl Tests
 
 This module exists to sanity-check foundational properties of toy model
 gradients and filtering behavior used throughout proof examples.
 
-## Theorems
+## Examples
 
 * `test_toy_filter_contraction`.
 * `test_toy_filter_identity`.
@@ -25,12 +25,12 @@ namespace LeanSharp.Tests
 open LeanSharp.QuadraticBowl
 
 /-- Verifies the fundamental L2 contraction property of the Z-score filter on the toy model. -/
-theorem test_toy_filter_contraction :
+example :
     ‖filteredGradient (exactGradientToy wInit) 1‖ ≤ ‖exactGradientToy wInit‖ := by
   apply norm_filteredGradient_le
 
 /-- Verifies that for the toy gradient, the Z-score filter (z=1) is an identity. -/
-theorem test_toy_filter_identity :
+example :
     filteredGradient (exactGradientToy wInit) 1 = (exactGradientToy wInit) := by
   have h_mean : vectorMean (exactGradientToy wInit) = 4 := by
     unfold vectorMean exactGradientToy wInit
@@ -62,7 +62,7 @@ theorem test_toy_filter_identity :
   }
 
 /-- Verifies that the toy model's gradient at the initial point is non-zero. -/
-theorem test_toy_gradient_nonzero :
+example :
     exactGradientToy wInit ≠ 0 := by
   unfold exactGradientToy wInit
   intro h

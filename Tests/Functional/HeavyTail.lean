@@ -7,22 +7,17 @@ import LeanSharp.Stochastic.Convergence.HeavyTail
 import LeanSharp.Stochastic.Foundations.Oracles
 
 /-!
-# Heavy-Tailed Convergence Tests
+# Heavy-Tail Convergence Tests
 
-This module verifies the `zsharp_heavy_tail_convergence` theorem on a toy
-convex objective with a simulated Cauchy noise process.
+This module verifies the wiring of almost-sure convergence under non-Gaussian,
+heavy-tailed noise.
 
-## Main definitions
+## Examples
 
-* None.
-
-## Main theorems
-
-* `cauchy_process_convergence_test`: Verification of almost-sure convergence
-  on a simulated Cauchy noise process.
+* `cauchy_process_convergence_test`.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 open ProbabilityTheory MeasureTheory NNReal
 
@@ -32,17 +27,13 @@ variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure 
 /-- **Cauchy Noise Test Witness**:
 A simulated process that satisfies the `NonGaussianProbabilityOracle`.
 This test verifies the wiring of almost-sure convergence. -/
-theorem cauchy_process_convergence_test
-    (f : W ι → ℝ)
+example (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (ℱ : ℕ → MeasurableSpace Ω)
     (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
     (h_oracle : ZSharpOracleDescentHypotheses f w η ℱ ℱfil)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ) :
     ZSharpObjectiveAsConvergence f w := by
-  -- The theorem is designed to compose directly with the oracle hypotheses.
-  -- This test verifies that no additional hidden assumptions (like finite variance)
-  -- are required to state or prove the result.
   apply zsharp_heavy_tail_convergence f w η ℱ ℱfil h_oracle h_int
 
-end LeanSharp
+end LeanSharp.Tests

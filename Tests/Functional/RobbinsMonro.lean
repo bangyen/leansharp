@@ -9,20 +9,17 @@ import LeanSharp.Stochastic.Foundations.RobbinsMonro
 import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
 
 /-!
-# Robbins-Monro Martingale Interface Tests
+# Robbins-Monro Tests
 
 This module verifies that the martingale-update interface composes correctly in
 downstream theorem statements.
 
-## Theorems
+## Examples
 
-* `martingale_model_interface_test`.
-* `martingale_model_objective_limit_interface_test`.
-* `weight_sequence_robbins_monro_interface_test`.
 * `bridge_contract_interface_test`.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 open ProbabilityTheory MeasureTheory
 
@@ -32,8 +29,7 @@ variable {Ω : Type*} [MeasureSpace Ω]
 `RobbinsMonroUpdateMartingaleModel` immediately provides both the stochastic
 update recursion and the cumulative-noise martingale witness expected by
 Robbins-Monro convergence proofs. -/
-theorem martingale_model_interface_test
-    (f : W (Fin 2) → ℝ)
+example (f : W (Fin 2) → ℝ)
     (w : ℕ → Ω → W (Fin 2))
     (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -48,8 +44,7 @@ theorem martingale_model_interface_test
 Robbins-Monro interface theorem accepts the martingale update model and returns
 the update recursion and almost-sure objective convergence through focused
 contracts. -/
-theorem martingale_model_objective_limit_interface_test
-    [IsProbabilityMeasure (volume : Measure Ω)]
+example [IsProbabilityMeasure (volume : Measure Ω)]
     (f : W (Fin 2) → ℝ)
     (w : ℕ → Ω → W (Fin 2))
     (η : ℕ → ℝ)
@@ -73,8 +68,7 @@ theorem martingale_model_objective_limit_interface_test
 /-- **Concrete Weight-Sequence Interface Verification**: confirms that the
 `weightSequence` specialization exposes both the explicit recursion identity and
 the almost-sure objective convergence contracts for downstream callers. -/
-theorem weight_sequence_robbins_monro_interface_test
-    [IsProbabilityMeasure (volume : Measure Ω)]
+example [IsProbabilityMeasure (volume : Measure Ω)]
     (L_smooth : NNReal) (f : W (Fin 2) → ℝ)
     (w0 : W (Fin 2)) (η : ℕ → ℝ) (z σsq : ℝ)
     (g_adv : ℕ → Ω → W (Fin 2))
@@ -94,8 +88,7 @@ theorem weight_sequence_robbins_monro_interface_test
 
 /-- **Bridge API Wiring Verification**: checks that the project-level bridge
 contract wrappers remain directly usable from theorem clients. -/
-theorem bridge_contract_interface_test
-    [IsProbabilityMeasure (volume : Measure Ω)]
+example [IsProbabilityMeasure (volume : Measure Ω)]
     (f : W (Fin 2) → ℝ)
     (w : ℕ → Ω → W (Fin 2))
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -106,4 +99,4 @@ theorem bridge_contract_interface_test
   exact zsharp_objective_as_convergence_of_submartingale_bridge_contract
     f w ℱ R h_sub hbdd
 
-end LeanSharp
+end LeanSharp.Tests

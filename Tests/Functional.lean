@@ -9,8 +9,8 @@ import Tests.Functional.Integrability
 import Tests.Functional.RobbinsMonro
 
 /-!
-# Functional Tests Aggregator
+# Functional Tests
 
-This module exists to group theorem-level functional checks under one import so
-test runs can include the full functional suite via a stable target.
+This module aggregates functional tests for stochastic convergence and
+integrability.
 -/

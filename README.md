@@ -16,12 +16,11 @@ By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the 
 
 ## Key Accomplishments
 
-- **Heavy-Tailed Analysis**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
-- **Verified Layer Library**: Formalized the full stack of modern ML—from core Linear/BatchNorm units to Vision Transformers (ViT) and Attention mechanisms.
-- **Generalized Taylor Theory**: Developed a library for **arbitrary-degree multilinear Taylor expansions** and $H^k$-aware descent lemmas.
-- **Infinite Width Regime**: Established topological dimension sequence limits ($|ι| \to \infty$) for formal NTK and infinite-width analysis.
-- **Automation Engine**: Hardened the `zsharp_solve` tactic to automate complex SAM algebraic normalization and Z-score inequality splitting.
-
+- **Stochastic Robustness**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
+- **Statistical Robustness**: Formalized breakdown-point theory for robust estimators, proving the geometric median's **$50\%$ outlier stability** ($k/n \ge 1/2$).
+- **Generalization Theory**: Rigorously connected landscape sharpness (max Hessian eigenvalue) to population risk via **PAC-Bayes bounds** and Taylor descent lemmas.
+- **Infinite Width Regime**: Established topological dimension sequence limits ($|ι| \to \infty$) for formal **Neural Tangent Kernel (NTK)** and infinite-width analysis.
+- **Verified ML Infrastructure**: Hardened the `zsharp_solve` tactic for automated SAM algebra and formalized the stack of modern ML (BatchNorm, ViT, etc.).
 
 ## Extensions & Grand Challenges
 

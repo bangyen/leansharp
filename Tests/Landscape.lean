@@ -10,8 +10,7 @@ import Tests.Landscape.MultilinearTaylor
 import Tests.Landscape.QuadraticBowl
 
 /-!
-# Landscape Tests Aggregator
+# Landscape Tests
 
-This module exists to gather concrete objective and optimizer scenario tests
-under one import for consistent landscape regression coverage.
+This module aggregates landscape-specific tests for toy models and schedules.
 -/

@@ -48,6 +48,11 @@ inductive Chain : Type → Type → Type 1 where
   | single {In Out : Type} : Layer In Out → Chain In Out
   | append {In Mid Out : Type} : Chain In Mid → Layer Mid Out → Chain In Out
 
+/-- The number of layers in a chain. -/
+def Chain.length {In Out : Type} : Chain In Out → ℕ
+  | .single _ => 1
+  | .append prev _ => prev.length + 1
+
 /-- Concatenate two chains. -/
 def Chain.concat {In Mid Out : Type} (c1 : Chain In Mid) : Chain Mid Out → Chain In Out
   | .single L => Chain.append c1 L
@@ -80,6 +85,10 @@ def forwardChain {In Out : Type} {c : Chain In Out} :
   | .append _ L => fun p (x : In) =>
       match p with
       | .append p_prev w => L.forward w (forwardChain p_prev x)
+
+/-- Forward pass through a chain of layers. Alias for `forwardChain`. -/
+abbrev Chain.forward {In Out : Type} {c : Chain In Out} (p : ChainData c) (x : In) : Out :=
+  forwardChain p x
 
 /-- Recursive backpropagation through a chain.
     Applies Z-score filtering at each layer. -/

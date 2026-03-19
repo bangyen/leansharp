@@ -7,18 +7,18 @@ import LeanSharp.Core.Landscape
 import LeanSharp.Theory.Dynamics.SecondOrder
 
 /-!
-# Second-Order Descent Tests
+# Second-Order Tests
 
-## Main definitions
+## Examples
 
-* `quadraticBowl`: A concrete quadratic landscape for testing.
+* `quadratic_bowl_descent_test`.
 
-## Theorems
+## Definitions
 
-* `quadratic_bowl_descent_test`: Verification of the second-order descent lemma.
+* `quadraticBowl`: Canonical strongly convex objective used for second-order checks.
 -/
 
-namespace LeanSharp
+namespace LeanSharp.Tests
 
 open Real InnerProductSpace
 
@@ -35,7 +35,7 @@ variable {ι : Type*} [Fintype ι]
 /-- **Second-Order Descent on Quadratic Bowl**:
 Verifies that the descent lemma correctly predicts the objective decrease
 on a quadratic objective where L_smooth = 1 and curvature κ = 1. -/
-theorem quadratic_bowl_descent_test
+example
     (w g_base g_f : W ι) (η : ℝ)
     (h_diff : Differentiable ℝ (quadraticBowl ι))
     (h_smooth : IsLSmooth (quadraticBowl ι) 1)
@@ -52,4 +52,4 @@ theorem quadratic_bowl_descent_test
 
 end Tests
 
-end LeanSharp
+end LeanSharp.Tests

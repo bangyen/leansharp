@@ -14,7 +14,7 @@ import Mathlib.Tactic.Linarith
 This module exists to check endpoint and monotonicity identities for learning
 rate schedules so later convergence proofs can rely on tested primitives.
 
-## Theorems
+## Examples
 
 * `test_cosine_decay_start`.
 * `test_cosine_decay_end`.
@@ -24,18 +24,18 @@ rate schedules so later convergence proofs can rely on tested primitives.
 namespace LeanSharp.Tests
 
 /-- Unit test: Verify starting learning rate is η_max. -/
-theorem test_cosine_decay_start :
+example :
     cosineDecaySchedule 0.1 0.01 100 0 = 0.1 := by
   apply cosine_decay_zero
   norm_num
 
 /-- Unit test: Verify ending learning rate is η_min. -/
-theorem test_cosine_decay_end :
+example :
     cosineDecaySchedule 0.1 0.01 100 100 = 0.01 := by
   exact cosine_decay_schedule_of_ge 0.1 0.01 100 100 le_rfl
 
 /-- Unit test: Verify monotonicity for a specific range. -/
-theorem test_cosine_decay_mono :
+example :
     cosineDecaySchedule 0.1 0.01 100 50 ≤ cosineDecaySchedule 0.1 0.01 100 25 := by
   apply cosine_decay_antitone
   · norm_num

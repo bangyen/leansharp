@@ -7,18 +7,22 @@ import LeanSharp.Core.Taylor.Multilinear
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 
 /-!
-# Multilinear Taylor expansion tests
+# Multilinear Taylor Tests
 
- This module verifies the correctness of the multilinear Taylor bound on
- simple polynomial objectives.
+This module verifies that for polynomial objectives, the multilinear Taylor
+bound matches the expected derivative-based error.
 
- ## Main Definitions
+## Examples
 
- * `cubicObjective`: A 1D polynomial for verification.
+* `test_multilinear_taylor_cubic`.
 
- ## Theorems
+## Definitions
 
- * `test_multilinear_taylor_cubic`: Concrete remainder bounding.
+* `cubicObjective`: Cubic objective with a constant third derivative.
+
+## Theorems
+
+* `test_multilinear_taylor_cubic`: Concrete remainder bounding.
  -/
 
 namespace LeanSharp.Tests
@@ -33,7 +37,7 @@ noncomputable def cubicObjective (x : ℝ) : ℝ := (1 / 6 : ℝ) * x ^ 3
 /-- **Multilinear Taylor Bound Test**:
 Verifies that for f(x) = x³/6, the difference between the actual value
 and the 2nd-degree Taylor expansion is exactly bounded by the 3rd derivative. -/
-theorem test_multilinear_taylor_cubic (x h : ℝ) :
+example (x h : ℝ) :
     |cubicObjective (x + h) - (cubicObjective x + h * (x^2 / 2) + h^2 * (x / 2))| ≤
       (1 / 6 : ℝ) * |h|^3 := by
   -- Explicit expansion of (x + h)^3 / 6
