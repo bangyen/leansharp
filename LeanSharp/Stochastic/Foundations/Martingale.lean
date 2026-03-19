@@ -44,14 +44,11 @@ structure RobbinsMonroUpdateMartingaleModel
     (w : ℕ → Ω → W ι)
     (η : ℕ → ℝ)
     (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace) where
-
   /-- Per-step stochastic noise increment. -/
   ξ : ℕ → Ω → W ι
-
   /-- Martingale witness for the cumulative noise process. -/
   h_noise_martingale :
     Martingale (robbinsMonroPartialNoiseSum ξ) ℱ ℙ
-
   /-- Update recursion expressed as drift plus noise increment. -/
   h_update :
     ∀ t, ∀ᵐ ω ∂ℙ,

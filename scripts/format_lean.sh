@@ -36,8 +36,11 @@ format_file() {
         function is_blank(line) {
             return line ~ /^[[:space:]]*$/
         }
-        function is_docstring(line) {
-            return line ~ /^[[:space:]]*\/--/
+        function is_top_level_docstring(line) {
+            return line ~ /^\/--/
+        }
+        function is_indented_comment(line) {
+            return line ~ /^[[:space:]]+\/--/ || line ~ /^[[:space:]]+\/-/ || line ~ /^[[:space:]]+--/
         }
         function ends_with_in(line) {
             return line ~ /[[:space:]]in[[:space:]]*$/
@@ -45,24 +48,28 @@ format_file() {
         {
             sub(/[[:space:]]+$/, "", $0)
 
-            # Keep declaration docstrings visually separated from prior code,
-            # except immediately after command headers like `omit ... in`.
-            if (is_docstring($0) && prev_was_blank == 0 && emitted_any == 1 &&
-                prev_nonblank_ends_in == 0) {
-                print ""
-                prev_was_blank = 1
+            if (is_blank($0)) {
+                pending_blank = 1
+                next
             }
 
-            if (is_blank($0)) {
-                if (prev_nonblank_ends_in == 1) {
-                    next
-                }
-                if (prev_was_blank == 0) {
-                    print
-                    prev_was_blank = 1
+            if (pending_blank == 1) {
+                if (prev_nonblank_ends_in == 0 && is_top_level_docstring($0)) {
+                    print ""
+                    emitted_any = 1
+                } else if (prev_nonblank_ends_in == 0 && is_indented_comment($0)) {
+                    # Never keep blank lines before indented comments/docstrings.
+                } else if (prev_nonblank_ends_in == 0) {
+                    print ""
                     emitted_any = 1
                 }
-                next
+                pending_blank = 0
+            } else if (is_top_level_docstring($0) && emitted_any == 1 && prev_nonblank_ends_in == 0) {
+                # Keep top-level declaration docstrings visually separated from
+                # prior code, except immediately after command headers like
+                # `omit ... in`.
+                print ""
+                emitted_any = 1
             }
 
             print

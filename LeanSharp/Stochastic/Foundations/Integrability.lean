@@ -42,30 +42,22 @@ integrability of objective values and squared gradient norms. It exists to
 avoid requiring unrelated convergence assumptions when proving integrability
 alone. -/
 structure ZSharpIntegrabilityAssumptions (f : W ι → ℝ) (w : ℕ → Ω → W ι) where
-
   /-- Objective process is strongly measurable, enabling domination-based
   integrability. -/
   h_f_aemeas : ∀ t, AEStronglyMeasurable (fun ω => f (w t ω))
-
   /-- Squared gradient-norm process is strongly measurable, enabling
   domination-based integrability. -/
   h_g_aemeas : ∀ t, AEStronglyMeasurable (fun ω => ‖gradient f (w t ω)‖ ^ 2)
-
   /-- Dominating process for the objective value. -/
   f_dom : ℕ → Ω → ℝ
-
   /-- Dominating process for the squared gradient norm. -/
   g_dom : ℕ → Ω → ℝ
-
   /-- Integrability of the objective dominating process. -/
   h_f_dom_int : ∀ t, Integrable (f_dom t)
-
   /-- Integrability of the gradient-norm-squared dominating process. -/
   h_g_dom_int : ∀ t, Integrable (g_dom t)
-
   /-- Almost-everywhere domination for the objective value. -/
   h_f_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖f (w t ω)‖ ≤ ‖f_dom t ω‖
-
   /-- Almost-everywhere domination for the squared gradient norm. -/
   h_g_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ,
     ‖‖gradient f (w t ω)‖ ^ 2‖ ≤ ‖g_dom t ω‖
@@ -77,52 +69,37 @@ of descent lemmas. -/
 structure ZSharpStructuralAssumptions
     (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
     (z σsq : ℝ) where
-
   /-- Lipschitz constant of the gradient. -/
   L_smooth : NNReal
-
   /-- Gradient smoothness hypothesis witness. -/
   h_smooth : IsSmooth f L_smooth
-
   /-- Global lower bound hypothesis witness. -/
   h_bdd_below : BddBelow (Set.range f)
-
   /-- Gradient estimator variance hypothesis witness. -/
   h_var :
     ∀ t, HasBoundedVariance f (fun ω => gradient f (w t ω)) (w t ω) σsq
-
   /-- Objective process is strongly measurable, enabling domination-based
   integrability. -/
   h_f_aemeas : ∀ t, AEStronglyMeasurable (fun ω => f (w t ω))
-
   /-- Squared gradient-norm process is strongly measurable, enabling
   domination-based integrability. -/
   h_g_aemeas : ∀ t, AEStronglyMeasurable (fun ω => ‖gradient f (w t ω)‖ ^ 2)
-
   /-- Dominating process for the objective value. -/
   f_dom : ℕ → Ω → ℝ
-
   /-- Dominating process for the squared gradient norm. -/
   g_dom : ℕ → Ω → ℝ
-
   /-- Integrability of the objective dominating process. -/
   h_f_dom_int : ∀ t, Integrable (f_dom t)
-
   /-- Integrability of the gradient-norm-squared dominating process. -/
   h_g_dom_int : ∀ t, Integrable (g_dom t)
-
   /-- Almost-everywhere domination for the objective value. -/
   h_f_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖f (w t ω)‖ ≤ ‖f_dom t ω‖
-
   /-- Almost-everywhere domination for the squared gradient norm. -/
   h_g_dom_bound : ∀ t, ∀ᵐ ω ∂ℙ, ‖‖gradient f (w t ω)‖ ^ 2‖ ≤ ‖g_dom t ω‖
-
   /-- Initial weight integrability witness. -/
   h_w0 : Integrable (fun ω => ‖w 0 ω‖ ^ 2)
-
   /-- Measurability of the stochastic process. -/
   h_meas : ∀ t, AEStronglyMeasurable (w t)
-
   /-- Step update rule witness. -/
   h_step :
     ∀ t, ∀ᵐ ω ∂ℙ,

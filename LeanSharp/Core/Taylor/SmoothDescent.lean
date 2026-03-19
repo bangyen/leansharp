@@ -36,16 +36,12 @@ variable {ι : Type*} [Fintype ι]
 
 /-- A structure bundling a function `L` with its smoothness property. -/
 structure SmoothObjective (ι : Type*) [Fintype ι] where
-
   /-- The underlying loss function. -/
   toFun : W ι → ℝ
-
   /-- The L-smoothness constant. -/
   smoothness : ℝ≥0
-
   /-- Proof that the loss is differentiable. -/
   differentiable : Differentiable ℝ toFun
-
   /-- Proof that the gradient is L-Lipschitz. -/
   lipschitz : LipschitzWith smoothness (gradient toFun)
 

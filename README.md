@@ -30,14 +30,13 @@ Run all guards locally with:
 - ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
 - ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
 - ✅ **SAM Logic & Invariance** (`Theory/`): Formalized the mathematical definition of the Z-Score SAM update step and proved the functional equivalence of patch embeddings to strided 2D convolutions.
-- ✅ **Stochastic & Heavy-Tailed Convergence** (`Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates and established almost-sure convergence under **heavy-tailed noise regimes** using new Cauchy/non-Gaussian probability oracle interfaces.
+- ✅ **Stochastic & Heavy-Tailed Convergence** (`Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates and established almost-sure convergence under **heavy-tailed noise regimes** using new Cauchy/non-Gaussian/$\alpha$-stable probability oracle interfaces.
 - ✅ **Second-Order Dynamics** (`Theory/`): Formalized the **Second-Order Descent Lemma** using the local curvature matrix and generalized filter condition, bridging structural filter contract properties to functional descent.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
 
 ## Roadmap & Future Work
 
 The following items represent the planned evolution of LeanSharp. While the project is **functionally complete** (core convergence results are verified), the roadmap aims for **theoretical completeness** and foundational rigor.
-
 
 ### Immediate Roadmap (Hard Complexity)
 
@@ -47,7 +46,6 @@ These items represent foundational tasks necessary for project completeness and 
 | :--- | :--- | :--- |
 | **Higher-Order Fréchet** | Low | Core results use custom `hessian`; needs Mathlib alignment. |
 | **Multilinear Taylor** | Medium | General version of the current project-specific Taylor bounds. |
-| **$\alpha$-stable families** | High | Explicit proof that heavy-tailed laws satisfy the oracle. |
 | **Analytical Limit $D \to \infty$** | Medium | Foundation for analyzing generalization in infinite-width layers. |
 
 ---

@@ -118,7 +118,6 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
       | Sum.inr (Sum.inl p) => gK_p p.1 p.2
       | Sum.inr (Sum.inr (Sum.inl p)) => gV_p p.1 p.2
       | Sum.inr (Sum.inr (Sum.inr _)) => 0 -- Unused projection (e.g. output)
-
     -- Gradient w.r.t input x
     let g_x := WithLp.equiv 2 _ |>.symm fun (s, k) =>
       (∑ d, gQ_f (s, d) * Q_p_f (k, d)) +
