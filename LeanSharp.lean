@@ -10,7 +10,8 @@ import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Stats
-import LeanSharp.Core.Taylor
+import LeanSharp.Core.Taylor.SamBounds
+import LeanSharp.Core.Taylor.SmoothDescent
 
 /- Examples: concrete objectives/networks used for demos and regression checks. -/
 import LeanSharp.Examples.IllConditioned
@@ -46,7 +47,8 @@ import LeanSharp.Stochastic.Convergence.Assumptions
 import LeanSharp.Stochastic.Convergence.HeavyTail
 
 -- Mechanics: one-step descent identities and stochastic decomposition lemmas.
-import LeanSharp.Stochastic.Mechanics.DescentSteps
+import LeanSharp.Stochastic.Mechanics.DescentSteps.ZScore
+import LeanSharp.Stochastic.Mechanics.DescentSteps.Core
 import LeanSharp.Stochastic.Mechanics.SampleErrors
 import LeanSharp.Stochastic.Mechanics.SharpnessMap
 
@@ -54,7 +56,8 @@ import LeanSharp.Stochastic.Mechanics.SharpnessMap
 import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.Martingale
 import LeanSharp.Stochastic.Foundations.Oracles
-import LeanSharp.Stochastic.Foundations.Schedules
+import LeanSharp.Stochastic.Foundations.Schedules.Nonconvex
+import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 
 /- Tactics: project-local automation for recurring proof patterns. -/
@@ -83,7 +86,8 @@ import LeanSharp.Theory.Structural.SobolevRegularity
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilteredMeanProps
-import LeanSharp.Theory.Robustness.MedianComparison
+import LeanSharp.Theory.Robustness.MedianComparison.Breakdown
+import LeanSharp.Theory.Robustness.MedianComparison.Core
 import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!

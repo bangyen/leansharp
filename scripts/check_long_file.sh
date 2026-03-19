@@ -1,32 +1,74 @@
 #!/bin/bash
 
-# Check that Lean files do not exceed a maximum line count.
-# Override the default threshold with MAX_LEAN_FILE_LINES.
+# Check Lean file lengths with hard and soft thresholds.
+# Hard max fails CI; soft min/max emit warnings only.
+#
+# Environment variables:
+# - MAX_LEAN_FILE_LINES: hard maximum line count (default: 300)
+# - SOFT_LEAN_FILE_MIN_LINES: advisory minimum line count (default: 20)
+# - SOFT_LEAN_FILE_MAX_LINES: advisory maximum line count (default: 250)
 
-MAX_LINES="${MAX_LEAN_FILE_LINES:-300}"
+HARD_MAX_LINES="${MAX_LEAN_FILE_LINES:-300}"
+SOFT_MIN_LINES="${SOFT_LEAN_FILE_MIN_LINES:-25}"
+SOFT_MAX_LINES="${SOFT_LEAN_FILE_MAX_LINES:-250}"
 
-if ! [[ "$MAX_LINES" =~ ^[0-9]+$ ]] || [ "$MAX_LINES" -le 0 ]; then
-    echo "ERROR: MAX_LEAN_FILE_LINES must be a positive integer."
+for value_name in HARD_MAX_LINES SOFT_MIN_LINES SOFT_MAX_LINES; do
+    value="${!value_name}"
+    if ! [[ "$value" =~ ^[0-9]+$ ]] || [ "$value" -le 0 ]; then
+        echo "ERROR: ${value_name} must be a positive integer."
+        exit 1
+    fi
+done
+
+if [ "$SOFT_MIN_LINES" -gt "$SOFT_MAX_LINES" ]; then
+    echo "ERROR: SOFT_LEAN_FILE_MIN_LINES must be less than or equal to SOFT_LEAN_FILE_MAX_LINES."
     exit 1
 fi
 
-MATCHES=()
+if [ "$SOFT_MAX_LINES" -ge "$HARD_MAX_LINES" ]; then
+    echo "ERROR: SOFT_LEAN_FILE_MAX_LINES must be smaller than MAX_LEAN_FILE_LINES."
+    exit 1
+fi
+
+HARD_MATCHES=()
+SOFT_LOW_MATCHES=()
+SOFT_HIGH_MATCHES=()
 
 while IFS= read -r file_path; do
     [ -z "$file_path" ] && continue
 
     line_count="$(wc -l < "$file_path" | tr -d ' ')"
-    if [ "$line_count" -gt "$MAX_LINES" ]; then
-        MATCHES+=("$file_path:$line_count")
+    if [ "$line_count" -gt "$HARD_MAX_LINES" ]; then
+        HARD_MATCHES+=("$file_path:$line_count")
+    fi
+
+    if [ "$line_count" -lt "$SOFT_MIN_LINES" ]; then
+        SOFT_LOW_MATCHES+=("$file_path:$line_count")
+    elif [ "$line_count" -gt "$SOFT_MAX_LINES" ]; then
+        SOFT_HIGH_MATCHES+=("$file_path:$line_count")
     fi
 done < <(git ls-files '*.lean')
 
-if [ "${#MATCHES[@]}" -gt 0 ]; then
-    echo "ERROR: Found Lean files longer than ${MAX_LINES} lines."
+if [ "${#SOFT_LOW_MATCHES[@]}" -gt 0 ] || [ "${#SOFT_HIGH_MATCHES[@]}" -gt 0 ]; then
+    echo "WARN: Some Lean files are outside the advisory range ${SOFT_MIN_LINES}-${SOFT_MAX_LINES} lines."
+    echo "These warnings do not fail CI, but can indicate opportunities to consolidate or split modules."
+    if [ "${#SOFT_LOW_MATCHES[@]}" -gt 0 ]; then
+        echo "WARN: Files below advisory minimum:"
+        printf "%s\n" "${SOFT_LOW_MATCHES[@]}"
+    fi
+    if [ "${#SOFT_HIGH_MATCHES[@]}" -gt 0 ]; then
+        echo "WARN: Files above advisory maximum:"
+        printf "%s\n" "${SOFT_HIGH_MATCHES[@]}"
+    fi
+fi
+
+if [ "${#HARD_MATCHES[@]}" -gt 0 ]; then
+    echo "ERROR: Found Lean files longer than hard limit ${HARD_MAX_LINES} lines."
     echo "Split large files into smaller modules where possible."
-    printf "%s\n" "${MATCHES[@]}"
+    printf "%s\n" "${HARD_MATCHES[@]}"
     exit 1
 fi
 
-echo "✓ All Lean files are within ${MAX_LINES} lines."
+echo "✓ All Lean files are within hard limit ${HARD_MAX_LINES} lines."
+echo "✓ Advisory range check completed (${SOFT_MIN_LINES}-${SOFT_MAX_LINES} lines)."
 exit 0

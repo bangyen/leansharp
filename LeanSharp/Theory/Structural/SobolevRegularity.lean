@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
-import LeanSharp.Core.Taylor
+import LeanSharp.Core.Taylor.SamBounds
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 

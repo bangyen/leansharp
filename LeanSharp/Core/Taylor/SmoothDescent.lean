@@ -12,20 +12,20 @@ import Mathlib.Data.NNReal.Basic
 import Mathlib.Tactic.Linarith
 
 /-!
-# Taylor Descent Lemma for SAM
+# Taylor Smoothness Descent
 
-This module proves a second-order Taylor bound for L-smooth loss functions,
-which is critical for the convergence analysis of SAM variants.
-
-## Theorems
-
-* `smooth_descent`: The standard quadratic upper bound for L-smooth functions.
-* `sam_taylor_bound`: Specifically adapts the descent lemma to the SAM objective.
+This module exists to isolate smoothness-based descent statements used across
+core and dynamics analyses, keeping foundational gradient calculus lemmas in one
+place.
 
 ## Definitions
 
-* `SmoothObjective`: Bundles a function `L` with its smoothness constant `M` and
-  differentiability properties.
+* `SmoothObjective`: smooth function bundle with differentiability and Lipschitz gradient.
+
+## Theorems
+
+* `smooth_descent_on_segment`: local segment-form descent bound.
+* `smooth_descent`: global corollary of the segment-form bound.
 -/
 
 namespace LeanSharp
@@ -108,12 +108,9 @@ theorem smooth_descent_on_segment (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     (h_diff_path : ∀ t ∈ Ico (0 : ℝ) 1, DifferentiableAt ℝ L (w + t • ε))
     (h_smooth : LipschitzWith M (gradient L)) :
     L (w + ε) ≤ L w + inner ℝ (gradient L w) ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 := by
-  -- Step 1: Define the auxiliary path function
-  -- φ(t) = L(w + tε) - t⟨∇L(w), ε⟩ - t²/2 * M‖ε‖²
   let c := inner ℝ (gradient L w) ε
   let m := (M : ℝ) / 2 * ‖ε‖ ^ 2
   let φ : ℝ → ℝ := fun t => L (w + t • ε) - t * c - t ^ 2 * m
-  -- Step 2: Show that the derivative of φ is non-positive on [0, 1]
   have hφ' : ∀ t ∈ Ico (0 : ℝ) 1, HasDerivAt φ
       (inner ℝ (gradient L (w + t • ε) - gradient L w) ε - 2 * t * m) t := by
     intro t ht
@@ -135,7 +132,6 @@ theorem smooth_descent_on_segment (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
     intro t h0t ht1
     apply smooth_descent_phi_deriv_nonpos L w ε M h_smooth t h0t m
     simp only [m]; ring
-  -- Step 3: Use the Boundary Derivative Lemma to conclude φ(1) ≤ φ(0)
   have hφ_cont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
     have h_lin : ContinuousOn (fun t : ℝ => t * c) (Icc (0 : ℝ) 1) :=
       (continuous_id.mul continuous_const).continuousOn
@@ -149,7 +145,6 @@ theorem smooth_descent_on_segment (L : W ι → ℝ) (w ε : W ι) (M : ℝ≥0)
   have hφ_le : φ 1 ≤ φ 0 :=
     smooth_descent_mvt_step hφ_cont hφ'within
       (fun x hx => hφ'_nonpos x hx.1 (le_of_lt hx.2))
-  -- Step 4: Recover the descent bound from φ(1) ≤ φ(0)
   have hφ0 : φ 0 = L w := by simp only [
     zero_smul,
     add_zero,
@@ -186,87 +181,5 @@ theorem smooth_descent (L : SmoothObjective ι) (w ε : W ι) :
     intro t _
     exact L.differentiable (w + t • ε)
   exact smooth_descent_on_segment L.toFun w ε L.smoothness h_path_cont h_diff_path L.lipschitz
-
-/-- **SAM Taylor Terms Bound**: Auxiliary lemma to bound the SAM objective terms. -/
-private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (g ε : W ι)
-    (h_norm : ‖ε‖ ≤ ρ) :
-    inner ℝ g ε + (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ ‖g‖ * ρ + (M : ℝ) / 2 * ρ ^ 2 := by
-  have hcs : inner ℝ g ε ≤ ‖g‖ * ρ := by
-    calc inner ℝ g ε ≤ ‖g‖ * ‖ε‖ := real_inner_le_norm _ _
-      _ ≤ ‖g‖ * ρ := mul_le_mul_of_nonneg_left h_norm (norm_nonneg _)
-  have hsq : (M : ℝ) / 2 * ‖ε‖ ^ 2 ≤ (M : ℝ) / 2 * ρ ^ 2 := by
-    apply mul_le_mul_of_nonneg_left (sq_le_sq.mpr (by
-      simp only [abs_of_nonneg (norm_nonneg _), abs_of_nonneg hρ, h_norm]))
-    apply div_nonneg (NNReal.coe_nonneg M)
-    norm_num
-  linarith
-
-/-- **SAM Taylor Bound**: `samObjective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
-theorem sam_taylor_bound (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
-    (hρ : 0 ≤ ρ) :
-    samObjective L.toFun w ρ ≤
-      L.toFun w + ‖gradient L.toFun w‖ * ρ + (L.smoothness : ℝ) / 2 * ρ ^ 2 := by
-  unfold samObjective perturbationNeighborhood
-  apply csSup_le
-  · exact ⟨L.toFun w, w, ⟨
-      0,
-      by simpa only [Metric.mem_closedBall, dist_self] using hρ,
-      by simp only [add_zero]
-    ⟩, rfl⟩
-  · rintro v ⟨_, ⟨ε, hε_norm, rfl⟩, rfl⟩
-    rw [Metric.mem_closedBall, dist_zero_right] at hε_norm
-    -- Step 1: Apply the smooth descent lemma to the perturbation ε
-    have hdescent := smooth_descent L w ε
-    -- Step 2: Use the SAM Taylor Terms Bound helper lemma
-    have h_terms := sam_taylor_terms_bound L.smoothness ρ hρ (gradient L.toFun w) ε hε_norm
-    linarith [hdescent, h_terms]
-
-/-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
-with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
-$L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
-theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
-    (h_eta_nonneg : 0 ≤ η)
-    (h_eta_bound : η * (L.smoothness : ℝ) ≤ 1) :
-    L.toFun (w - η • gradient L.toFun w) ≤
-      L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 := by
-  set g := gradient L.toFun w
-  have h_descent := smooth_descent L w (-(η • g))
-  have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
-  -- Step 1: Verify the descent radius bound
-  have h_bound : (L.smoothness : ℝ) * η ≤ 1 := by
-    simpa only [mul_comm] using h_eta_bound
-  have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
-    rw [
-      inner_neg_right,
-      inner_smul_right,
-      inner_self_eq_norm_sq_to_K,
-      RCLike.ofReal_real_eq_id,
-      id_eq,
-      neg_mul
-    ]
-  have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by
-    rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
-  calc L.toFun (w - η • g)
-    _ = L.toFun (w + -(η • g)) := by rw [h_step]
-    _ ≤ L.toFun w + inner ℝ g (-(η • g)) +
-        (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 :=
-      h_descent
-    _ ≤ L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
-      have hquad : (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
-        rw [h_norm_desc]
-        have hMη_norm : ((L.smoothness : ℝ) * η) * ‖g‖ ^ 2 ≤ ‖g‖ ^ 2 := by
-          nlinarith [h_bound, sq_nonneg ‖g‖]
-        calc
-          (L.smoothness : ℝ) / 2 * (η ^ 2 * ‖g‖ ^ 2)
-              = (η / 2) * (((L.smoothness : ℝ) * η) * ‖g‖ ^ 2) := by ring
-          _ ≤ (η / 2) * ‖g‖ ^ 2 :=
-            mul_le_mul_of_nonneg_left hMη_norm (by nlinarith [h_eta_nonneg])
-      calc
-        L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2
-            ≤ L.toFun w + inner ℝ g (-(η • g)) + (η / 2) * ‖g‖ ^ 2 := by
-              nlinarith [hquad]
-        _ = L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
-          rw [h_inner_desc]
-          ring
 
 end LeanSharp

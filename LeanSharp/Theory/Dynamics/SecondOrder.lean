@@ -3,7 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
-import LeanSharp.Core.Taylor
+import LeanSharp.Core.Taylor.SamBounds
 import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Structural.HessianContraction
 
