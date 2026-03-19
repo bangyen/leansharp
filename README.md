@@ -12,45 +12,18 @@ LeanSharp is the formal, mathematical sister-project to [ZSharp](https://github.
 
 Machine Learning optimization algorithms are notoriously difficult to analyze theoretically. Proofs of convergence for Deep Learning optimizers often rely on informal heuristics or hidden assumptions about the loss landscape.
 
-By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel. **Critically, every theorem is formally proved with zero `axiom` declarations in the source; all mathematical claims are derived directly from Mathlib.**
+By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel.
 
-### Verification Status
+## Key Accomplishments
 
-All mathematical claims in LeanSharp are formally verified with **zero axioms** and **zero sorry placeholders**. This status is automatically enforced by strict CI quality guards:
-- `check_banned.sh`: Fails if banned Lean markers are found (`axiom`, `sorry`, `admit`, `nolint`, file-level `set_option`).
-- `check_import.sh`: Fails if banned or disallowed imports are detected.
-- `check_simp.sh`: Fails if risky simplification patterns are detected.
+- **Heavy-Tailed Analysis**: Proved $O(1/T)$ convergence rates for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
+- **Verified Vision Architectures**: Formalized Transformer and ViT layers, including a rigorous proof of patch-embedding to 2D-convolution equivalence.
+- **Generalized Taylor Theory**: Developed a library for **arbitrary-degree multilinear Taylor expansions** and H^k-aware descent lemmas.
+- **Infinite Width Foundations**: Established the topological dimension sequence limits ($|ι| \to \infty$) for formal NTK and generalization analysis.
+- **Automation Engine**: Hardened the `zsharp_solve` tactic to automate complex SAM algebraic normalization and Z-score inequality splitting.
 
-Run all guards locally with:
 
-```bash
-./scripts/check_all.sh
-```
-
-- ✅ **Mathematical Foundations** (`Core/`): Established Hessian symmetry, L-smoothness, and the core Taylor descent lemma for optimization proofs.
-- ✅ **Verified Layer Library** (`Layers/`): Formalized Linear, ReLU, BatchNorm, and Residual layers. Implemented complex architectures including Transformers and Vision Transformers (ViT).
-- ✅ **SAM Logic & Invariance** (`Theory/`): Formalized the mathematical definition of the Z-Score SAM update step and proved the functional equivalence of patch embeddings to strided 2D convolutions.
-- ✅ **Stochastic & Heavy-Tailed Convergence** (`Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates and established almost-sure convergence under **heavy-tailed noise regimes** using new Cauchy/non-Gaussian/$\alpha$-stable probability oracle interfaces.
-- ✅ **Second-Order Dynamics** (`Theory/`): Formalized the **Second-Order Descent Lemma** using the local curvature matrix and generalized filter condition, bridging structural filter contract properties to functional descent.
-- ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
-- ✅ **Multilinear Taylor** (`Core/`): Generalization of the project-specific Taylor bounds to arbitrary-degree multilinear forms.
-
-## Roadmap & Future Work
-
-The following items represent the planned evolution of LeanSharp. While the project is **functionally complete** (core convergence results are verified), the roadmap aims for **theoretical completeness** and foundational rigor.
-
-### Immediate Roadmap (Hard Complexity)
-
-These items represent foundational tasks necessary for project completeness and Mathlib alignment.
-
-| Task | Necessity | Justification |
-| :--- | :--- | :--- |
-| **Higher-Order Fréchet** | Low | Core results use custom `hessian`; needs Mathlib alignment. |
-| **Analytical Limit $D \to \infty$** | Medium | Foundation for analyzing generalization in infinite-width layers. |
-
----
-
-### Extensions & Grand Challenges (Extreme Complexity)
+## Extensions & Grand Challenges
 
 These items represent specialized research directions currently limited by foundational gaps in Mathlib.
 
