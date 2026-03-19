@@ -96,19 +96,22 @@ private lemma hessian_symmetry_reduction (L : W ι → ℝ) (w : W ι)
 structure TwiceDifferentiable (ι : Type*) [Fintype ι] where
   /-- The underlying loss function. -/
   toFun : W ι → ℝ
-  /-- Proof that the function is differentiable everywhere. -/
-  differentiable : ∀ p, HasFDerivAt toFun (fderiv ℝ toFun p) p
-  /-- Proof that the derivative is itself differentiable. -/
-  twiceDifferentiable : ∀ p, DifferentiableAt ℝ (fderiv ℝ toFun) p
+  /-- Proof that the function is twice continuously differentiable everywhere. -/
+  differentiable : ContDiff ℝ 2 toFun
 
 /-- The Hessian is symmetric (self-adjoint) for C² loss functions.
 Proved via `second_derivative_symmetric` (Schwarz's Theorem) from Mathlib. -/
 theorem hessian_symmetric (L : TwiceDifferentiable ι) (w : W ι) :
-    (hessian L.toFun w).toLinearMap.IsSymmetric :=
-  hessian_symmetry_reduction L.toFun w (fderiv ℝ (fderiv ℝ L.toFun) w)
-    (hessian_def_riesz_comp L.toFun w (L.twiceDifferentiable w).hasFDerivAt)
-    (fun x y => second_derivative_symmetric L.differentiable
-      (L.twiceDifferentiable w).hasFDerivAt x y)
+    (hessian L.toFun w).toLinearMap.IsSymmetric := by
+  have h' : ContDiff ℝ (1 + 1) L.toFun := L.differentiable
+  have hd1 : ∀ p, HasFDerivAt L.toFun (fderiv ℝ L.toFun p) p :=
+    fun p => ((contDiff_succ_iff_fderiv.mp h').left p).hasFDerivAt
+  have hd2_cont : ContDiff ℝ 1 (fderiv ℝ L.toFun) := (contDiff_succ_iff_fderiv.mp h').2.2
+  have hd2 : ∀ p, DifferentiableAt ℝ (fderiv ℝ L.toFun) p :=
+    fun p => (ContDiff.differentiable hd2_cont (by decide) p)
+  exact hessian_symmetry_reduction L.toFun w (fderiv ℝ (fderiv ℝ L.toFun) w)
+    (hessian_def_riesz_comp L.toFun w (hd2 w).hasFDerivAt)
+    (fun x y => second_derivative_symmetric hd1 (hd2 w).hasFDerivAt x y)
 
 /-- **Squared Norm of Difference with Scalar Multiple**:
 ‖a - ηb‖² = ‖a‖² - 2η⟨b, a⟩ + η²‖b‖². -/
