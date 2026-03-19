@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
+import Mathlib.Analysis.Calculus.FDeriv.WithLp
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.Normed.Group.Basic
 
 /-!
 # Activation Functions
@@ -14,6 +17,11 @@ This module formalizes activation functions as neural network layers.
 
 * `reluLayer`: The Rectified Linear Unit (ReLU) activation function.
 * `softmax`: The Softmax activation function.
+* `relu_lipschitz`: Lipshitz continuity of the ReLU layer.
+
+## Theorems
+
+* `relu_lipschitz`.
 -/
 
 namespace LeanSharp
@@ -24,6 +32,20 @@ variable {ι : Type}
 noncomputable def relu (x : W ι) : W ι :=
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     Max.max 0 ((WithLp.equiv 2 (ι → ℝ) x) i)
+
+/-- **ReLU Lipschitz**: The ReLU activation function is 1-Lipschitz. -/
+theorem relu_lipschitz [Fintype ι] : LipschitzWith 1 (relu (ι := ι)) := by
+  apply LipschitzWith.of_dist_le_mul
+  intro x y
+  simp only [relu, WithLp.equiv_apply, WithLp.equiv_symm_apply, NNReal.coe_one, one_mul]
+  rw [PiLp.dist_eq_of_L2, PiLp.dist_eq_of_L2]
+  apply Real.sqrt_le_sqrt
+  apply Finset.sum_le_sum
+  intro i _
+  rw [sq_le_sq, abs_of_nonneg dist_nonneg, abs_of_nonneg dist_nonneg]
+  rw [Real.dist_eq, Real.dist_eq]
+  exact (abs_max_sub_max_le_max 0 (x.ofLp i) 0 (y.ofLp i)).trans
+    (by simp only [sub_self, abs_zero, abs_nonneg, sup_of_le_right, le_refl])
 
 /-- ReLU backward pass. Since ReLU is not differentiable at 0, we use a subgradient (0). -/
 noncomputable def reluBackward (x : W ι) (g_out : W ι) : W ι :=

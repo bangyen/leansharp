@@ -15,15 +15,13 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 This module formalizes the parameter space and core calculus operators for
 Sharpness-Aware Minimization (SAM).
 
-## Definitions
-
+## Main Definitions
 * `W`: The parameter space $\mathbb{R}^d$, represented as a Euclidean space.
 * `gradient`: The gradient of a loss function, defined via the Riesz representation.
 * `hessian`: The Hessian operator, defined as the derivative of the gradient.
 * `TwiceDifferentiable`: Bundles a function $L$ with its second-order regularity properties.
 
-## Theorems
-
+## Main Theorems
 * `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
 
 ## Implementation notes
