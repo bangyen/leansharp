@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Theory.Dynamics
+import LeanSharp.Theory.InfiniteLimit
 import LeanSharp.Theory.Robustness
 import LeanSharp.Theory.Structural
 

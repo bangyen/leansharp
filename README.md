@@ -33,6 +33,7 @@ Run all guards locally with:
 - ✅ **Stochastic & Heavy-Tailed Convergence** (`Stochastic/`): Proved deterministic/stochastic $O(1/T)$ rates and established almost-sure convergence under **heavy-tailed noise regimes** using new Cauchy/non-Gaussian/$\alpha$-stable probability oracle interfaces.
 - ✅ **Second-Order Dynamics** (`Theory/`): Formalized the **Second-Order Descent Lemma** using the local curvature matrix and generalized filter condition, bridging structural filter contract properties to functional descent.
 - ✅ **Automation & Tactics** (`Tactic/`): Hardened the `zsharp_solve` tactic to automate algebraic normalization and Z-score inequality splitting.
+- ✅ **Multilinear Taylor** (`Core/`): Generalization of the project-specific Taylor bounds to arbitrary-degree multilinear forms.
 
 ## Roadmap & Future Work
 
@@ -45,7 +46,6 @@ These items represent foundational tasks necessary for project completeness and 
 | Task | Necessity | Justification |
 | :--- | :--- | :--- |
 | **Higher-Order Fréchet** | Low | Core results use custom `hessian`; needs Mathlib alignment. |
-| **Multilinear Taylor** | Medium | General version of the current project-specific Taylor bounds. |
 | **Analytical Limit $D \to \infty$** | Medium | Foundation for analyzing generalization in infinite-width layers. |
 
 ---
