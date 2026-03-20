@@ -26,7 +26,6 @@ into a structural assumption set.
 ## Theorems
 
 * `zsharp_integrability_of_assumptions`.
-* `zsharp_structural_integrability`.
 -/
 
 namespace LeanSharp
@@ -141,19 +140,5 @@ def toIntegrabilityAssumptions
   h_g_dom_bound := h_struct.h_g_dom_bound
 
 end ZSharpStructuralAssumptions
-
-omit [IsProbabilityMeasure (volume : Measure Ω)] in
-/-- **Structural Integrability**: The main theorem that derives the entire sequence of
-integrability witnesses from structural assumptions. This theorem is intentionally
-retained as a compatibility wrapper for callers that already package assumptions in
-`ZSharpStructuralAssumptions`; minimal new results should prefer
-`zsharp_integrability_of_assumptions`. -/
-theorem zsharp_structural_integrability (f : W ι → ℝ) (w : ℕ → Ω → W ι)
-    (η : ℕ → ℝ)
-    (z σsq : ℝ)
-    (h_struct : ZSharpStructuralAssumptions f w η z σsq) :
-    (∀ t, Integrable (fun ω => f (w t ω))) ∧
-    (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2)) := by
-  exact zsharp_integrability_of_assumptions f w h_struct.toIntegrabilityAssumptions
 
 end LeanSharp

@@ -62,8 +62,9 @@ example [IsProbabilityMeasure (volume : Measure Ω)]
       ∧ ZSharpObjectiveAsConvergence f w := by
   refine ⟨?_, ?_⟩
   · exact h_model.h_update
-  · exact zsharp_robbins_monro_objective_limit_with_martingale_model
-      f w ℱ R h_adapted h_int h_step hbdd
+  · have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
+      submartingale_nat h_adapted h_int h_step
+    exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 /-- **Concrete Weight-Sequence Interface Verification**: confirms that the
 `weightSequence` specialization exposes both the explicit recursion identity and
@@ -96,7 +97,6 @@ example [IsProbabilityMeasure (volume : Measure Ω)]
     (h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ)
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
     ZSharpObjectiveAsConvergence f w := by
-  exact zsharp_objective_as_convergence_of_submartingale_bridge_contract
-    f w ℱ R h_sub hbdd
+  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 end LeanSharp.Tests

@@ -20,7 +20,6 @@ core smoothness descent theorem from `SmoothDescent`.
 
 * `smoothObjective_hasWeakGradientCore`: canonical weak-gradient witness.
 * `smooth_descent_h1`: `H¹`-aware descent lemma variant.
-* `smooth_descent_h1_of_smooth`: compatibility wrapper from `SmoothObjective`.
 -/
 
 namespace LeanSharp
@@ -37,8 +36,7 @@ def HasWeakGradientCore (u : W ι → ℝ) (grad_u : W ι → W ι) : Prop :=
 
 /-- `H¹`-aware smooth objective bundle used by core Taylor descent lemmas. It
 stores weak-gradient data and a proof that this weak gradient agrees with the
-canonical `gradient`, so existing smooth-descent proofs can be reused through
-compatibility wrappers. -/
+canonical `gradient`, so existing smooth-descent proofs can be reused internally. -/
 structure H1SmoothObjective (ι : Type*) [Fintype ι] where
   /-- The underlying loss function. -/
   toFun : W ι → ℝ
@@ -87,13 +85,5 @@ theorem smooth_descent_h1 (L : H1SmoothObjective ι) (w ε : W ι) :
       lipschitz := by
         simpa only [L.gradient_eq_weakGradient] using L.weakLipschitz }
   exact smooth_descent Lsmooth w ε
-
-/-- Compatibility wrapper exposing `smooth_descent_h1` directly for existing
-`SmoothObjective` clients. -/
-theorem smooth_descent_h1_of_smooth (L : SmoothObjective ι) (w ε : W ι) :
-    L.toFun (w + ε) ≤
-      L.toFun w + inner ℝ (gradient L.toFun w) ε + (L.smoothness : ℝ) / 2 * ‖ε‖ ^ 2 := by
-  simpa only [SmoothObjective.toH1SmoothObjective] using
-    smooth_descent_h1 (L := L.toH1SmoothObjective) w ε
 
 end LeanSharp

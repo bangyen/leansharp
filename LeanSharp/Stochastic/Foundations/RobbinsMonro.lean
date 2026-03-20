@@ -16,7 +16,6 @@ exposes almost-sure convergence statements for the stochastic objective process.
 
 ## Theorems
 
-* `zsharp_robbins_monro_objective_limit_with_martingale_model`.
 * `zsharp_objective_as_convergence_of_bridge`.
 * `zsharp_robbins_monro_almost_sure_convergence`.
 * `zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses`.
@@ -28,26 +27,6 @@ open ProbabilityTheory MeasureTheory
 
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
-
-omit [Fintype ι] in
-/-- **Objective limit from submartingale hypotheses**: derives almost-sure
-objective convergence from adaptation, integrability, and one-step
-submartingale inequality assumptions. This theorem is retained as a
-compatibility bridge to the submartingale API. -/
-theorem zsharp_robbins_monro_objective_limit_with_martingale_model
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_adapted : StronglyAdapted ℱ (fun t ω => f (w t ω)))
-    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
-    (h_step :
-      ∀ t, (fun ω => f (w t ω)) ≤ᵐ[ℙ] ℙ[fun ω => f (w (t + 1) ω) | ℱ t])
-    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    ZSharpObjectiveAsConvergence f w := by
-  have h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ :=
-    submartingale_nat h_adapted h_int h_step
-  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 /-- **Bridge application theorem** -/
 theorem zsharp_objective_as_convergence_of_bridge
@@ -142,7 +121,8 @@ theorem zsharp_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses
   rcases h_model with ⟨_, ⟨h_struct⟩, ⟨R_obj, h_adapted_obj, h_step_obj, hbdd_obj⟩,
     h_meas, h_desc_step⟩
   let g_adv (t : ℕ) (ω : Ω) := gradient f (w t ω)
-  have ⟨h_int, h_int_grad⟩ := zsharp_structural_integrability f w η z σsq h_struct
+  have ⟨h_int, h_int_grad⟩ :=
+    zsharp_integrability_of_assumptions f w h_struct.toIntegrabilityAssumptions
   let R_neg := R_obj
   have h_adapted_neg : StronglyAdapted ℱfil (fun t ω => -f (w t ω)) := h_adapted_obj.neg
   have h_step_neg (t : ℕ) : (fun ω => -f (w t ω)) ≤ᵐ[ℙ]

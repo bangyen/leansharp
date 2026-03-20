@@ -25,7 +25,7 @@ open ProbabilityTheory MeasureTheory
 
 /-- **Structural Envelope Wiring Verification**: This test ensures the sequence
 descent envelope can be instantiated from structural assumptions by deriving
-integrability through `zsharp_structural_integrability`. -/
+integrability through `zsharp_integrability_of_assumptions`. -/
 example
     {Ω : Type*}
     [MeasureSpace Ω]
@@ -42,7 +42,7 @@ example
     (∑ t ∈ Finset.range T, (η t / 4) * 𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
       𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
       (∑ t ∈ Finset.range T, (η t ^ 2 * L_smooth / 2) * σsq) := by
-  have h_int_all := zsharp_structural_integrability f w η z σsq h_struct
+  have h_int_all := zsharp_integrability_of_assumptions f w h_struct.toIntegrabilityAssumptions
   exact stochastic_zsharp_sequence_descent L_smooth f w η z σsq T
     (fun t ω => gradient f (w t ω)) ℱ (fun t => h_struct.h_step t) h_desc_step
     h_int_all.1 h_int_all.2 h_meas

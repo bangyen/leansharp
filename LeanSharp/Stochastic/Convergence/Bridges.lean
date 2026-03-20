@@ -26,7 +26,6 @@ assumptions.
 
 * `zsharp_objective_as_convergence_of_submartingale`.
 * `zsharp_objective_as_convergence_of_bridge_contract`.
-* `zsharp_objective_as_convergence_of_submartingale_bridge_contract`.
 -/
 
 namespace LeanSharp
@@ -101,21 +100,5 @@ theorem zsharp_objective_as_convergence_of_bridge_contract
     (h_bridge : ZSharpSupermartingaleAsBridge L_smooth f w η σsq) :
     ZSharpObjectiveAsConvergence f w :=
   h_bridge hη h_env
-
-omit [Fintype ι] in
-/-- **Submartingale-to-bridge instantiation theorem**: given submartingale and
-uniform `L¹` bounds for the objective process, this theorem builds the project
-bridge contract and immediately derives almost-sure objective convergence. This
-is an explicit project-level formalization wrapper around Mathlib's martingale
-convergence theorem. -/
-theorem zsharp_objective_as_convergence_of_submartingale_bridge_contract
-    (f : W ι → ℝ)
-    (w : ℕ → Ω → W ι)
-    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
-    (R : NNReal)
-    (h_sub : Submartingale (fun t ω => f (w t ω)) ℱ ℙ)
-    (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
-    ZSharpObjectiveAsConvergence f w := by
-  exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
 
 end LeanSharp
