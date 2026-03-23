@@ -14,6 +14,10 @@ Machine Learning optimization algorithms are notoriously difficult to analyze th
 
 By formally verifying Z-Score SAM in Lean 4, every mathematical step—from the Fréchet derivative of the loss function to the final contraction properties of the gradient filter—is rigorously checked by a verified kernel.
 
+## Architecture
+
+For a detailed overview of the project's design patterns, including the `W` parameter space abstraction and the recursive `Chain`/`ChainData` architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Key Accomplishments
 
 - **Stochastic Robustness**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
