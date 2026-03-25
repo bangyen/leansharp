@@ -23,18 +23,27 @@ For a detailed overview of the project's design patterns, including the `W` para
 - **Stochastic Robustness**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
 - **Statistical Robustness**: Formalized breakdown-point theory for robust estimators, proving the geometric median's **$50\%$ outlier stability** ($k/n \ge 1/2$).
 - **Generalization Theory**: Rigorously connected landscape sharpness (max Hessian eigenvalue) to population risk via **PAC-Bayes bounds** and Taylor descent lemmas.
-- **Infinite Width Regime**: Established topological dimension sequence limits ($|ι| \to \infty$) for formal **Neural Tangent Kernel (NTK)** and infinite-width analysis.
+- **Infinite Width Framework**: Established topological dimension sequence limits ($|ι| \to \infty$) as the foundation for formal **Neural Tangent Kernel (NTK)** and infinite-width analysis.
 - **Verified ML Infrastructure**: Hardened the `zsharp_solve` tactic for automated SAM algebra and formalized the stack of modern ML (BatchNorm, ViT, etc.).
+
+## Immediate Roadmap
+
+These items represent the path toward foundational theoretical completeness for the core Z-score SAM algorithm.
+
+| Task | Priority | Justification |
+| :--- | :--- | :--- |
+| **Alignment Proofs** | High | Deriving the `AlignmentCondition` from statistical noise properties. |
+| **PAC-Bayes Basis** | Medium | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
+| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
 
 ## Extensions & Grand Challenges
 
-These items represent specialized research directions currently limited by foundational gaps in Mathlib.
+These items represent specialized research directions and advanced analytical regimes.
 
-| Task | Necessity | Justification |
+| Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
-| **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
 | **NTK Dynamics** | Low | Proving network initialization and NTK-regime bounds. |
+| **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
 | **Diffusion Stability**| Low | Formalizing SDE objectives and stability for DDPMs. |
 
 ## Installation & Building
