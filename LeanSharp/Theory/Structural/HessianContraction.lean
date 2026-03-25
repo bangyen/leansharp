@@ -75,7 +75,7 @@ the statistical filter. -/
 theorem zsharp_curvature_bound (C : CurvatureCertificate ι) (g : W ι) (z : ℝ) :
     hessianQuadraticForm C.L C.w (filteredGradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
   apply (C.spectral_bound _).trans
-  apply mul_le_mul_of_nonneg_left (norm_sq_filteredGradient_le g z) C.sharpness_nonneg
+  apply mul_le_mul_of_nonneg_left (norm_sq_filtered_gradient_le g z) C.sharpness_nonneg
 
 /-- Lifts a spectral curvature bound plus a norm-contraction witness into the
 generalized filter condition. This theorem exists so new filters only need to provide

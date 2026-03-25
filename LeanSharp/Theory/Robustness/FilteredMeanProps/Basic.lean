@@ -88,7 +88,7 @@ theorem z_filtered_empirical_mean_norm_le
         exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (1 / (s.card : ℝ)) * (∑ i ∈ s, ‖g i‖) := by
         apply mul_le_mul_of_nonneg_left
-        · exact Finset.sum_le_sum (fun i _ => norm_filteredGradient_le (g i) z)
+        · exact Finset.sum_le_sum (fun i _ => norm_filtered_gradient_le (g i) z)
         · positivity
 
 /-- **Uniform-input bound for filtered mean**: if every sample gradient has norm at most

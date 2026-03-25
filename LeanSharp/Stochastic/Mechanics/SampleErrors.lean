@@ -25,7 +25,7 @@ not increase the variance of the stochastic estimator.
 
 ## Main theorems
 
-* `norm_filteredGradient_le`: Proves the $L_2$ norm contraction of the filter.
+* `norm_filtered_gradient_le`: Proves the $L_2$ norm contraction of the filter.
 * `zsharp_variance_bound`: Proves that the variance of the filtered stochastic
   gradient is bounded by the variance of the original estimator plus a
   curvature term.
@@ -48,7 +48,7 @@ theorem zsharp_variance_bound (L : W ι → ℝ) (g_adv : Ω → W ι) (w : W ι
     𝔼[fun ω => ‖filteredGradient (g_adv ω) z‖ ^ 2] ≤ σsq + ‖gradient L w‖ ^ 2 := by
   calc 𝔼[fun ω => ‖filteredGradient (g_adv ω) z‖ ^ 2]
       ≤ 𝔼[fun ω => ‖g_adv ω‖ ^ 2] :=
-        integral_mono h_int_fg h_int_g (fun ω => norm_sq_filteredGradient_le (g_adv ω) z)
+        integral_mono h_int_fg h_int_g (fun ω => norm_sq_filtered_gradient_le (g_adv ω) z)
     _ = 𝔼[fun ω => ‖g_adv ω - gradient L w‖ ^ 2] + ‖gradient L w‖ ^ 2 := by
         rw [l2_bias_variance_decomposition g_adv h_int_g h_unbiased.1, h_unbiased.2]
     _ ≤ σsq + ‖gradient L w‖ ^ 2 := by

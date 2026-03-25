@@ -33,10 +33,10 @@ theorem zsharp_chain_stability {In Out : Type} (c : Chain In Out)
   | single L =>
       cases p
       unfold backpropChain rawBackpropChain chainDataNormSq
-      simp only [norm_sq_filteredGradient_le]
+      simp only [norm_sq_filtered_gradient_le]
   | append prev L ih =>
     cases p with | append p_prev w =>
     unfold backpropChain rawBackpropChain chainDataNormSq
-    apply add_le_add (ih p_prev _ _) (norm_sq_filteredGradient_le _ _)
+    apply add_le_add (ih p_prev _ _) (norm_sq_filtered_gradient_le _ _)
 
 end LeanSharp

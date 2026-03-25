@@ -38,7 +38,7 @@ noncomputable def batchnormForward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
     W (Fin N × Fin D) :=
   let μ := fun d => batchMean x d
-  let σ := fun d => Real.sqrt (batchVar x d μ + 0.00001)
+  let σ := fun d => Real.sqrt (batchVar x d μ)
   WithLp.equiv 2 (Fin N × Fin D → ℝ) |>.symm fun p =>
     let (n, d) := p
     let x_nd := (WithLp.equiv 2 _ x) (n, d)
@@ -51,7 +51,7 @@ noncomputable def batchnormBackward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D))
     (g_out : W (Fin N × Fin D)) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
   let μ := fun d => batchMean x d
-  let σ := fun d => Real.sqrt (batchVar x d μ + 0.00001)
+  let σ := fun d => Real.sqrt (batchVar x d μ)
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl d => ∑ n : Fin N, (WithLp.equiv 2 _ g_out) (n, d) *
         (((WithLp.equiv 2 _ x) (n, d) - μ d) / σ d)

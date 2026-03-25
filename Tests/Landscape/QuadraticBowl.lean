@@ -27,7 +27,7 @@ open LeanSharp.QuadraticBowl
 /-- Verifies the fundamental L2 contraction property of the Z-score filter on the toy model. -/
 example :
     ‖filteredGradient (exactGradientToy wInit) 1‖ ≤ ‖exactGradientToy wInit‖ := by
-  apply norm_filteredGradient_le
+  apply norm_filtered_gradient_le
 
 /-- Verifies that for the toy gradient, the Z-score filter (z=1) is an identity. -/
 example :

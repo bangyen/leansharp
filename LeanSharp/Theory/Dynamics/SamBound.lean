@@ -49,7 +49,7 @@ theorem sam_bound_from_gap (L_D L_S : W ι → ℝ) (h : ℝ → ℝ) {ρ : ℝ}
     SamGeneralizationBoundHolds L_D L_S h ρ := by
   intro w hρ
   have h_sam_ge : L_S w ≤ samObjective L_S w ρ :=
-    samObjective_ge_self L_S w (le_of_lt hρ) (h_bdd w)
+    sam_objective_ge_self L_S w (le_of_lt hρ) (h_bdd w)
   have h_gap_spec := h_gap w hρ
   linarith [h_gap_spec, h_sam_ge]
 

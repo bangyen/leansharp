@@ -26,12 +26,12 @@ Z-score masking.
 
 ## Main theorems
 
-* `norm_sq_filteredGradient_le`: Proves that the filter is an $L_2$ contraction.
-* `zScoreMask_nonempty`: Proves that the filter preserves at least one component
+* `norm_sq_filtered_gradient_le`: Proves that the filter is an $L_2$ contraction.
+* `zscore_mask_nonempty`: Proves that the filter preserves at least one component
   when $z \le 1$.
-* `filteredGradient_eq_self_of_std_zero`: Proves that constant gradients are
+* `filtered_gradient_eq_self_of_std_zero`: Proves that constant gradients are
   preserved by the filter.
-* `zScoreMask_idempotent`: Proves the mask is idempotent under Hadamard product.
+* `zscore_mask_idempotent`: Proves the mask is idempotent under Hadamard product.
 -/
 
 namespace LeanSharp
@@ -58,7 +58,7 @@ noncomputable def filteredGradient (g : W ι) (z : ℝ) : W ι :=
 
 /-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
 by the original. -/
-theorem norm_sq_filteredGradient_le (g : W ι) (z : ℝ) :
+theorem norm_sq_filtered_gradient_le (g : W ι) (z : ℝ) :
     ‖filteredGradient g z‖^2 ≤ ‖g‖^2 := by
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   apply Finset.sum_le_sum
@@ -79,17 +79,17 @@ theorem norm_sq_filteredGradient_le (g : W ι) (z : ℝ) :
     positivity
 
 /-- **Filtered Norm Bound (API convenience)**: Direct corollary of
-`norm_sq_filteredGradient_le`; kept as a simpler norm-level interface. -/
-theorem norm_filteredGradient_le (g : W ι) (z : ℝ) :
+`norm_sq_filtered_gradient_le`; kept as a simpler norm-level interface. -/
+theorem norm_filtered_gradient_le (g : W ι) (z : ℝ) :
     ‖filteredGradient g z‖ ≤ ‖g‖ := by
-  have h_sq := norm_sq_filteredGradient_le g z
+  have h_sq := norm_sq_filtered_gradient_le g z
   have h_sqrt := Real.sqrt_le_sqrt h_sq
   rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
   exact h_sqrt
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out, the empirical variance would be less than itself. -/
-private lemma zScoreMask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) (hz_le : z ≤ 1)
+private lemma zscore_mask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) (hz_le : z ≤ 1)
     (h_filtered : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 0) :
     False := by
   haveI : Nonempty ι := inferInstance
@@ -128,7 +128,7 @@ private lemma zScoreMask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : �
 
 /-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
 one component of the gradient. -/
-theorem zScoreMask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
+theorem zscore_mask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
     ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1 := by
   let σ := vectorStd g
   haveI : 0 < Fintype.card ι := Fintype.card_pos
@@ -146,7 +146,7 @@ theorem zScoreMask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1)
     ]
   · by_contra h
     push_neg at h
-    refine zScoreMask_nonempty_contradiction g z hz_le (fun i => ?_)
+    refine zscore_mask_nonempty_contradiction g z hz_le (fun i => ?_)
     have hi := h i
     unfold zScoreMask at hi ⊢
     rw [Equiv.apply_symm_apply] at hi ⊢
@@ -160,7 +160,7 @@ theorem zScoreMask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1)
 
 /-- **Zero Signal Stability**: If all components of the gradient are identical (zero variance),
 the filter preserves the entire gradient because every component is exactly at the mean. -/
-theorem filteredGradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
+theorem filtered_gradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
     (h_std : vectorStd g = 0) :
     filteredGradient g z = g := by
   unfold filteredGradient hadamard zScoreMask
@@ -171,7 +171,7 @@ theorem filteredGradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
 
 /-- **Mask Idempotency**: The Z-score mask is its own Hadamard product
     (since its components are 0 or 1). -/
-theorem zScoreMask_idempotent (g : W ι) (z : ℝ) :
+theorem zscore_mask_idempotent (g : W ι) (z : ℝ) :
     hadamard (zScoreMask g z) (zScoreMask g z) = zScoreMask g z := by
   unfold hadamard zScoreMask
   apply (WithLp.equiv 2 (ι → ℝ)).injective

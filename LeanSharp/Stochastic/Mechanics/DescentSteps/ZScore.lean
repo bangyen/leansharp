@@ -42,14 +42,14 @@ theorem z_score_descent (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w
       (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := by
   let g_f_loc (ω : Ω) := filteredGradient (g ω) z
   have h_norm_le : 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-    integral_mono h_int_f h_int (fun ω => norm_sq_filteredGradient_le (g ω) z)
+    integral_mono h_int_f h_int (fun ω => norm_sq_filtered_gradient_le (g ω) z)
   have h_raw_decomp := l2_bias_variance_decomposition g h_int h_stoch.1
   rw [h_stoch.2] at h_raw_decomp
   have h_input_bound : 𝔼[fun ω => ‖g ω‖ ^ 2] ≤ σsq + ‖gradient f w‖ ^ 2 := by
     rw [h_raw_decomp]; unfold HasBoundedVariance at h_var; linarith [h_var]
   have h_int_gf : Integrable g_f_loc ℙ :=
     h_stoch.1.mono h_meas_f
-      (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
+      (Filter.Eventually.of_forall (fun ω => norm_filtered_gradient_le (g ω) z))
   have h_int_inner : Integrable (fun ω => η * inner ℝ (gradient f w) (g_f_loc ω)) ℙ := by
     apply (Integrable.inner_const h_int_gf (gradient f w)).const_mul η |>.congr
     apply Filter.Eventually.of_forall; intro ω; dsimp only; rw [real_inner_comm]

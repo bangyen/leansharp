@@ -28,8 +28,7 @@ variable {ι : Type} [Fintype ι]
 /-- The parameter index type for normalization: scale (gamma) and shift (beta). -/
 abbrev NormParam (ι : Type) := ι ⊕ ι
 
-/-- Layer Normalization forward pass: y = γ * (x - μ) / σ + β.
-    Note: We assume σ > 0 for the formal definition. -/
+/-- Layer Normalization forward pass: y = γ * (x - μ) / σ + β. -/
 noncomputable def layernormForward (w : W (NormParam ι)) (x : W ι) : W ι :=
   let μ := vectorMean x
   let σ := vectorStd x

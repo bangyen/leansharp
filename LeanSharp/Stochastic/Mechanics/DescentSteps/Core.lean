@@ -52,10 +52,10 @@ theorem filtered_variance_bound (L : W ι → ℝ) (g : Ω → W ι) (w : W ι)
   have h_int_g : Integrable g := h_stoch.1
   have h_int_gf : Integrable g_f :=
     h_int_g.mono h_meas_f
-      (Filter.Eventually.of_forall (fun ω => norm_filteredGradient_le (g ω) z))
+      (Filter.Eventually.of_forall (fun ω => norm_filtered_gradient_le (g ω) z))
   have h_gf_decomp := l2_bias_variance_decomposition g_f h_int_f h_int_gf
   have h_norm_le : 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≤ 𝔼[fun ω => ‖g ω‖ ^ 2] :=
-    integral_mono h_int_f h_int (fun ω => norm_sq_filteredGradient_le (g ω) z)
+    integral_mono h_int_f h_int (fun ω => norm_sq_filtered_gradient_le (g ω) z)
   have h_raw_decomp := l2_bias_variance_decomposition g h_int h_stoch.1
   calc 𝔼[fun ω => ‖g_f ω - 𝔼[g_f]‖ ^ 2]
     _ = 𝔼[fun ω => ‖g_f ω‖ ^ 2] - ‖𝔼[g_f]‖ ^ 2 := by

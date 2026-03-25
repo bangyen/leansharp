@@ -32,7 +32,7 @@ variable {ι : Type*} [Fintype ι]
 theorem filtered_update_stability (w g : W ι) (η z : ℝ) :
     ‖(w - η • filteredGradient g z) - w‖ ≤ ‖(w - η • g) - w‖ := by
   simp only [sub_sub_cancel_left, norm_neg, norm_smul]
-  apply mul_le_mul_of_nonneg_left (norm_filteredGradient_le g z)
+  apply mul_le_mul_of_nonneg_left (norm_filtered_gradient_le g z)
   positivity
 
 /-- **Localized One-Step Stability Bound**: if the gradient norm at a step is
@@ -122,7 +122,7 @@ theorem residual_filtered_stability {ι_in : Type} [Fintype ι_in]
   rw [sub_sub_cancel_left, norm_neg, norm_smul]
   rw [Real.norm_eq_abs, ← mul_assoc]
   apply mul_le_mul_of_nonneg_left
-  · exact norm_filteredGradient_le g z
+  · exact norm_filtered_gradient_le g z
   · positivity
 
 end LeanSharp

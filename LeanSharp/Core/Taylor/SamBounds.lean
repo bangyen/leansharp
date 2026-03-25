@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+import LeanSharp.Core.Filters
 import LeanSharp.Core.Taylor.SmoothDescent
 
 /-!
@@ -36,6 +37,13 @@ private lemma sam_taylor_terms_bound (M : ℝ≥0) (ρ : ℝ) (hρ : 0 ≤ ρ) (
     apply div_nonneg (NNReal.coe_nonneg M)
     norm_num
   linarith
+
+/-- **Gradient Norm Contraction (SAM Complexity Benefit)**:
+    The term controlling the generalization gap is reduced by the filter. -/
+theorem z_sharp_gap_benefit (g : W ι) (z : ℝ) (ρ : ℝ) (hρ : 0 ≤ ρ) :
+    ‖filteredGradient g z‖ * ρ ≤ ‖g‖ * ρ := by
+  have h_contract := norm_filtered_gradient_le g z
+  nlinarith
 
 /-- **SAM Taylor Bound**: `samObjective L w ρ ≤ L w + ‖∇L(w)‖ * ρ + M/2 * ρ²`. -/
 theorem sam_taylor_bound (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
