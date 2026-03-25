@@ -15,6 +15,10 @@ This module formalizes normalization layers, specifically Layer Normalization.
 
 * `layerNorm`: The Layer Normalization operation.
 * `NormParam`: Parameter index type for scale (gamma) and shift (beta).
+
+## Main theorems
+
+* `layernorm_mean_zero`: Proves that LayerNorm output has mean zero.
 -/
 
 namespace LeanSharp
@@ -54,5 +58,23 @@ noncomputable def layerNorm (ι : Type) [Fintype ι] : Layer (W ι) (W ι) where
   fintypeParamDim := inferInstance
   forward := layernormForward
   backward := layernormBackward
+
+/-- **Mean Normalization**: For any input `x`, the vector mean of the normalized output
+(with γ=1, β=0) is zero. -/
+theorem layernorm_mean_zero [hf : Nonempty ι] (x : W ι) :
+    let w_id : W (NormParam ι) :=
+      WithLp.equiv 2 _ |>.symm fun | Sum.inl _ => 1 | Sum.inr _ => 0
+    vectorMean (layernormForward w_id x) = 0 := by
+  unfold vectorMean layernormForward
+  simp only [Equiv.apply_symm_apply, one_mul, add_zero]
+  have h_card : (Fintype.card ι : ℝ) ≠ 0 := by positivity
+  rw [← Finset.sum_div, div_div]
+  -- We provide the goal without local 'let' to avoid unfold issues
+  have h_sum : ∑ i, ((WithLp.equiv 2 (ι → ℝ)) x i - vectorMean x) = 0 := by
+    unfold vectorMean
+    rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+    field_simp [h_card]
+    ring
+  rw [h_sum, zero_div]
 
 end LeanSharp

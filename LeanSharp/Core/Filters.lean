@@ -31,6 +31,7 @@ Z-score masking.
   when $z \le 1$.
 * `filteredGradient_eq_self_of_std_zero`: Proves that constant gradients are
   preserved by the filter.
+* `zScoreMask_idempotent`: Proves the mask is idempotent under Hadamard product.
 -/
 
 namespace LeanSharp
@@ -162,12 +163,21 @@ the filter preserves the entire gradient because every component is exactly at t
 theorem filteredGradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
     (h_std : vectorStd g = 0) :
     filteredGradient g z = g := by
-  unfold filteredGradient hadamard
+  unfold filteredGradient hadamard zScoreMask
+  apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext i
-  change ((WithLp.equiv 2 (ι → ℝ)) g i) * ((WithLp.equiv 2 (ι → ℝ)) (zScoreMask g z) i) =
-    (WithLp.equiv 2 (ι → ℝ)) g i
-  unfold zScoreMask
-  simp only [h_std, mul_zero, ge_iff_le, abs_nonneg, ↓reduceIte, Equiv.apply_symm_apply, mul_one]
+  simp only [h_std, mul_zero, ge_iff_le, abs_nonneg, ↓reduceIte,
+    Equiv.apply_symm_apply, mul_one]
+
+/-- **Mask Idempotency**: The Z-score mask is its own Hadamard product
+    (since its components are 0 or 1). -/
+theorem zScoreMask_idempotent (g : W ι) (z : ℝ) :
+    hadamard (zScoreMask g z) (zScoreMask g z) = zScoreMask g z := by
+  unfold hadamard zScoreMask
+  apply (WithLp.equiv 2 (ι → ℝ)).injective
+  ext i
+  simp only [Equiv.apply_symm_apply]
+  split_ifs <;> simp only [mul_one, mul_zero]
 
 /-- The update step for Sharpness-Aware Minimization with Z-score filtering. -/
 noncomputable def samZSharpUpdate (L : W ι → ℝ) (w : W ι) (η ρ z : ℝ) : W ι :=

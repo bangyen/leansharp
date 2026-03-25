@@ -31,6 +31,8 @@ gradient vectors so filtering proofs can share a common statistical foundation.
 ## Theorems
 
 * `vectorMean_smul`.
+* `vectorVariance_nonneg`.
+* `vectorVariance_smul`.
 * `vectorStd_smul`.
 * `continuous_sum_distances`.
 * `tendsto_sum_distances_cocompact`.
@@ -68,24 +70,28 @@ lemma vectorMean_smul (k : ℝ) (g : W ι) :
   simp only [h_smul, ← Finset.mul_sum]
   rw [mul_div_assoc]
 
+/-- The variance is always non-negative. -/
+lemma vectorVariance_nonneg (g : W ι) : 0 ≤ vectorVariance g := by
+  unfold vectorVariance; positivity
+
+/-- The variance of a scalar-multiple vector. -/
+lemma vectorVariance_smul (k : ℝ) (g : W ι) :
+    vectorVariance (k • g) = k^2 * vectorVariance g := by
+  unfold vectorVariance
+  rw [vectorMean_smul]
+  have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vectorMean g)^2 =
+      k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 := by
+    have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i =
+        k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
+    rw [this, ← mul_sub, mul_pow]
+  simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
+
 /-- The standard deviation scales with the absolute value of the scalar. -/
 @[simp]
 lemma vectorStd_smul (k : ℝ) (g : W ι) :
     vectorStd (k • g) = |k| * vectorStd g := by
   unfold vectorStd
-  have h_var_smul : vectorVariance (k • g) = k^2 * vectorVariance g := by
-    unfold vectorVariance; rw [vectorMean_smul]
-    have h_inner (i : ι) : ((WithLp.equiv 2 (ι → ℝ) (k • g)) i - k * vectorMean g)^2 =
-      k^2 * ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 := by
-      have : (WithLp.equiv 2 (ι → ℝ) (k • g)) i =
-          k * (WithLp.equiv 2 (ι → ℝ) g) i := rfl
-      rw [this, ← mul_sub, mul_pow]
-    simp only [h_inner, ← Finset.mul_sum, mul_div_assoc]
-  rw [h_var_smul]
-  have h_nonneg : 0 ≤ vectorVariance g := by
-    unfold vectorVariance
-    positivity
-  rw [Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq_eq_abs]
+  rw [vectorVariance_smul, Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq_eq_abs]
 
 /-- The sum of Euclidean distances from `m` to a set of vectors `g_i` is continuous. -/
 lemma continuous_sum_distances {α : Type*} (s : Finset α) (g : α → W ι) :
@@ -143,10 +149,6 @@ noncomputable def geometricMedian {α : Type*} (s : Finset α) (g : α → W ι)
 lemma geometricMedian_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
     geometricMedian s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
   unfold geometricMedian; rw [dif_pos h]
-
-/-- The variance is always non-negative. -/
-lemma vectorVariance_nonneg (g : W ι) : 0 ≤ vectorVariance g := by
-  unfold vectorVariance; positivity
 
 /-- If the variance of a vector is zero, then all its components are equal to the mean. -/
 lemma eq_mean_of_vectorVariance_eq_zero [Nonempty ι] (g : W ι) (h : vectorVariance g = 0) :
