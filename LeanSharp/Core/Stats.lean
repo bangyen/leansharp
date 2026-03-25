@@ -36,6 +36,7 @@ gradient vectors so filtering proofs can share a common statistical foundation.
 * `tendsto_sum_distances_cocompact`.
 * `exists_isMin_on_finite_sum_norm`.
 * `geometricMedian_eq_choose`.
+* `eq_mean_of_vectorVariance_eq_zero`.
 -/
 
 namespace LeanSharp
@@ -142,5 +143,22 @@ noncomputable def geometricMedian {α : Type*} (s : Finset α) (g : α → W ι)
 lemma geometricMedian_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
     geometricMedian s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
   unfold geometricMedian; rw [dif_pos h]
+
+/-- The variance is always non-negative. -/
+lemma vectorVariance_nonneg (g : W ι) : 0 ≤ vectorVariance g := by
+  unfold vectorVariance; positivity
+
+/-- If the variance of a vector is zero, then all its components are equal to the mean. -/
+lemma eq_mean_of_vectorVariance_eq_zero [Nonempty ι] (g : W ι) (h : vectorVariance g = 0) :
+    ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) g) i = vectorMean g := by
+  unfold vectorVariance at h
+  have h_card : (Fintype.card ι : ℝ) ≠ 0 := by positivity
+  have h_sum : ∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 = 0 := by
+    field_simp [h_card] at h; simp only [mul_zero] at h; exact h
+  intro i
+  have : ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 = 0 := by
+    apply Finset.sum_eq_zero_iff_of_nonneg (fun j _ => sq_nonneg _) |>.mp h_sum
+    exact Finset.mem_univ i
+  exact sub_eq_zero.mp (sq_eq_zero_iff.mp this)
 
 end LeanSharp

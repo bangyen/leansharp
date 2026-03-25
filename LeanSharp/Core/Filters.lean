@@ -29,6 +29,8 @@ Z-score masking.
 * `norm_sq_filteredGradient_le`: Proves that the filter is an $L_2$ contraction.
 * `zScoreMask_nonempty`: Proves that the filter preserves at least one component
   when $z \le 1$.
+* `filteredGradient_eq_self_of_std_zero`: Proves that constant gradients are
+  preserved by the filter.
 -/
 
 namespace LeanSharp
@@ -154,6 +156,18 @@ theorem zScoreMask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1)
       not_true_eq_false,
       h_cond
     ] at hi ⊢
+
+/-- **Zero Signal Stability**: If all components of the gradient are identical (zero variance),
+the filter preserves the entire gradient because every component is exactly at the mean. -/
+theorem filteredGradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
+    (h_std : vectorStd g = 0) :
+    filteredGradient g z = g := by
+  unfold filteredGradient hadamard
+  ext i
+  change ((WithLp.equiv 2 (ι → ℝ)) g i) * ((WithLp.equiv 2 (ι → ℝ)) (zScoreMask g z) i) =
+    (WithLp.equiv 2 (ι → ℝ)) g i
+  unfold zScoreMask
+  simp only [h_std, mul_zero, ge_iff_le, abs_nonneg, ↓reduceIte, Equiv.apply_symm_apply, mul_one]
 
 /-- The update step for Sharpness-Aware Minimization with Z-score filtering. -/
 noncomputable def samZSharpUpdate (L : W ι → ℝ) (w : W ι) (η ρ z : ℝ) : W ι :=

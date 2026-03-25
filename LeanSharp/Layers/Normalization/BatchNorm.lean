@@ -18,6 +18,10 @@ Normalization is performed across the batch dimension.
 ## Main definitions
 
 * `batchNormLayer`: The Batch Normalization operation.
+
+## Main theorems
+
+* `batchnorm_mean_zero`: Proves that BatchNorm output has mean zero.
 -/
 
 /-- Batch mean for a specific feature dimension `d`. -/
@@ -65,5 +69,23 @@ noncomputable def batchNormLayer (N D : ℕ) :
   fintypeParamDim := inferInstance
   forward := batchnormForward
   backward := batchnormBackward
+
+/-- **Mean Normalization**: For any input `x`, the batch mean of the normalized output
+(with γ=1, β=0) is zero for all feature dimensions `d`. -/
+theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d : Fin D) :
+    let w_id : W (NormParam (Fin D)) :=
+      WithLp.equiv 2 _ |>.symm fun | Sum.inl _ => 1 | Sum.inr _ => 0
+    batchMean (batchnormForward w_id x) d = 0 := by
+  unfold batchMean batchnormForward
+  simp only [Equiv.apply_symm_apply, one_mul, add_zero]
+  have hN_real : (N : ℝ) ≠ 0 := by positivity
+  rw [← Finset.sum_div]
+  have h_sum : ∑ n : Fin N, ((WithLp.equiv 2 _) x (n, d) - batchMean x d) = 0 := by
+    unfold batchMean
+    rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    field_simp [hN_real]
+    simp only [sub_self, mul_zero]
+  rw [h_sum]
+  simp only [zero_div]
 
 end LeanSharp
