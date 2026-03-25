@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import LeanSharp.Theory.Robustness.Alignment
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilteredMeanProps
