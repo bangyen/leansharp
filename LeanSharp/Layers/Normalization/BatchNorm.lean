@@ -24,21 +24,24 @@ Normalization is performed across the batch dimension.
 * `batchnorm_mean_zero`: Proves that BatchNorm output has mean zero.
 -/
 
+/-- Extracts a slice of the batch for a specific feature dimension `d`. -/
+noncomputable def batchSlice {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : W (Fin N) :=
+  WithLp.equiv 2 _ |>.symm fun n => (WithLp.equiv 2 _ x) (n, d)
+
 /-- Batch mean for a specific feature dimension `d`. -/
 noncomputable def batchMean {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : ℝ :=
-  (∑ n : Fin N, (WithLp.equiv 2 _ x) (n, d)) / N
+  vectorMean (batchSlice x d)
 
 /-- Batch variance for a specific feature dimension `d`. -/
-noncomputable def batchVar {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D)
-    (μ : Fin D → ℝ) : ℝ :=
-  (∑ n : Fin N, ((WithLp.equiv 2 _ x) (n, d) - μ d)^2) / N
+noncomputable def batchVar {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : ℝ :=
+  vectorVariance (batchSlice x d)
 
 /-- Batch Normalization forward pass. -/
 noncomputable def batchnormForward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
     W (Fin N × Fin D) :=
   let μ := fun d => batchMean x d
-  let σ := fun d => Real.sqrt (batchVar x d μ)
+  let σ := fun d => Real.sqrt (batchVar x d)
   WithLp.equiv 2 (Fin N × Fin D → ℝ) |>.symm fun p =>
     let (n, d) := p
     let x_nd := (WithLp.equiv 2 _ x) (n, d)
@@ -51,7 +54,7 @@ noncomputable def batchnormBackward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D))
     (g_out : W (Fin N × Fin D)) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
   let μ := fun d => batchMean x d
-  let σ := fun d => Real.sqrt (batchVar x d μ)
+  let σ := fun d => Real.sqrt (batchVar x d)
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl d => ∑ n : Fin N, (WithLp.equiv 2 _ g_out) (n, d) *
         (((WithLp.equiv 2 _ x) (n, d) - μ d) / σ d)
@@ -76,12 +79,15 @@ theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d
     let w_id : W (NormParam (Fin D)) :=
       WithLp.equiv 2 _ |>.symm fun | Sum.inl _ => 1 | Sum.inr _ => 0
     batchMean (batchnormForward w_id x) d = 0 := by
-  unfold batchMean batchnormForward
+  unfold batchMean batchnormForward batchSlice
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   have hN_real : (N : ℝ) ≠ 0 := by positivity
-  rw [← Finset.sum_div]
+  unfold vectorMean
+  simp only [Equiv.apply_symm_apply]
+  rw [← Finset.sum_div, div_div]
   have h_sum : ∑ n : Fin N, ((WithLp.equiv 2 _) x (n, d) - batchMean x d) = 0 := by
-    unfold batchMean
+    unfold batchMean vectorMean batchSlice
+    simp only [Equiv.apply_symm_apply]
     rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
     field_simp [hN_real]
     simp only [sub_self, mul_zero]
