@@ -25,6 +25,8 @@ For a detailed overview of the project's design patterns, including the `W` para
 - **Generalization Theory**: Rigorously connected landscape sharpness (max Hessian eigenvalue) to population risk via **PAC-Bayes bounds** and Taylor descent lemmas.
 - **Infinite Width Framework**: Established topological dimension sequence limits ($|ι| \to \infty$) as the foundation for formal **Neural Tangent Kernel (NTK)** and infinite-width analysis.
 - **Verified ML Infrastructure**: Hardened the `zsharp_solve` tactic for automated SAM algebra and formalized the stack of modern ML (BatchNorm, ViT, etc.).
+- **Alignment Unification**: Established the definitive `AlignmentCondition` bridge between deterministic gradient geometry and stochastic Z-score filtering.
+- **Stability Certification**: Introduced rigorous `StabilityCertificate` contracts, ensuring $C^2$ compatibility for second-order optimization analysis across non-linear layers.
 
 ## Immediate Roadmap
 
@@ -32,9 +34,9 @@ These items represent the path toward foundational theoretical completeness for 
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Alignment Proofs** | High | Deriving the `AlignmentCondition` from statistical noise properties. |
-| **PAC-Bayes Basis** | Medium | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
+| **PAC-Bayes Basis** | High | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
 | **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
+| **Convergence Sharpness** | Medium | Tightening the $O(1/T)$ rate with explicit Lipschitz constants for multilayer chains. |
 
 ## Extensions & Grand Challenges
 
