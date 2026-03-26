@@ -81,17 +81,29 @@ theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d
     batchMean (batchnormForward w_id x) d = 0 := by
   unfold batchMean batchnormForward batchSlice
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
-  have hN_real : (N : ℝ) ≠ 0 := by positivity
-  unfold vectorMean
-  simp only [Equiv.apply_symm_apply]
-  rw [← Finset.sum_div, div_div]
-  have h_sum : ∑ n : Fin N, ((WithLp.equiv 2 _) x (n, d) - batchMean x d) = 0 := by
-    unfold batchMean vectorMean batchSlice
-    simp only [Equiv.apply_symm_apply]
-    rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    field_simp [hN_real]
-    simp only [sub_self, mul_zero]
-  rw [h_sum]
-  simp only [zero_div]
+  -- Pull out the scaling factor 1 / σ_stable
+  let σ_inv := 1 / √(batchVar x d + 0.00001)
+  have h_smul (n : Fin N) :
+      ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) /
+      √(batchVar x d + 0.00001) =
+      σ_inv * ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) := by
+    unfold σ_inv; rw [div_eq_mul_inv, one_div, mul_comm]
+  have h_func : (fun n ↦ ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) /
+      √(batchVar x d + 0.00001)) =
+      σ_inv • (fun n ↦ (WithLp.equiv 2 _) x (n, d) - batchMean x d) := by
+    funext n; rw [h_smul n]; rfl
+  rw [h_func]
+  -- Use the linear equivalence property
+  have h_lp : (WithLp.equiv 2 (Fin N → ℝ)).symm (σ_inv • fun n ↦
+      (WithLp.equiv 2 _) x (n, d) - batchMean x d) =
+      σ_inv • (WithLp.equiv 2 (Fin N → ℝ)).symm (fun n ↦
+      (WithLp.equiv 2 _) x (n, d) - batchMean x d) := by
+    apply (WithLp.linearEquiv 2 ℝ (Fin N → ℝ)).symm.map_smul
+  rw [h_lp, vectorMean_smul]
+  have h_zero : vectorMean ((WithLp.equiv 2 (Fin N → ℝ)).symm fun n ↦
+      (WithLp.equiv 2 _) x (n, d) - batchMean x d) = 0 := by
+    have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+    exact vectorMean_sub_mean (batchSlice x d)
+  rw [h_zero, mul_zero]
 
 end LeanSharp

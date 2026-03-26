@@ -163,4 +163,15 @@ lemma eq_mean_of_vectorVariance_eq_zero [Nonempty ι] (g : W ι) (h : vectorVari
     exact Finset.mem_univ i
   exact sub_eq_zero.mp (sq_eq_zero_iff.mp this)
 
+/-- The mean of a vector shifted by its own mean is zero. -/
+lemma vectorMean_sub_mean [Nonempty ι] (g : W ι) :
+    vectorMean (WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
+      (WithLp.equiv 2 _ g) i - vectorMean g) = 0 := by
+  unfold vectorMean
+  simp only [WithLp.equiv_apply, WithLp.equiv_symm_apply]
+  have h_card : (Fintype.card ι : ℝ) ≠ 0 := by positivity
+  rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  field_simp [h_card]
+  ring
+
 end LeanSharp
