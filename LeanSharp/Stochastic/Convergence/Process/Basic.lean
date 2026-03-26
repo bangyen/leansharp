@@ -17,7 +17,7 @@ This module defines the alignment condition between updates and gradients, and
 provides distance expansion lemmas.
 
 ## Main Theorems
-* `dist_sq_expansion`: Core identity for expected distance updates.
+* `stochastic_dist_expansion`: Core identity for expected distance updates.
 -/
 
 namespace LeanSharp
