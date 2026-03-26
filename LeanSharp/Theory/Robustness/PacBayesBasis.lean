@@ -12,6 +12,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Decomposition.Lebesgue
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.MeasureTheory.Measure.MeasureSpace
+import Mathlib.MeasureTheory.Measure.Tilted
 
 /-!
 # PAC-Bayes Basis
@@ -30,6 +31,8 @@ the parameter space `W ι`.
 ## Main Theorems
 
 * `DonskerVaradhanInequality`: The variational representation of KL divergence.
+* `gibbsMeasure_eq_tilted`: The Gibbs measure equals Mathlib's `Measure.tilted`.
+* `gibbsMeasure_isProbabilityMeasure`: The Gibbs measure is a probability measure.
 -/
 
 namespace LeanSharp
@@ -63,6 +66,30 @@ noncomputable def gibbsMeasure (L : W ι → ℝ) (μ_prior : Measure (W ι)) (t
   let density := fun w => ENNReal.ofReal (exp (-temp * L w))
   let partition := (∫ w, (density w).toReal ∂μ_prior)
   (1 / ENNReal.ofReal partition) • μ_prior.withDensity density
+
+omit [Fintype ι] in
+/-- **Gibbs Measure is a Probability Measure**:
+    The Gibbs posterior is a well-defined probability measure when the loss is integrable
+    under the prior. The `[NeZero μ_prior]` condition ensures the prior is not the zero measure,
+    which guarantees the partition function is strictly positive. -/
+theorem gibbsMeasure_isProbabilityMeasure {L : W ι → ℝ} {μ_prior : Measure (W ι)} {temp : ℝ}
+    [NeZero μ_prior]
+    (h_int : Integrable (fun w => exp (-temp * L w)) μ_prior) :
+    IsProbabilityMeasure (gibbsMeasure L μ_prior temp) := by
+  have hZ : ∫ w, (ENNReal.ofReal (exp (-temp * L w))).toReal ∂μ_prior =
+      ∫ w, exp (-temp * L w) ∂μ_prior :=
+    integral_congr_ae (Filter.Eventually.of_forall (fun w =>
+      ENNReal.toReal_ofReal (exp_nonneg _)))
+  have hZ_pos : 0 < ∫ w, exp (-temp * L w) ∂μ_prior := integral_exp_pos h_int
+  have hZ_ne : ENNReal.ofReal (∫ w, exp (-temp * L w) ∂μ_prior) ≠ 0 :=
+    ENNReal.ofReal_pos.mpr hZ_pos |>.ne'
+  constructor
+  simp only [gibbsMeasure, hZ, Measure.smul_apply,
+    withDensity_apply _ MeasurableSet.univ, setLIntegral_univ]
+  rw [← ofReal_integral_eq_lintegral_ofReal h_int
+        (Filter.Eventually.of_forall (fun _ => exp_nonneg _))]
+  simp only [smul_eq_mul, one_div]
+  exact ENNReal.inv_mul_cancel hZ_ne ENNReal.ofReal_ne_top
 
 /-- **Donsker-Varadhan Variational Inequality**:
     The core "change of measure" identity used in PAC-Bayes.
