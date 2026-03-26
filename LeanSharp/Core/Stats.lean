@@ -214,31 +214,26 @@ theorem contDiff_vectorVariance (ι : Type*) [Fintype ι] :
   apply ContDiff.pow
   apply ContDiff.sub
   · exact contDiff_piLp_apply (p := 2) (i := i)
-  · exact contDiff_vectorMean ι
+  · exact contDiff_vectorMean (ι := ι)
 
 /-- **Vector Normalize Smoothness**: Normalizing a vector is $C^\infty$ (and thus $C^2$)
     provided the stability epsilon is strictly positive. -/
 theorem contDiff_vectorNormalize (ι : Type*) [Fintype ι] {ε : ℝ} (hε : 0 < ε) :
-    ContDiff ℝ ⊤ (fun x => vectorNormalize x ε) := by
+    ContDiff ℝ ⊤ (fun (x : W ι) => vectorNormalize x ε) := by
   unfold vectorNormalize
   apply contDiff_piLp' (p := 2)
   intro i
   apply ContDiff.mul
-  · apply ContDiff.inv
+  · apply ContDiff.div
+    · exact contDiff_const
     · apply ContDiff.sqrt
       · apply ContDiff.add
-        · exact contDiff_vectorVariance ι
+        · apply contDiff_vectorVariance
         · exact contDiff_const
-      · intro x
-        apply lt_of_lt_of_le hε
-        simp only [le_add_iff_nonneg_left, vectorVariance_nonneg]
-    · intro x
-      apply ne_of_gt
-      apply Real.sqrt_pos.mpr
-      apply lt_of_lt_of_le hε
-      simp only [le_add_iff_nonneg_left, vectorVariance_nonneg]
+      · intro x; linarith [vectorVariance_nonneg x]
+    · intro x; apply ne_of_gt; apply Real.sqrt_pos.mpr; linarith [vectorVariance_nonneg x]
   · apply ContDiff.sub
     · exact contDiff_piLp_apply (p := 2) (i := i)
-    · exact contDiff_vectorMean ι
+    · apply contDiff_vectorMean
 
 end LeanSharp
