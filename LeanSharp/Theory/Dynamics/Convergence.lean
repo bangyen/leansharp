@@ -7,7 +7,7 @@ import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Taylor.SamBounds
-import LeanSharp.Stochastic.Convergence.Process.Basic
+import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Dynamics.Schedulers
 import Mathlib.Algebra.Order.Ring.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Basic
@@ -80,15 +80,6 @@ def ZSharpConvergenceHolds (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
     ∀ w : W ι, ∀ t : ℕ,
       ‖zsharpStep L w η t ρ z - w_star‖^2 ≤ c t * ‖w - w_star‖^2
 
-/-- **Alignment Condition**: A statistical assumption that the filtered gradient
-maintains sufficient alignment with the true descent direction. -/
-def AlignmentCondition (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
-    (z μ L_smooth : ℝ) : Prop :=
-  let g_adv := gradient L (w + ε)
-  let g_f := filteredGradient g_adv z
-  μ * ‖w - w_star‖^2 ≤ @inner ℝ _ _ g_f (w - w_star) ∧
-  ‖g_f‖ ≤ L_smooth * ‖w - w_star‖
-
 /-- A structure bundling the full set of assumptions for ZSharp convergence. -/
 structure ZSharpModel (ι : Type*) [Fintype ι] where
   /-- The strongly convex and smooth objective. -/
@@ -102,7 +93,8 @@ structure ZSharpModel (ι : Type*) [Fintype ι] where
   /-- The foundational alignment condition connecting geometry to filtering. -/
   alignment : ∀ w : W ι,
     let ε := samPerturbation L.toFun w ρ
-    AlignmentCondition L.toFun w w_star ε z L.μ (L.smoothness : ℝ)
+    let g_f := filteredGradient (gradient L.toFun (w + ε)) z
+    AlignmentCondition w w_star g_f L.μ (L.smoothness : ℝ)
 
 /-- **ZSharp Convergence Theorem**: Under the bundled ZSharp assumptions, any learning
 rate schedule satisfying the local 'tightness' condition (step size scaled by
@@ -193,9 +185,9 @@ theorem deterministic_implies_stochastic_alignment (Ω : Type*) [MeasureSpace Ω
     [IsProbabilityMeasure (volume : Measure Ω)]
     (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
     (z μ L_smooth : ℝ) (η : ℕ → ℝ) (t : ℕ)
-    (h_align : AlignmentCondition L w w_star ε z μ L_smooth)
+    (h_align : AlignmentCondition w w_star (filteredGradient (gradient L (w + ε)) z) μ L_smooth)
     (h_tight : η t * L_smooth ^ 2 ≤ μ) (h_eta : 0 ≤ η t) :
-    StochasticAlignmentCondition (Ω := Ω) w_star w η t z μ (fun _ => gradient L (w + ε)) := by
+    StochasticAlignmentCondition (Ω := Ω) w w_star (fun _ => gradient L (w + ε)) (η t) μ z := by
   unfold StochasticAlignmentCondition AlignmentCondition at *
   let g_f := filteredGradient (gradient L (w + ε)) z
   have h1 : Integrable (fun _ : Ω => g_f) := integrable_const _

@@ -77,7 +77,7 @@ condition and standard assumptions, the distance to the optimum decreases in
 expectation under a learning rate schedule. -/
 theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w : W ι)
     (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
-    (h_align : StochasticAlignmentCondition w_star w η t z μ g_adv) :
+    (h_align : StochasticAlignmentCondition (Ω := Ω) w w_star g_adv (η t) μ z) :
     𝔼[fun ω => ‖stochasticZSharpStep w η t z g_adv ω - w_star‖ ^ 2] ≤
       (1 - (η t) * μ) * ‖w - w_star‖ ^ 2 := by
   let A : W ι := w - w_star

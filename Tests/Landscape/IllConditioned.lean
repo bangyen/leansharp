@@ -25,8 +25,11 @@ namespace LeanSharp.Tests
 holds for the ill-conditioned landscape with a cosine decay schedule. -/
 example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
-    (h_align : ∀ w : W (Fin 2), let ε := samPerturbation IllConditioned.L_advanced w ρ;
-                AlignmentCondition IllConditioned.L_advanced w 0 ε z 2 20) :
+    (h_align : ∀ w : W (Fin 2),
+                let g_f := filteredGradient
+                  (gradient IllConditioned.L_advanced
+                    (w + samPerturbation IllConditioned.L_advanced w ρ)) z
+                AlignmentCondition w 0 g_f 2 20) :
     ZSharpConvergenceHolds IllConditioned.L_advanced 0
       (cosineDecaySchedule η0 0 T) ρ z 20 2 := by
   let M : ZSharpModel (Fin 2) := {

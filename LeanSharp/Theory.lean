@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Dynamics
 import LeanSharp.Theory.InfiniteLimit
 import LeanSharp.Theory.Robustness

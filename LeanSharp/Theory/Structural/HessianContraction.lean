@@ -54,18 +54,16 @@ def GeneralizedFilterCondition
 
 /-- Bundles a local curvature operator (Hessian) with its spectral characteristics. -/
 structure CurvatureCertificate (ι : Type*) [Fintype ι] where
-  /-- The loss function. -/
-  L : W ι → ℝ
+  /-- The twice-differentiable loss function. -/
+  L : TwiceDifferentiable ι
   /-- The point at which the curvature is evaluated. -/
   w : W ι
-  /-- Proof that the Hessian is symmetric. -/
-  h_symm : (hessian L w).toLinearMap.IsSymmetric
-  /-- The sharpness (max eigenvalue) at this point. -/
+  /-- Proof that the sharpness is non-negative. -/
   sharpness_val : ℝ
   /-- Proof that the sharpness is non-negative. -/
   sharpness_nonneg : 0 ≤ sharpness_val
   /-- Proof that the quadratic form is bounded by sharpness. -/
-  spectral_bound : ∀ v, hessianQuadraticForm L w v ≤ sharpness_val * ‖v‖ ^ 2
+  spectral_bound : ∀ v, hessianQuadraticForm L.toFun w v ≤ sharpness_val * ‖v‖ ^ 2
 
 /-- **ZSharp Curvature Bound**: Proves that the quadratic curvature along the
 Z-score filtered gradient's direction is strictly bounded.
@@ -73,7 +71,7 @@ Z-score filtered gradient's direction is strictly bounded.
 The bound is `sharpness * ‖g‖²`, connecting the geometric sharpness to
 the statistical filter. -/
 theorem zsharp_curvature_bound (C : CurvatureCertificate ι) (g : W ι) (z : ℝ) :
-    hessianQuadraticForm C.L C.w (filteredGradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
+    hessianQuadraticForm C.L.toFun C.w (filteredGradient g z) ≤ C.sharpness_val * ‖g‖ ^ 2 := by
   apply (C.spectral_bound _).trans
   apply mul_le_mul_of_nonneg_left (norm_sq_filtered_gradient_le g z) C.sharpness_nonneg
 

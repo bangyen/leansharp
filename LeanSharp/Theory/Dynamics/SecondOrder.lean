@@ -82,12 +82,7 @@ theorem alignment_condition_of_curvature_bound
     (h_inner : μ * ‖w - w_star‖ ^ 2 ≤
       inner ℝ (filteredGradient (gradient f g_base) z) (w - w_star))
     (h_norm : ‖filteredGradient (gradient f g_base) z‖ ≤ L_smooth * ‖w - w_star‖) :
-    let ε := g_base - w
-    AlignmentCondition f w w_star ε z μ L_smooth := by
-  unfold AlignmentCondition
-  dsimp only
-  have h_base : w + (g_base - w) = g_base := by abel
-  rw [h_base]
+    AlignmentCondition w w_star (filteredGradient (gradient f g_base) z) μ L_smooth := by
   constructor
   · exact h_inner
   · exact h_norm

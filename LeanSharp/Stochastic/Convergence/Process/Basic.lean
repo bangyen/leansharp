@@ -5,19 +5,16 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Mechanics.DescentSteps.ZScore
 import LeanSharp.Stochastic.Mechanics.SharpnessMap
+import LeanSharp.Theory.Alignment
 import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.Probability.Notation
 
 /-!
 # Stochastic ZSharp Process - Basic Definitions
 
 This module defines the alignment condition between updates and gradients, and
 provides distance expansion lemmas.
-
-## Main Definitions
-* `StochasticAlignment`: Condition on gradient-update alignment.
 
 ## Main Theorems
 * `dist_sq_expansion`: Core identity for expected distance updates.
@@ -29,16 +26,6 @@ open ProbabilityTheory MeasureTheory NNReal
 
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
-
-/-- **Stochastic Alignment Condition**: A generalization of the alignment condition
-to the stochastic setting, supporting learning rate schedules. -/
-def StochasticAlignmentCondition (w_star w : W ι) (η : ℕ → ℝ) (t : ℕ) (z μ : ℝ)
-    (g_adv : Ω → W ι) : Prop :=
-  let g_f (ω : Ω) := filteredGradient (g_adv ω) z
-  Integrable g_f ∧
-  Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
-  2 * (η t) * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
-  (η t)^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ (η t) * μ * ‖w - w_star‖ ^ 2
 
 /-- **Integral Inner Product Identity**: The integral of an inner product with a
 constant vector is the inner product of the integral. -/

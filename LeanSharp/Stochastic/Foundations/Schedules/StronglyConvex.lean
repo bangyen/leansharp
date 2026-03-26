@@ -89,7 +89,7 @@ theorem zsharp_strongly_convex_rate (w_star : W ι) w0
       (1 - η t * μ) * ‖weightSequence w0 η z g_adv t ω - w_star‖ ^ 2)
     (hμ : 0 < μ)
     (h_step : ∀ t, η t = 1 / (μ * (t + 1)))
-    (h_align0 : StochasticAlignmentCondition w_star w0 η 0 z μ (g_adv 0))
+    (h_align0 : StochasticAlignmentCondition (Ω := Ω) w0 w_star (g_adv 0) (η 0) μ z)
     (h_int : ∀ t, Integrable (fun ω => ‖weightSequence w0 η z g_adv t ω - w_star‖ ^ 2)) :
     ∀ T : ℕ, T > 0 →
       𝔼[fun ω => ‖weightSequence w0 η z g_adv T ω - w_star‖ ^ 2]

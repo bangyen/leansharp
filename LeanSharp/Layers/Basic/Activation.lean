@@ -55,7 +55,12 @@ noncomputable def reluBackward (x : W ι) (g_out : W ι) : W ι :=
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
     if (WithLp.equiv 2 (ι → ℝ) x) i > 0 then (WithLp.equiv 2 (ι → ℝ) g_out) i else 0
 
-/-- ReLU Layer instance. Activation functions have no parameters. -/
+/-- ReLU Layer instance. Activation functions have no parameters.
+
+> [!WARNING]
+> Models using `reluLayer` do not satisfy the `TwiceDifferentiable` requirement
+> for Hessian-based structural analysis. Use `smoothReluLayer` (Softplus)
+> for formally verified landscape curvature claims. -/
 noncomputable def reluLayer (ι : Type) : Layer (W ι) (W ι) where
   ParamDim := Empty
   fintypeParamDim := inferInstance
