@@ -6,6 +6,8 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Filters
 import LeanSharp.Theory.Dynamics.Generalization
 import LeanSharp.Theory.Dynamics.SamBound
+import LeanSharp.Theory.Robustness.PacBayesBasis
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
 # PAC-Bayes & Rademacher Complexity for Filtered SAM
@@ -28,11 +30,13 @@ reduces the effective complexity of the hypothesis class.
 * `standard_bound_of_z_sharp`: Proves that a ZSharp PAC-Bayes bound implies
   a standard SAM sharpness bound (showing ZSharp is the stricter/tighter condition).
 * `filtered_rademacher_le`: Proves the reduction of effective Rademacher complexity.
+* `z_sharp_pac_bayes_expected`: Proves that pointwise ZSharp bounds integrate
+  to a distributional bound compatible with `PacBayesGeneralizationBound`.
 -/
 
 namespace LeanSharp
 
-open Real NNReal
+open MeasureTheory Real NNReal
 
 variable {ι : Type*} [Fintype ι]
 
@@ -75,5 +79,36 @@ theorem filtered_rademacher_le (R_base : ℝ) (g : W ι) (z : ℝ) (hR : 0 ≤ R
       rw [div_le_one hg_pos]
       exact h_norm
     nlinarith
+
+/-- **ZSharp to Distributional PAC-Bayes**:
+    A pointwise `ZSharpPacBayesBound` integrates to an expected-risk inequality
+    under any probability measure `P`, establishing `ZSharpPacBayesBound` as a
+    pointwise special case of `PacBayesGeneralizationBound`. -/
+theorem z_sharp_pac_bayes_expected {L_D L_S : W ι → ℝ} (P : Measure (W ι))
+    [hP : IsProbabilityMeasure P] (ρ z C : ℝ)
+    (h : ∀ w, ZSharpPacBayesBound L_D L_S w ρ z C)
+    (h_D : Integrable L_D P)
+    (h_S : Integrable L_S P)
+    (h_f : Integrable (fun w => ‖filteredGradient (gradient L_S w) z‖ * ρ) P) :
+    ∫ w, L_D w ∂P ≤ ∫ w, L_S w ∂P +
+        ∫ w, ‖filteredGradient (gradient L_S w) z‖ * ρ ∂P + C := by
+  have h_ae : ∀ᵐ w ∂P, L_D w ≤
+      L_S w + ‖filteredGradient (gradient L_S w) z‖ * ρ + C :=
+    Filter.Eventually.of_forall h
+  have h_bnd := integral_mono_ae h_D
+    (h_S.add h_f |>.add (integrable_const C)) h_ae
+  have h_bnd' : ∫ w, L_D w ∂P ≤ ∫ w, L_S w ∂P +
+      ∫ w, ‖filteredGradient (gradient L_S w) z‖ * ρ ∂P + C := by
+    have h1 := integral_add (h_S.add h_f) (integrable_const C) (μ := P)
+    have h2 := integral_add h_S h_f (μ := P)
+    simp only [integral_const, probReal_univ, one_smul] at h1
+    have h3 : ∫ a, (L_S + fun w => ‖filteredGradient (gradient L_S w) z‖ * ρ) a ∂P =
+        ∫ a, L_S a ∂P + ∫ a, ‖filteredGradient (gradient L_S a) z‖ * ρ ∂P := h2
+    have h_bnd2 : ∫ x, L_D x ∂P ≤
+        ∫ a, (L_S a + ‖filteredGradient (gradient L_S a) z‖ * ρ) + C ∂P := h_bnd
+    have h4 : ∫ a, (L_S a + ‖filteredGradient (gradient L_S a) z‖ * ρ) + C ∂P =
+        ∫ a, (L_S + fun w => ‖filteredGradient (gradient L_S w) z‖ * ρ) a + C ∂P := rfl
+    linarith [h_bnd2, h4 ▸ h_bnd2, h1, h3]
+  exact h_bnd'
 
 end LeanSharp
