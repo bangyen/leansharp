@@ -25,27 +25,17 @@ For a detailed overview of the project's design patterns, including the `W` para
 - **Formal Stability & Regularity**: Introduced `StabilityCertificate` contracts ($C^2$ enforcement) across the ML layer stack, ensuring compatibility with Hessian-based second-order analysis.
 - **Scaling & Generalization**: Rigorously connected landscape curvature to population risk via PAC-Bayes bounds and established infinite-width limits ($|ι| \to \infty$) for NTK analysis.
 
-## Immediate Roadmap
-
-These items represent the path toward foundational theoretical completeness for the core Z-score SAM algorithm.
+## Future Work
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Prove Donsker-Varadhan** | High | Formalize the variational inequality as a theorem, enabling rigorous change-of-measure arguments. |
-| **Gibbs IsProbabilityMeasure** | Medium | Prove `gibbsMeasure` is a valid probability measure, unlocking its use in generalization bounds. |
-
-## Extensions & Grand Challenges
-
-These items represent specialized research directions and advanced analytical regimes.
-
-| Task | Priority | Justification |
-| :--- | :--- | :--- |
-| **Stochastic Generalization** | Medium | Extending alignment to non-volume/heavy-tailed noise distributions. |
-| **Extended Layer Coverage** | Medium | Applying stability certification to Normalization, Attention, and Layer-wise Scaling. |
-| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
-| **NTK Dynamics** | Low | Proving network initialization and NTK-regime bounds. |
-| **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
-| **Diffusion Stability**| Low | Formalizing SDE objectives and stability for DDPMs. |
+| **Stochastic Generalization** | High | Extend alignment to heavy-tailed noise distributions. |
+| **Extended Layer Coverage** | High | Stability certification for Normalization, Attention, and Layer-wise Scaling. |
+| **Z-Score CLT** | Medium | Characterize the statistical limit of the filtered distribution. |
+| **Prove Donsker-Varadhan** | Medium | Formalize the variational inequality, enabling rigorous change-of-measure reasoning. |
+| **NTK Dynamics** | Low | Prove network initialization and NTK-regime bounds. |
+| **Optimality Bound** | Low | Prove statistical lower bounds via information theory. |
+| **Diffusion Stability** | Low | Formalize SDE objectives and stability for DDPMs. |
 
 ## Installation & Building
 
