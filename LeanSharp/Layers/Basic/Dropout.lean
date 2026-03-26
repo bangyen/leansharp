@@ -19,6 +19,15 @@ For structural verification in our deterministic framework, we model dropout
 as a layer where the "mask" is provided externally or treated as part of the
 non-learnable execution state.
 
+> [!IMPORTANT]
+> **The Fixed-Mask Paradox**: In this formalization, Dropout is proven to be
+> twice-differentiable (`ContDiff ℝ 2`) because the mask is treated as a fixed
+> parameter for the duration of the forward/backward pass. In a real stochastic
+> training loop, the mask changes every step, meaning the "composed" process across
+> steps is non-differentiable. We "buy" formal stability guarantees for the
+> optimizer by projecting the stochastic layer into a family of deterministic
+> linear operators.
+
 ## Main definitions
 
 * `dropoutLayer`: Regularization by zeroing out elements.
