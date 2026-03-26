@@ -23,7 +23,7 @@ example (ι : Type) [Fintype ι] : (layerNorm ι).ParamDim = NormParam ι :=
 
 /-- Test: Residual Layer Dimensions. -/
 example {ι : Type} [Fintype ι] (L : Layer (W ι) (W ι)) :
-    (residualLayer L).ParamDim = L.ParamDim :=
+    (Layer.residualLayer L).ParamDim = L.ParamDim :=
   rfl
 
 /-- Test: LayerNorm output has zero mean. -/
@@ -40,10 +40,10 @@ example (ι : Type) [Fintype ι] [Nonempty ι] :
   infer_instance
 
 /-- Test: Residual identity: x + relu(x) where x > 0. -/
-example : (residualLayer (reluLayer (Fin 1))).forward 0
+example : (Layer.residualLayer (reluLayer (Fin 1))).forward 0
     (WithLp.equiv 2 _ |>.symm fun _ => (1 : ℝ)) =
     (WithLp.equiv 2 _ |>.symm fun _ => (2 : ℝ)) := by
-  unfold residualLayer reluLayer
+  unfold Layer.residualLayer reluLayer
   dsimp only [WithLp.equiv_apply, WithLp.equiv_symm_apply, relu]
   ext i
   norm_num

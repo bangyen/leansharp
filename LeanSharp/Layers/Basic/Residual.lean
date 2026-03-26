@@ -30,7 +30,7 @@ gradient vanishing.
 
 /-- A Residual Block is a wrapper that adds a skip connection: $y = x + f(x)$.
     The input and output spaces must be the same Euclidean space. -/
-noncomputable def residualLayer {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) :
+noncomputable def Layer.residualLayer {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι)) :
     Layer (W ι) (W ι) :=
   { ParamDim := f.ParamDim
     fintypeParamDim := f.fintypeParamDim
@@ -41,18 +41,18 @@ noncomputable def residualLayer {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι
 
 /-- **Residual Lipschitz**: If the inner layer `f` is $K$-Lipschitz, then the
     residual layer $x + f(x)$ is $(1 + K)$-Lipschitz. -/
-theorem residual_lipschitz {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι))
+theorem Layer.residual_lipschitz {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι))
     (w : W f.ParamDim) (K : NNReal) (hL : LipschitzWith K (f.forward w)) :
-    LipschitzWith (1 + K) ((residualLayer f).forward w) := by
+    LipschitzWith (1 + K) ((Layer.residualLayer f).forward w) := by
   -- y(x) = id(x) + f(x)
   have h_id : LipschitzWith 1 (fun x : W ι => x) := LipschitzWith.id
   exact h_id.add hL
 
 /-- **Residual Smoothness**: If the inner layer `f` is $C^k$, then the
     residual layer is also $C^k$. -/
-theorem residual_contDiff {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι))
+theorem Layer.residual_contDiff {ι : Type} [Fintype ι] (f : Layer (W ι) (W ι))
     (w : W f.ParamDim) (k : ℕ) (hC : ContDiff ℝ k (f.forward w)) :
-    ContDiff ℝ k ((residualLayer f).forward w) := by
+    ContDiff ℝ k ((Layer.residualLayer f).forward w) := by
   apply ContDiff.add
   · exact contDiff_id
   · exact hC

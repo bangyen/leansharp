@@ -112,9 +112,9 @@ theorem uniform_filtered_process_stability
 theorem residual_filtered_stability {ι_in : Type} [Fintype ι_in]
     (f : Layer (W ι_in) (W ι_in)) (w g : W f.ParamDim) (x : W ι_in) (η z : ℝ)
     (h_lip : LipschitzWith K (fun w' => f.forward w' x)) :
-    ‖(residualLayer f).forward (w - η • filteredGradient g z) x -
-      (residualLayer f).forward w x‖ ≤ K * |η| * ‖g‖ := by
-  unfold residualLayer
+    ‖(Layer.residualLayer f).forward (w - η • filteredGradient g z) x -
+      (Layer.residualLayer f).forward w x‖ ≤ K * |η| * ‖g‖ := by
+  unfold Layer.residualLayer
   rw [add_sub_add_left_eq_sub]
   -- Use Lipschitz property
   have h_bound := h_lip.norm_sub_le (w - η • filteredGradient g z) w
