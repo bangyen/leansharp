@@ -71,6 +71,20 @@ structure StabilityCertificate (α β : Type*) [NormedAddCommGroup α] [NormedSp
   /-- Proof of $C^2$ smoothness (necessary for Hessian analysis). -/
   h_smooth : ContDiff ℝ 2 f
 
+/-- **Certificate Composition**: If two maps are stability-certified, their
+    composition is also certified. The Lipschitz constant is the product
+    of the individual constants. -/
+noncomputable def StabilityCertificate.comp {α β γ : Type*}
+    [NormedAddCommGroup α] [NormedSpace ℝ α]
+    [NormedAddCommGroup β] [NormedSpace ℝ β]
+    [NormedAddCommGroup γ] [NormedSpace ℝ γ]
+    (c2 : StabilityCertificate β γ) (c1 : StabilityCertificate α β) :
+    StabilityCertificate α γ where
+  f := c2.f ∘ c1.f
+  K := c2.K * c1.K
+  h_lipschitz := c2.h_lipschitz.comp c1.h_lipschitz
+  h_smooth := c2.h_smooth.comp c1.h_smooth
+
 /-- **Hadamard Inner Product Identity**:
     The inner product of a Hadamard product `hadamard a b` with `v` is the
     sum over components of `a_i * b_i * v_i`. -/

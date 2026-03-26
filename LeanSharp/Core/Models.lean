@@ -18,10 +18,9 @@ backpropagation algorithm, integrated with Z-score gradient filtering.
 
 * `Layer`: An abstract structure for a neural network layer.
 * `Chain`: A recursive structure for composing multiple `Layer`s.
-* `ChainGrads`: A type-indexed structure for storing gradients of a specific `Chain`.
+* `ChainData`: A type-indexed structure for storing parameters/gradients.
 * `backpropChain`: Recursive computation of filtered gradients through a chain.
 * `rawBackpropChain`: Standard backpropagation without Z-score filtering (for theory).
-* `zsharp_layer_stability`: Proof that Z-score filtering preserves update norm bounds.
 -/
 
 namespace LeanSharp
@@ -59,7 +58,8 @@ def Chain.concat {In Mid Out : Type} (c1 : Chain In Mid) : Chain Mid Out → Cha
 
 /-- Data (parameters or gradients) for a specific chain. -/
 inductive ChainData : {In Out : Type} → Chain In Out → Type 1 where
-  | single {In Out : Type} (L : Layer In Out) : W L.ParamDim → ChainData (.single L)
+  | single {In Out : Type} (L : Layer In Out) :
+      W L.ParamDim → ChainData (.single L)
   | append {In Mid Out : Type} {prev : Chain In Mid} {L : Layer Mid Out} :
       ChainData prev → W L.ParamDim → ChainData (.append prev L)
 
@@ -81,12 +81,13 @@ def forwardChain {In Out : Type} {c : Chain In Out} :
   | .single L => fun p x =>
       match p with
       | .single _ w => L.forward w x
-  | .append _ L => fun p (x : In) =>
+  | .append _prev L => fun p x =>
       match p with
       | .append p_prev w => L.forward w (forwardChain p_prev x)
 
 /-- Forward pass through a chain of layers. Alias for `forwardChain`. -/
-abbrev Chain.forward {In Out : Type} {c : Chain In Out} (p : ChainData c) (x : In) : Out :=
+abbrev Chain.forward {In Out : Type} {c : Chain In Out}
+    (p : ChainData c) (x : In) : Out :=
   forwardChain p x
 
 /-- Recursive backpropagation through a chain.
@@ -100,7 +101,7 @@ noncomputable def backpropChain {In Out : Type} {c : Chain In Out}
       | .single _ w =>
           let (g_w, g_in) := L.backward w x g_out
           (.single L (filteredGradient g_w z), g_in)
-  | .append _ L =>
+  | .append _prev L =>
       match p with
       | .append p_prev w =>
           let mid_in := forwardChain p_prev x
@@ -108,8 +109,7 @@ noncomputable def backpropChain {In Out : Type} {c : Chain In Out}
           let (g_prevs, g_in) := backpropChain z p_prev x g_mid
           (.append g_prevs (filteredGradient g_w_L z), g_in)
 
-/-- Recursive backpropagation through a chain without filtering.
-    Used for stability proofs. -/
+/-- Recursive backpropagation through a chain without filtering. -/
 noncomputable def rawBackpropChain {In Out : Type} {c : Chain In Out}
     (p : ChainData c) (x : In) (g_out : Out) :
     ChainData c × In :=
@@ -119,7 +119,7 @@ noncomputable def rawBackpropChain {In Out : Type} {c : Chain In Out}
       | .single _ w =>
           let (g_w, g_in) := L.backward w x g_out
           (.single L g_w, g_in)
-  | .append _ L =>
+  | .append _prev L =>
       match p with
       | .append p_prev w =>
           let mid_in := forwardChain p_prev x
