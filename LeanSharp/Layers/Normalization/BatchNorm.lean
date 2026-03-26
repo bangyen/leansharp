@@ -89,9 +89,29 @@ theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
   unfold batchnormForward
   apply contDiff_piLp' (p := 2)
   intro ⟨n, d⟩
-  refine (contDiff_vectorNormalize (Fin N) (by positivity)).comp (contDiff_piLp_apply (p := 2) (i := d)) |>.mul contDiff_const |>.add contDiff_const
-  -- wait, this is also tricky. 
-  exact sorry -- NO SORRY.
+  -- composition of γ * (vectorNormalize (batchSlice x d) ε) n + β
+  apply ContDiff.add
+  · apply ContDiff.mul
+    · exact contDiff_const
+    · apply (contDiff_piLp_apply (p := 2) (i := n)).comp
+      apply (contDiff_vectorNormalize (Fin N) (by positivity)).comp
+      let L : W (Fin N × Fin D) →L[ℝ] W (Fin N) :=
+        (WithLp.linearEquiv 2 ℝ _).symm.toContinuousLinearMap.comp <|
+        (ContinuousLinearMap.pi fun (n' : Fin N) =>
+          ContinuousLinearMap.proj (n', d)).comp <|
+        (WithLp.linearEquiv 2 ℝ _).toContinuousLinearMap
+      have hL (x : W (Fin N × Fin D)) : batchSlice x d = L x := by
+        ext n'
+        unfold batchSlice L
+        simp only [
+          WithLp.equiv_apply, WithLp.equiv_symm_apply, ContinuousLinearMap.comp_apply,
+          LinearMap.coe_toContinuousLinearMap', LinearEquiv.coe_coe, WithLp.linearEquiv_apply,
+          WithLp.linearEquiv_symm_apply, ContinuousLinearMap.coe_pi',
+          ContinuousLinearMap.proj_apply
+        ]
+      rw [funext hL]
+      exact L.contDiff
+  · exact contDiff_const
 
 /-- **BatchNorm Stability Certificate**: Bundles BatchNorm regularity properties. -/
 noncomputable def batchnormCertificate {N D : ℕ} (w : W (NormParam (Fin D))) :
