@@ -174,4 +174,23 @@ lemma vectorMean_sub_mean [Nonempty ι] (g : W ι) :
   field_simp [h_card]
   ring
 
+/-- Normalize a vector using its mean and variance with a stability epsilon. -/
+noncomputable def vectorNormalize (x : W ι) (ε : ℝ) : W ι :=
+  let μ := vectorMean x
+  let σ_inv := 1 / Real.sqrt (vectorVariance x + ε)
+  WithLp.equiv 2 _ |>.symm fun i =>
+    σ_inv * ((WithLp.equiv 2 _ x) i - μ)
+
+/-- The mean of a normalized vector is zero. -/
+theorem vectorMean_normalize [Nonempty ι] (x : W ι) (ε : ℝ) :
+    vectorMean (vectorNormalize x ε) = 0 := by
+  unfold vectorNormalize
+  let σ_inv := 1 / Real.sqrt (vectorVariance x + ε)
+  have h_lp : (WithLp.equiv 2 (ι → ℝ)).symm (fun i =>
+      σ_inv * ((WithLp.equiv 2 (ι → ℝ) x) i - vectorMean x)) =
+      σ_inv • (WithLp.equiv 2 (ι → ℝ)).symm (fun i =>
+      (WithLp.equiv 2 (ι → ℝ) x) i - vectorMean x) := by
+    apply (WithLp.linearEquiv 2 ℝ (ι → ℝ)).symm.map_smul
+  rw [h_lp, vectorMean_smul, vectorMean_sub_mean, mul_zero]
+
 end LeanSharp

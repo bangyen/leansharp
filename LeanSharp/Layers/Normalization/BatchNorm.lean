@@ -40,21 +40,19 @@ noncomputable def batchVar {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : �
 noncomputable def batchnormForward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
     W (Fin N × Fin D) :=
-  let μ := fun d => batchMean x d
-  let σ_stable := fun d => Real.sqrt (batchVar x d + 0.00001)
-  WithLp.equiv 2 (Fin N × Fin D → ℝ) |>.symm fun p =>
-    let (n, d) := p
-    let x_nd := (WithLp.equiv 2 _ x) (n, d)
+  WithLp.equiv 2 _ |>.symm fun (n, d) =>
+    let x_d := batchSlice x d
+    let x_norm := vectorNormalize x_d 0.00001
     let γ_d := (WithLp.equiv 2 _ w) (Sum.inl d)
     let β_d := (WithLp.equiv 2 _ w) (Sum.inr d)
-    γ_d * ((x_nd - μ d) / σ_stable d) + β_d
+    γ_d * (WithLp.equiv 2 _ x_norm) n + β_d
 
 /-- Batch Normalization backward pass. -/
 noncomputable def batchnormBackward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D))
     (g_out : W (Fin N × Fin D)) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
-  let μ := fun d => batchMean x d
-  let σ_stable := fun d => Real.sqrt (batchVar x d + 0.00001)
+  let μ (d : Fin D) := batchMean x d
+  let σ_stable (d : Fin D) := Real.sqrt (batchVar x d + 0.00001)
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl d => ∑ n : Fin N, (WithLp.equiv 2 _ g_out) (n, d) *
         (((WithLp.equiv 2 _ x) (n, d) - μ d) / σ_stable d)
@@ -81,29 +79,7 @@ theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d
     batchMean (batchnormForward w_id x) d = 0 := by
   unfold batchMean batchnormForward batchSlice
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
-  -- Pull out the scaling factor 1 / σ_stable
-  let σ_inv := 1 / √(batchVar x d + 0.00001)
-  have h_smul (n : Fin N) :
-      ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) /
-      √(batchVar x d + 0.00001) =
-      σ_inv * ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) := by
-    unfold σ_inv; rw [div_eq_mul_inv, one_div, mul_comm]
-  have h_func : (fun n ↦ ((WithLp.equiv 2 (Fin N × Fin D → ℝ)) x (n, d) - batchMean x d) /
-      √(batchVar x d + 0.00001)) =
-      σ_inv • (fun n ↦ (WithLp.equiv 2 _) x (n, d) - batchMean x d) := by
-    funext n; rw [h_smul n]; rfl
-  rw [h_func]
-  -- Use the linear equivalence property
-  have h_lp : (WithLp.equiv 2 (Fin N → ℝ)).symm (σ_inv • fun n ↦
-      (WithLp.equiv 2 _) x (n, d) - batchMean x d) =
-      σ_inv • (WithLp.equiv 2 (Fin N → ℝ)).symm (fun n ↦
-      (WithLp.equiv 2 _) x (n, d) - batchMean x d) := by
-    apply (WithLp.linearEquiv 2 ℝ (Fin N → ℝ)).symm.map_smul
-  rw [h_lp, vectorMean_smul]
-  have h_zero : vectorMean ((WithLp.equiv 2 (Fin N → ℝ)).symm fun n ↦
-      (WithLp.equiv 2 _) x (n, d) - batchMean x d) = 0 := by
-    have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
-    exact vectorMean_sub_mean (batchSlice x d)
-  rw [h_zero, mul_zero]
+  have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+  exact vectorMean_normalize (batchSlice x d) 0.00001
 
 end LeanSharp
