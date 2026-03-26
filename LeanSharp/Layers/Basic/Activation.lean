@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Analysis.Calculus.ContDiff.WithLp
 import Mathlib.Analysis.Calculus.FDeriv.WithLp
 import Mathlib.Analysis.InnerProductSpace.PiL2
@@ -123,5 +125,26 @@ theorem contDiff_smoothRelu [Fintype ι] : ContDiff ℝ 2 (smoothRelu (ι := ι)
     · apply ContDiff.exp
       exact contDiff_piLp_apply (p := 2) (i := i)
   · intro x; positivity
+
+/-- Softmax is continuously differentiable to order 2. -/
+theorem contDiff_softmax [Fintype ι] [Nonempty ι] : ContDiff ℝ 2 (softmax (ι := ι)) := by
+  have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
+  apply contDiff_piLp' (p := 2)
+  intro i
+  apply ContDiff.div
+  · -- Numerator: exp(x_i)
+    apply ContDiff.exp
+    exact contDiff_piLp_apply (p := 2) (i := i)
+  · -- Denominator: ∑ j, exp(x_j)
+    apply ContDiff.sum
+    intro j _
+    apply ContDiff.exp
+    exact contDiff_piLp_apply (p := 2) (i := j)
+  · -- Non-zero denominator
+    intro x
+    apply ne_of_gt
+    apply Finset.sum_pos
+    · intro j _; positivity
+    · exact Finset.univ_nonempty
 
 end LeanSharp
