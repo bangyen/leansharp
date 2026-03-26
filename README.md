@@ -20,13 +20,10 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 ## Key Accomplishments
 
-- **Stochastic Robustness**: Proved $O(1/T)$ convergence for SAM under **non-Gaussian/$\alpha$-stable noise**, bridging empirical robustness to formal probability.
-- **Statistical Robustness**: Formalized breakdown-point theory for robust estimators, proving the geometric median's **$50\%$ outlier stability** ($k/n \ge 1/2$).
-- **Generalization Theory**: Rigorously connected landscape sharpness (max Hessian eigenvalue) to population risk via **PAC-Bayes bounds** and Taylor descent lemmas.
-- **Infinite Width Framework**: Established topological dimension sequence limits ($|ι| \to \infty$) as the foundation for formal **Neural Tangent Kernel (NTK)** and infinite-width analysis.
-- **Verified ML Infrastructure**: Hardened the `zsharp_solve` tactic for automated SAM algebra and formalized the stack of modern ML (BatchNorm, ViT, etc.).
-- **Alignment Unification**: Established the definitive `AlignmentCondition` bridge between deterministic gradient geometry and stochastic Z-score filtering.
-- **Stability Certification**: Introduced rigorous `StabilityCertificate` contracts, ensuring $C^2$ compatibility for second-order optimization analysis across non-linear layers.
+- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and established $50\%$ outlier stability through formalized breakdown-point analysis.
+- **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
+- **Formal Stability & Regularity**: Introduced `StabilityCertificate` contracts ($C^2$ enforcement) across the ML layer stack, ensuring compatibility with Hessian-based second-order analysis.
+- **Scaling & Generalization**: Rigorously connected landscape curvature to population risk via PAC-Bayes bounds and established infinite-width limits ($|ι| \to \infty$) for NTK analysis.
 
 ## Immediate Roadmap
 
@@ -35,8 +32,7 @@ These items represent the path toward foundational theoretical completeness for 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **PAC-Bayes Basis** | High | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
-| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
-| **Convergence Sharpness** | Medium | Tightening the $O(1/T)$ rate with explicit Lipschitz constants for multilayer chains. |
+| **Convergence Sharpness** | High | Tightening the $O(1/T)$ rate with explicit Lipschitz constants for multilayer chains. |
 
 ## Extensions & Grand Challenges
 
@@ -44,6 +40,9 @@ These items represent specialized research directions and advanced analytical re
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
+| **Stochastic Generalization** | Medium | Extending alignment to non-volume/heavy-tailed noise distributions. |
+| **Extended Layer Coverage** | Medium | Applying stability certification to Attention and Layer-wise Adaptive Scaling. |
+| **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
 | **NTK Dynamics** | Low | Proving network initialization and NTK-regime bounds. |
 | **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
 | **Diffusion Stability**| Low | Formalizing SDE objectives and stability for DDPMs. |
