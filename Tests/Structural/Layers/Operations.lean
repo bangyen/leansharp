@@ -26,26 +26,12 @@ example {ι : Type} [Fintype ι] (L : Layer (W ι) (W ι)) :
     (residualLayer L).ParamDim = L.ParamDim :=
   rfl
 
-/-- Test: LayerNorm identity with zero mean and unit variance inputs. -/
-example {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (x : W ι)
-    (hμ : vectorMean x = 0)
-    (hσ : vectorStd x = 1) :
-    (layerNorm ι).forward (WithLp.equiv 2 _ |>.symm fun
-      | Sum.inl _ => (1 : ℝ)
-      | Sum.inr _ => 0) x = x := by
-  unfold layerNorm layernormForward
-  simp only [
-    WithLp.equiv_apply,
-    Lean.Elab.WF.paramLet,
-    WithLp.equiv_symm_apply,
-    hμ,
-    hσ,
-    div_one,
-    one_mul,
-    add_zero,
-    sub_zero,
-    WithLp.toLp_ofLp
-  ]
+/-- Test: LayerNorm output has zero mean. -/
+example {ι : Type} [Fintype ι] [Nonempty ι] (x : W ι) :
+    vectorMean ((layerNorm ι).forward (WithLp.equiv 2 _ |>.symm fun
+      | Sum.inl _ => 1
+      | Sum.inr _ => 0) x) = 0 :=
+  layernorm_mean_zero x
 
 /-- Test: LayerNorm Parameter non-emptiness. -/
 example (ι : Type) [Fintype ι] [Nonempty ι] :
