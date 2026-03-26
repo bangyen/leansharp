@@ -7,6 +7,7 @@ import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Taylor.SamBounds
+import LeanSharp.Stochastic.Convergence.Process.Basic
 import LeanSharp.Theory.Dynamics.Schedulers
 import Mathlib.Algebra.Order.Ring.Defs
 import Mathlib.Analysis.Calculus.FDeriv.Basic
@@ -182,5 +183,48 @@ theorem zsharp_convergence (M : ZSharpModel ι) (η : Schedule)
       _ ≤ (1 - η t * L_obj.μ) * ‖w - w_star‖ ^ 2 := by
         nlinarith [hkey, sq_nonneg ‖w - w_star‖]
   exact h_main
+
+/-- **Alignment Bridging Theorem**: A mathematically formal bridge showing that
+any deterministic gradient satisfying the deterministic AlignmentCondition also
+satisfies the StochasticAlignmentCondition relative to a degenerate volume distribution,
+provided the step-size respects the theoretical local "tightness" threshold bounding
+smoothness against strong convexity. -/
+theorem deterministic_implies_stochastic_alignment (Ω : Type*) [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
+    (z μ L_smooth : ℝ) (η : ℕ → ℝ) (t : ℕ)
+    (h_align : AlignmentCondition L w w_star ε z μ L_smooth)
+    (h_tight : η t * L_smooth ^ 2 ≤ μ) (h_eta : 0 ≤ η t) :
+    StochasticAlignmentCondition (Ω := Ω) w_star w η t z μ (fun _ => gradient L (w + ε)) := by
+  unfold StochasticAlignmentCondition AlignmentCondition at *
+  let g_f := filteredGradient (gradient L (w + ε)) z
+  have h1 : Integrable (fun _ : Ω => g_f) := integrable_const _
+  have h2 : Integrable (fun _ : Ω => ‖g_f‖ ^ 2) := integrable_const _
+  refine ⟨h1, h2, ?_⟩
+  rw [integral_const, probReal_univ, one_smul]
+  rw [integral_const, probReal_univ, one_smul]
+  have h_mu : μ * ‖w - w_star‖^2 ≤ inner (𝕜 := ℝ) g_f (w - w_star) := h_align.1
+  have h_L : ‖g_f‖ ≤ L_smooth * ‖w - w_star‖ := h_align.2
+  have h_L_sq : ‖g_f‖^2 ≤ L_smooth^2 * ‖w - w_star‖^2 := by
+    nlinarith [h_L, norm_nonneg g_f, norm_nonneg (w - w_star)]
+  have h_tight_w : (η t) * (η t * L_smooth^2 * ‖w - w_star‖^2) ≤ η t * (μ * ‖w - w_star‖^2) := by
+    apply mul_le_mul_of_nonneg_left
+    · apply mul_le_mul_of_nonneg_right h_tight (sq_nonneg ‖w - w_star‖)
+    · exact h_eta
+  calc η t * μ * ‖w - w_star‖^2
+    _ = 2 * η t * (μ * ‖w - w_star‖^2) - η t * (μ * ‖w - w_star‖^2) := by ring
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) - η t * (μ * ‖w - w_star‖^2) := by
+      apply sub_le_sub_right
+      apply mul_le_mul_of_nonneg_left h_mu
+      nlinarith [h_eta]
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) -
+        (η t) * (η t * L_smooth^2 * ‖w - w_star‖^2) := by
+      apply sub_le_sub_left h_tight_w
+    _ = 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) -
+        (η t)^2 * (L_smooth^2 * ‖w - w_star‖^2) := by ring
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) - (η t)^2 * ‖g_f‖^2 := by
+      apply sub_le_sub_left
+      apply mul_le_mul_of_nonneg_left h_L_sq
+      nlinarith [sq_nonneg (η t)]
 
 end LeanSharp

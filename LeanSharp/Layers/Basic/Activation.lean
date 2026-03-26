@@ -4,9 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
+import Mathlib.Analysis.Calculus.ContDiff.WithLp
 import Mathlib.Analysis.Calculus.FDeriv.WithLp
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Group.Basic
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 /-!
 # Activation Functions
@@ -83,5 +86,37 @@ noncomputable def softmaxLayer (ι : Type) [Fintype ι] : Layer (W ι) (W ι) wh
   fintypeParamDim := inferInstance
   forward := fun _ x => softmax x
   backward := fun _ x g_out => (0, softmaxBackward x g_out)
+
+/-- Softplus (Smooth ReLU) activation for a vector x: log(1 + exp(x)). -/
+noncomputable def smoothRelu (x : W ι) : W ι :=
+  WithLp.equiv 2 _ |>.symm fun i =>
+    Real.log (1 + Real.exp ((WithLp.equiv 2 _ x) i))
+
+/-- Softplus (Smooth ReLU) backward pass (Sigmoid). -/
+noncomputable def smoothReluBackward (x : W ι) (g_out : W ι) : W ι :=
+  WithLp.equiv 2 _ |>.symm fun i =>
+    let x_i := (WithLp.equiv 2 _ x) i
+    let s := 1 / (1 + Real.exp (-x_i))
+    s * (WithLp.equiv 2 _ g_out) i
+
+/-- Smooth ReLU Layer instance. -/
+noncomputable def smoothReluLayer (ι : Type) : Layer (W ι) (W ι) where
+  ParamDim := Empty
+  fintypeParamDim := inferInstance
+  forward := fun _ x => smoothRelu x
+  backward := fun _ x g_out => (0, smoothReluBackward x g_out)
+
+/-- Softplus is continuously differentiable to order 2,
+    resolving the C2/C0 Regularity Contradiction. -/
+theorem contDiff_smoothRelu [Fintype ι] : ContDiff ℝ 2 (smoothRelu (ι := ι)) := by
+  have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
+  apply contDiff_piLp' (p := 2)
+  intro i
+  apply ContDiff.log
+  · apply ContDiff.add
+    · exact contDiff_const
+    · apply ContDiff.exp
+      exact contDiff_piLp_apply (p := 2) (i := i)
+  · intro x; positivity
 
 end LeanSharp
