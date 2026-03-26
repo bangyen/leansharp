@@ -31,7 +31,8 @@ These items represent the path toward foundational theoretical completeness for 
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **PAC-Bayes Basis** | High | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
+| **Prove Donsker-Varadhan** | High | Formalize the variational inequality as a theorem, enabling rigorous change-of-measure arguments. |
+| **Gibbs IsProbabilityMeasure** | Medium | Prove `gibbsMeasure` is a valid probability measure, unlocking its use in generalization bounds. |
 
 ## Extensions & Grand Challenges
 
