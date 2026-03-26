@@ -6,6 +6,8 @@ Authors: Bangyen Pham
 
 import LeanSharp.Core.Objective
 import Mathlib.Algebra.Order.Ring.Abs
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Group.Bounded
@@ -192,5 +194,51 @@ theorem vectorMean_normalize [Nonempty ι] (x : W ι) (ε : ℝ) :
       (WithLp.equiv 2 (ι → ℝ) x) i - vectorMean x) := by
     apply (WithLp.linearEquiv 2 ℝ (ι → ℝ)).symm.map_smul
   rw [h_lp, vectorMean_smul, vectorMean_sub_mean, mul_zero]
+
+/-- **Vector Mean Smoothness**: The mean of a vector is $C^\infty$. -/
+theorem contDiff_vectorMean (ι : Type*) [Fintype ι] :
+    ContDiff ℝ ⊤ (vectorMean (ι := ι)) := by
+  unfold vectorMean
+  apply ContDiff.div_const
+  apply ContDiff.sum
+  intro i _
+  exact contDiff_piLp_apply (p := 2) (i := i)
+
+/-- **Vector Variance Smoothness**: The variance of a vector is $C^\infty$. -/
+theorem contDiff_vectorVariance (ι : Type*) [Fintype ι] :
+    ContDiff ℝ ⊤ (vectorVariance (ι := ι)) := by
+  unfold vectorVariance
+  apply ContDiff.div_const
+  apply ContDiff.sum
+  intro i _
+  apply ContDiff.pow
+  apply ContDiff.sub
+  · exact contDiff_piLp_apply (p := 2) (i := i)
+  · exact contDiff_vectorMean ι
+
+/-- **Vector Normalize Smoothness**: Normalizing a vector is $C^\infty$ (and thus $C^2$)
+    provided the stability epsilon is strictly positive. -/
+theorem contDiff_vectorNormalize (ι : Type*) [Fintype ι] {ε : ℝ} (hε : 0 < ε) :
+    ContDiff ℝ ⊤ (fun x => vectorNormalize x ε) := by
+  unfold vectorNormalize
+  apply contDiff_piLp' (p := 2)
+  intro i
+  apply ContDiff.mul
+  · apply ContDiff.inv
+    · apply ContDiff.sqrt
+      · apply ContDiff.add
+        · exact contDiff_vectorVariance ι
+        · exact contDiff_const
+      · intro x
+        apply lt_of_lt_of_le hε
+        simp only [le_add_iff_nonneg_left, vectorVariance_nonneg]
+    · intro x
+      apply ne_of_gt
+      apply Real.sqrt_pos.mpr
+      apply lt_of_lt_of_le hε
+      simp only [le_add_iff_nonneg_left, vectorVariance_nonneg]
+  · apply ContDiff.sub
+    · exact contDiff_piLp_apply (p := 2) (i := i)
+    · exact contDiff_vectorMean ι
 
 end LeanSharp

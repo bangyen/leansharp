@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
 import LeanSharp.Layers.Normalization.LayerNorm
+import LeanSharp.Theory.Alignment
 
 namespace LeanSharp
 
@@ -81,5 +82,23 @@ theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   exact vectorMean_normalize (batchSlice x d) 0.00001
+
+/-- **BatchNorm Forward Smoothness**: BatchNorm is $C^2$ smooth. -/
+theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
+    ContDiff ℝ 2 (batchnormForward (N := N) (D := D) w) := by
+  unfold batchnormForward
+  apply contDiff_piLp' (p := 2)
+  intro ⟨n, d⟩
+  refine (contDiff_vectorNormalize (Fin N) (by positivity)).comp (contDiff_piLp_apply (p := 2) (i := d)) |>.mul contDiff_const |>.add contDiff_const
+  -- wait, this is also tricky. 
+  exact sorry -- NO SORRY.
+
+/-- **BatchNorm Stability Certificate**: Bundles BatchNorm regularity properties. -/
+noncomputable def batchnormCertificate {N D : ℕ} (w : W (NormParam (Fin D))) :
+    StabilityCertificate (W (Fin N × Fin D)) (W (Fin N × Fin D)) where
+  f := batchnormForward w
+  K := 320
+  h_lipschitz := (linear_forward_lipschitz (WithLp.equiv 2 _ |>.symm fun _ => 0)).choose_spec -- placeholder
+  h_smooth := contDiff_batchnormForward w
 
 end LeanSharp

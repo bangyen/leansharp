@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
+import LeanSharp.Theory.Alignment
 import Mathlib.Analysis.Calculus.FDeriv.WithLp
 import Mathlib.Analysis.InnerProductSpace.PiL2
 
@@ -103,9 +104,38 @@ theorem linear_forward_lipschitz (w : W (LinearParam ι_in ι_out)) :
     rfl
   let LC := L.toContinuousLinearMap
   use ‖LC‖₊
-  have hL := LC.lipschitz
-  apply LipschitzWith.of_dist_le_mul; intro x y
+  apply LipschitzWith.of_dist_le_mul; intro x₁ x₂
   rw [h_affine, h_affine, dist_add_right]
-  exact hL.dist_le_mul x y
+  exact LC.lipschitz.dist_le_mul x₁ x₂
+
+/-- **Linear Forward Smoothness**: Linear layers are $C^\infty$ (and thus $C^2$). -/
+theorem contDiff_linearForward (w : W (LinearParam ι_in ι_out)) :
+    ContDiff ℝ 2 (linearForward w) := by
+  classical
+  let L : W ι_in →ₗ[ℝ] W ι_out :=
+    (WithLp.linearEquiv 2 ℝ _).symm.toLinearMap.comp <|
+    (Matrix.toLin' (Matrix.of fun (i : ι_out) (j : ι_in) =>
+      (WithLp.equiv 2 _ w) (Sum.inl (i, j)))).comp <|
+    (WithLp.linearEquiv 2 ℝ _).toLinearMap
+  let b : W ι_out :=
+    (WithLp.linearEquiv 2 ℝ _).symm fun i => (WithLp.equiv 2 _ w) (Sum.inr i)
+  have h_affine (x : W ι_in) :
+      linearForward w x = L x + b := by
+    ext i
+    simp only [linearForward, L, b]
+    rfl
+  rw [funext h_affine]
+  apply ContDiff.add
+  · apply (L.toContinuousLinearMap).contDiff
+  · exact contDiff_const
+
+/-- **Linear Stability Certificate**: Bundles the linear layer's forward pass
+    with its Lipschitz constant and $C^2$ smoothness proof. -/
+noncomputable def linearCertificate (w : W (LinearParam ι_in ι_out)) :
+    StabilityCertificate (W ι_in) (W ι_out) where
+  f := linearForward w
+  K := (linear_forward_lipschitz w).choose
+  h_lipschitz := (linear_forward_lipschitz w).choose_spec
+  h_smooth := contDiff_linearForward w
 
 end LeanSharp
