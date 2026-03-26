@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import LeanSharp.Theory.Structural.ChainConvergence
 import LeanSharp.Theory.Structural.ChainStability
 import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HardThresholding

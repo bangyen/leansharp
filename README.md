@@ -32,7 +32,6 @@ These items represent the path toward foundational theoretical completeness for 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **PAC-Bayes Basis** | High | Formalizing Rademacher/PAC-Bayes bounds for the filtered hypothesis class. |
-| **Convergence Sharpness** | High | Tightening the $O(1/T)$ rate with explicit Lipschitz constants for multilayer chains. |
 
 ## Extensions & Grand Challenges
 
@@ -41,7 +40,7 @@ These items represent specialized research directions and advanced analytical re
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **Stochastic Generalization** | Medium | Extending alignment to non-volume/heavy-tailed noise distributions. |
-| **Extended Layer Coverage** | Medium | Applying stability certification to Attention and Layer-wise Adaptive Scaling. |
+| **Extended Layer Coverage** | Medium | Applying stability certification to Normalization, Attention, and Layer-wise Scaling. |
 | **Z-Score CLT** | Medium | Characterizing the statistical limit of the filtered distribution. |
 | **NTK Dynamics** | Low | Proving network initialization and NTK-regime bounds. |
 | **Optimality Bound** | Low | Proving statistical lower bounds via information theory. |
