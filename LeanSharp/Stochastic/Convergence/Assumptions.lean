@@ -17,9 +17,9 @@ simplify interface theorems.
 
 ## Definitions
 
-* `zsharp_objective_bridge_hypotheses`.
 * `ZSharpStrongestDescentHypotheses`.
 * `ZSharpModelDescentHypotheses`.
+* `ZSharpOracleDescentHypotheses`.
 
 ## Theorems
 

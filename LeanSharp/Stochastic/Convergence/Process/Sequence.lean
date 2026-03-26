@@ -13,7 +13,7 @@ This module aggregates individual descent steps into sequence-level bounds
 governing the entire optimization trajectory.
 
 ## Main Theorems
-* `sequence_descent_bound`: Accumulation of descent steps over time.
+* `stochastic_zsharp_sequence_descent`: Accumulation of descent steps over time.
 -/
 
 namespace LeanSharp

@@ -16,8 +16,9 @@ This module establishes one-step expected descent inequalities and the core
 stochastic convergence theorem for ZSharp.
 
 ## Main Theorems
-* `one_step_descent`: Single-step progress bound.
-* `stochastic_convergence`: Martingale-based convergence theorem.
+* `stochastic_expected_descent_step`: Single-step progress bound.
+* `stochastic_zsharp_convergence`: Martingale-based convergence theorem.
+* `z_score_descent_fixed`: Final descent lemma for Z-score filtered gradients.
 -/
 
 namespace LeanSharp
