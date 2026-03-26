@@ -43,41 +43,28 @@ noncomputable def posEncoding (S D : ℕ) : W (Fin S × Fin D) :=
     else
       Real.cos (pos / (10000 ^ ((dim - 1) / model_dim)))
 
-/-- Feature-wise Layer Normalization. -/
+/-- Feature-wise Layer Normalization forward pass. -/
 noncomputable def featureNormForward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D)) :
     W (Fin S × Fin D) :=
   WithLp.equiv 2 _ |>.symm fun (s, d) =>
     let x_f := WithLp.equiv 2 _ x
-    let w_f := WithLp.equiv 2 _ w
-    let row := fun d' => x_f (s, d')
-    let μ_s := (∑ i, row i) / D
-    let σ_s := Real.sqrt ((∑ i, (row i - μ_s)^2) / D + 0.00001)
-    let γ_d := w_f (Sum.inl d)
-    let β_d := w_f (Sum.inr d)
-    γ_d * ((row d - μ_s) / σ_s) + β_d
+    let row := WithLp.equiv 2 _ |>.symm fun d' => x_f (s, d')
+    (WithLp.equiv 2 _ (layernormForward w row)) d
 
-/-- Feature-wise Layer Normalized backward pass. -/
+/-- Feature-wise Layer Normalization backward pass. -/
 noncomputable def featureNormBackward (w : W (NormParam (Fin D))) (x : W (Fin S × Fin D))
     (g_out : W (Fin S × Fin D)) : W (NormParam (Fin D)) × W (Fin S × Fin D) :=
-  let D_r := (D : ℝ)
   let x_f := WithLp.equiv 2 _ x
-  let w_f := WithLp.equiv 2 _ w
   let g_out_f := WithLp.equiv 2 _ g_out
-  -- Recompute statistics and normalized values
-  let μ := fun s => (∑ i : Fin D, x_f (s, i)) / D_r
-  let σ := fun s => Real.sqrt ((∑ i : Fin D, (x_f (s, i) - μ s)^2) / D_r + 0.00001)
-  let x_hat := fun s d => (x_f (s, d) - μ s) / σ s
-  -- Gradients w.r.t parameters γ and β
-  let g_w := WithLp.equiv 2 _ |>.symm fun
-    | Sum.inl d => ∑ s, g_out_f (s, d) * x_hat s d
-    | Sum.inr d => ∑ s, g_out_f (s, d)
-  -- Gradient w.r.t input x
+  -- Compute row-wise gradients and sum them
+  let g_row (s : Fin S) : W (NormParam (Fin D)) × W (Fin D) :=
+    let row := WithLp.equiv 2 _ |>.symm fun d' => x_f (s, d')
+    let g_out_row := WithLp.equiv 2 _ |>.symm fun d' => g_out_f (s, d')
+    layernormBackward w row g_out_row
+  let g_w_sum := ∑ s, (g_row s).1
   let g_x := WithLp.equiv 2 _ |>.symm fun (s, d) =>
-    let γ_d := w_f (Sum.inl d)
-    let m_grad := (∑ i : Fin D, w_f (Sum.inl i) * g_out_f (s, i)) / D_r
-    let m_grad_xhat := (∑ i : Fin D, w_f (Sum.inl i) * g_out_f (s, i) * x_hat s i) / D_r
-    (γ_d * g_out_f (s, d) - m_grad - x_hat s d * m_grad_xhat) / σ s
-  (g_w, g_x)
+    (WithLp.equiv 2 _ (g_row s).2) d
+  (g_w_sum, g_x)
 
 /-- The Attention Block: Residual(LN + MHA) -/
 noncomputable def transformerAttnBlock (S D : ℕ) :
