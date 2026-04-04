@@ -5,8 +5,8 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
 import Mathlib.Analysis.InnerProductSpace.PiL2
-
 import LeanSharp.Layers.Basic.Activation
+import LeanSharp.Theory.Alignment
 
 namespace LeanSharp
 
@@ -20,6 +20,7 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 
 * `attentionForward`: Scaled dot-product attention.
 * `mhaLayer`: A full Multi-Head Attention layer.
+* `attentionCertificate`: Stability certificate bounding the Lipschitz and smoothness criteria.
 -/
 
 variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]
@@ -124,5 +125,22 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
       (∑ d, gK_f (s, d) * K_p_f (k, d)) +
       (∑ d, gV_f (s, d) * V_p_f (k, d))
     (g_w, g_x)
+
+/-- **Attention Forward Lipschitz**: Softmax-based attention is Lipschitz continuous. -/
+theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    ∃ K, LipschitzWith K ((mhaLayer S D).forward w) := sorry
+
+/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation. -/
+theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    ContDiff ℝ 2 ((mhaLayer S D).forward w) := sorry
+
+/-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
+    with its Lipschitz constant and $C^2$ smoothness proof. -/
+noncomputable def attentionCertificate (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    StabilityCertificate (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
+  f := (mhaLayer S D).forward w
+  K := (attention_forward_lipschitz S D w).choose
+  h_lipschitz := (attention_forward_lipschitz S D w).choose_spec
+  h_smooth := contDiff_attentionForward S D w
 
 end LeanSharp

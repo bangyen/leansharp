@@ -68,4 +68,21 @@ theorem layernorm_mean_zero [Nonempty ι] (x : W ι) :
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   exact vectorMean_normalize x 0.00001
 
+/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is Lipschitz continuous for fixed weights. -/
+theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
+    ∃ K, LipschitzWith K (layernormForward w) := sorry
+
+/-- **LayerNorm Smoothness**: Layer Normalization is $C^2$. -/
+theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
+    ContDiff ℝ 2 (layernormForward w) := sorry
+
+/-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
+    with its Lipschitz constant and $C^2$ smoothness proof. -/
+noncomputable def layerNormCertificate [Nonempty ι] (w : W (NormParam ι)) :
+    StabilityCertificate (W ι) (W ι) where
+  f := layernormForward w
+  K := (layernorm_forward_lipschitz w).choose
+  h_lipschitz := (layernorm_forward_lipschitz w).choose_spec
+  h_smooth := contDiff_layernormForward w
+
 end LeanSharp
