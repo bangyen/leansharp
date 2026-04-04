@@ -134,8 +134,9 @@ theorem contDiff_linearForward (w : W (LinearParam ι_in ι_out)) :
 noncomputable def linearCertificate (w : W (LinearParam ι_in ι_out)) :
     StabilityCertificate (W ι_in) (W ι_out) where
   f := linearForward w
+  S := Set.univ
   K := (linear_forward_lipschitz w).choose
-  h_lipschitz := (linear_forward_lipschitz w).choose_spec
-  h_smooth := contDiff_linearForward w
+  h_lipschitz := (linear_forward_lipschitz w).choose_spec.lipschitzOnWith (s := Set.univ)
+  h_smooth := (contDiff_linearForward w).contDiffOn (s := Set.univ)
 
 end LeanSharp

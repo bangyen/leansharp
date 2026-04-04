@@ -58,18 +58,20 @@ def StochasticAlignmentCondition (w w_star : W ι) (g : Ω → W ι) (η μ : �
 
 /-- **Stability Certificate**: Bundles a forward pass operation with its analytical
     regularity properties (Lipschitz continuity and differentiability).
-    By enforcing `ContDiff ℝ 2`, this certificate ensures that the layer is
-    compatible with Hessian-based second-order analysis. -/
+    By enforcing `ContDiffOn ℝ 2`, this certificate ensures that the layer is
+    compatible with Hessian-based second-order analysis within a stable region. -/
 structure StabilityCertificate (α β : Type*) [NormedAddCommGroup α] [NormedSpace ℝ α]
   [NormedAddCommGroup β] [NormedSpace ℝ β] where
   /-- The forward pass mapping. -/
   f : α → β
+  /-- Domain of stability. -/
+  S : Set α
   /-- Lipschitz constant witness. -/
   K : NNReal
-  /-- Proof of Lipschitz continuity. -/
-  h_lipschitz : LipschitzWith K f
-  /-- Proof of $C^2$ smoothness (necessary for Hessian analysis). -/
-  h_smooth : ContDiff ℝ 2 f
+  /-- Proof of Lipschitz continuity on S. -/
+  h_lipschitz : LipschitzOnWith K f S
+  /-- Proof of $C^2$ smoothness on S. -/
+  h_smooth : ContDiffOn ℝ 2 f S
 
 /-- **Certificate Composition**: If two maps are stability-certified, their
     composition is also certified. The Lipschitz constant is the product
@@ -81,9 +83,10 @@ noncomputable def StabilityCertificate.comp {α β γ : Type*}
     (c2 : StabilityCertificate β γ) (c1 : StabilityCertificate α β) :
     StabilityCertificate α γ where
   f := c2.f ∘ c1.f
+  S := c1.S ∩ (c1.f ⁻¹' c2.S)
   K := c2.K * c1.K
-  h_lipschitz := c2.h_lipschitz.comp c1.h_lipschitz
-  h_smooth := c2.h_smooth.comp c1.h_smooth
+  h_lipschitz := c2.h_lipschitz.comp (c1.h_lipschitz.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
+  h_smooth := ContDiffOn.comp c2.h_smooth (c1.h_smooth.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
 
 /-- **Hadamard Inner Product Identity**:
     The inner product of a Hadamard product `hadamard a b` with `v` is the

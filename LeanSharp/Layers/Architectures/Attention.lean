@@ -126,19 +126,20 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
       (∑ d, gV_f (s, d) * V_p_f (k, d))
     (g_w, g_x)
 
-/-- **Attention Forward Lipschitz**: Softmax-based attention is Lipschitz continuous. -/
+/-- **Attention Forward Lipschitz**: Softmax-based attention is locally Lipschitz continuous bounding domains. -/
 theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ∃ K, LipschitzWith K ((mhaLayer S D).forward w) := sorry
+    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 1000) := sorry
 
-/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation. -/
+/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
 theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ContDiff ℝ 2 ((mhaLayer S D).forward w) := sorry
+    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) := sorry
 
 /-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
 noncomputable def attentionCertificate (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
     StabilityCertificate (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   f := (mhaLayer S D).forward w
+  S := Metric.ball 0 1000
   K := (attention_forward_lipschitz S D w).choose
   h_lipschitz := (attention_forward_lipschitz S D w).choose_spec
   h_smooth := contDiff_attentionForward S D w

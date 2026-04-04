@@ -68,21 +68,34 @@ theorem layernorm_mean_zero [Nonempty ι] (x : W ι) :
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   exact vectorMean_normalize x 0.00001
 
-/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is Lipschitz continuous for fixed weights. -/
+/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is locally Lipschitz. -/
 theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
     ∃ K, LipschitzWith K (layernormForward w) := sorry
 
 /-- **LayerNorm Smoothness**: Layer Normalization is $C^2$. -/
 theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
-    ContDiff ℝ 2 (layernormForward w) := sorry
+    ContDiff ℝ 2 (layernormForward w) := by
+  unfold layernormForward
+  apply contDiff_piLp'
+  intro i
+  apply ContDiff.add
+  · apply ContDiff.mul
+    · exact contDiff_const
+    · have h1 : ContDiff ℝ 2 (fun x : W ι => vectorNormalize x 0.00001) :=
+        contDiff_vectorNormalize ι (by norm_num) |>.of_le le_top
+      have h2 : ContDiff ℝ 2 (fun (x : W ι) => (WithLp.equiv 2 (ι → ℝ) x) i) :=
+        contDiff_piLp_apply (p := 2) (i := i) |>.of_le le_top
+      exact ContDiff.comp h2 h1
+  · exact contDiff_const
 
 /-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
 noncomputable def layerNormCertificate [Nonempty ι] (w : W (NormParam ι)) :
     StabilityCertificate (W ι) (W ι) where
   f := layernormForward w
+  S := Set.univ
   K := (layernorm_forward_lipschitz w).choose
-  h_lipschitz := (layernorm_forward_lipschitz w).choose_spec
-  h_smooth := contDiff_layernormForward w
+  h_lipschitz := (layernorm_forward_lipschitz w).choose_spec.lipschitzOnWith (s := Set.univ)
+  h_smooth := (contDiff_layernormForward w).contDiffOn (s := Set.univ)
 
 end LeanSharp
