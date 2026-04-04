@@ -30,7 +30,7 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 
 * `contDiff_attentionForward_global`: The attention forward pass is globally $C^2$.
 * `attention_forward_lipschitz`: The attention forward pass is locally Lipschitz on
-  `Metric.ball 0 1000` (proved via the Extreme Value Theorem on compact sets).
+  `Metric.ball 0 R` for any $R > 0$ (proved via the Extreme Value Theorem on compact sets).
 -/
 
 variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]
@@ -181,40 +181,43 @@ theorem contDiff_attentionForward_global
 
 /-- **Attention Forward Lipschitz**:
     Softmax-based attention is locally Lipschitz continuous bounding domains. -/
-theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 1000) := by
+theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
+    (R : ℝ) (hR : 0 < R) :
+    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 R) := by
   let f := (mhaLayer S D).forward w
   have h_c2 : ContDiff ℝ 2 f := contDiff_attentionForward_global S D w
   have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
   have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
-  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin S × Fin D)) 1000) :=
-    isCompact_closedBall (0 : W (Fin S × Fin D)) 1000
+  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin S × Fin D)) R) :=
+    isCompact_closedBall (0 : W (Fin S × Fin D)) R
   have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) := continuous_norm.comp h_cont_deriv
-  have h_nonempty : (Metric.closedBall (0 : W (Fin S × Fin D)) 1000).Nonempty :=
-    Metric.nonempty_closedBall.mpr (by norm_num)
+  have h_nonempty : (Metric.closedBall (0 : W (Fin S × Fin D)) R).Nonempty :=
+    Metric.nonempty_closedBall.mpr hR.le
   obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
   let K := ‖fderiv ℝ f x0‖₊
   use K
-  have h_lips : LipschitzOnWith K f (Metric.closedBall (0 : W _) 1000) := by
+  have h_lips : LipschitzOnWith K f (Metric.closedBall (0 : W _) R) := by
     apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
     · exact fun x _ => h_diff x
     · exact fun x hx => h_max hx
-    · exact convex_closedBall 0 1000
+    · exact convex_closedBall 0 R
   exact h_lips.mono Metric.ball_subset_closedBall
 
 /-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
-theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) :=
+theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
+    (R : ℝ) :
+    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 R) :=
   (contDiff_attentionForward_global S D w).contDiffOn
 
 /-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
-noncomputable def attentionCertificate (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+noncomputable def attentionCertificate (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
+    (R : ℝ) (hR : 0 < R) :
     StabilityCertificate (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
   f := (mhaLayer S D).forward w
-  S := Metric.ball 0 1000
-  K := (attention_forward_lipschitz S D w).choose
-  h_lipschitz := (attention_forward_lipschitz S D w).choose_spec
-  h_smooth := contDiff_attentionForward S D w
+  S := Metric.ball 0 R
+  K := (attention_forward_lipschitz S D w R hR).choose
+  h_lipschitz := (attention_forward_lipschitz S D w R hR).choose_spec
+  h_smooth := (contDiff_attentionForward_global S D w).contDiffOn
 
 end LeanSharp

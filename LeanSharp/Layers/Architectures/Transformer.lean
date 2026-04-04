@@ -45,7 +45,7 @@ noncomputable def posEncoding (S D : ℕ) : W (Fin S × Fin D) :=
 
 /-- Feature-wise Layer Normalization. Applies `layerNorm` independently to each sequence element. -/
 noncomputable def featureNormLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S × Fin D)) :=
-  broadcastLayer (Fin S) (layerNorm (Fin D))
+  broadcastLayer (Fin S) (layerNorm (Fin D) 0.00001)
 
 /-- The Attention Block: Residual(LN + MHA) -/
 noncomputable def transformerAttnBlock (S D : ℕ) :

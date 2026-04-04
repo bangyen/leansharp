@@ -18,7 +18,7 @@ This module verifies normalization and residual connection layers.
 namespace LeanSharp.Tests
 
 /-- Test: LayerNorm Parameter Dimensions. -/
-example (ι : Type) [Fintype ι] : (layerNorm ι).ParamDim = NormParam ι :=
+example (ι : Type) [Fintype ι] : (layerNorm ι 0.00001).ParamDim = NormParam ι :=
   rfl
 
 /-- Test: Residual Layer Dimensions. -/
@@ -28,10 +28,10 @@ example {ι : Type} [Fintype ι] (L : Layer (W ι) (W ι)) :
 
 /-- Test: LayerNorm output has zero mean. -/
 example {ι : Type} [Fintype ι] [Nonempty ι] (x : W ι) :
-    vectorMean ((layerNorm ι).forward (WithLp.equiv 2 _ |>.symm fun
+    vectorMean ((layerNorm ι 0.00001).forward (WithLp.equiv 2 _ |>.symm fun
       | Sum.inl _ => 1
       | Sum.inr _ => 0) x) = 0 :=
-  layernorm_mean_zero x
+  layernorm_mean_zero x 0.00001
 
 /-- Test: LayerNorm Parameter non-emptiness. -/
 example (ι : Type) [Fintype ι] [Nonempty ι] :

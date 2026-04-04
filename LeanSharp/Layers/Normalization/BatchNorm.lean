@@ -43,11 +43,11 @@ noncomputable def batchVar {N D : ℕ} (x : W (Fin N × Fin D)) (d : Fin D) : �
 
 /-- Batch Normalization forward pass. -/
 noncomputable def batchnormForward {N D : ℕ}
-    (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) :
+    (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D)) (ε : ℝ) :
     W (Fin N × Fin D) :=
   WithLp.equiv 2 _ |>.symm fun (n, d) =>
     let x_d := batchSlice x d
-    let x_norm := vectorNormalize x_d 0.00001
+    let x_norm := vectorNormalize x_d ε
     let γ_d := (WithLp.equiv 2 _ w) (Sum.inl d)
     let β_d := (WithLp.equiv 2 _ w) (Sum.inr d)
     γ_d * (WithLp.equiv 2 _ x_norm) n + β_d
@@ -55,9 +55,9 @@ noncomputable def batchnormForward {N D : ℕ}
 /-- Batch Normalization backward pass. -/
 noncomputable def batchnormBackward {N D : ℕ}
     (w : W (NormParam (Fin D))) (x : W (Fin N × Fin D))
-    (g_out : W (Fin N × Fin D)) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
+    (g_out : W (Fin N × Fin D)) (ε : ℝ) : W (NormParam (Fin D)) × W (Fin N × Fin D) :=
   let μ (d : Fin D) := batchMean x d
-  let σ_stable (d : Fin D) := Real.sqrt (batchVar x d + 0.00001)
+  let σ_stable (d : Fin D) := Real.sqrt (batchVar x d + ε)
   let g_w := WithLp.equiv 2 _ |>.symm fun
     | Sum.inl d => ∑ n : Fin N, (WithLp.equiv 2 _ g_out) (n, d) *
         (((WithLp.equiv 2 _ x) (n, d) - μ d) / σ_stable d)
@@ -69,28 +69,27 @@ noncomputable def batchnormBackward {N D : ℕ}
   (g_w, g_x)
 
 /-- Batch Normalization Layer instance. -/
-noncomputable def batchNormLayer (N D : ℕ) :
+noncomputable def batchNormLayer (N D : ℕ) (ε : ℝ) :
     Layer (W (Fin N × Fin D)) (W (Fin N × Fin D)) where
   ParamDim := NormParam (Fin D)
   fintypeParamDim := inferInstance
-  forward := batchnormForward
-  backward := batchnormBackward
+  forward w x := batchnormForward w x ε
+  backward w x g := batchnormBackward w x g ε
 
 /-- **Mean Normalization**: For any input `x`, the batch mean of the normalized output
 (with γ=1, β=0) is zero for all feature dimensions `d`. -/
-theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d : Fin D) :
+theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d : Fin D) (ε : ℝ) :
     let w_id : W (NormParam (Fin D)) :=
       WithLp.equiv 2 _ |>.symm fun | Sum.inl _ => 1 | Sum.inr _ => 0
-    batchMean (batchnormForward w_id x) d = 0 := by
+    batchMean (batchnormForward w_id x ε) d = 0 := by
   unfold batchMean batchnormForward batchSlice
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
-  exact vectorMean_normalize (batchSlice x d) 0.00001
+  exact vectorMean_normalize (batchSlice x d) ε
 
-/-- **BatchNorm Smoothness**: Batch Normalization is $C^\infty$ (and thus $C^2$) because
-    `vectorNormalize` avoids division by zero via `ε > 0`. -/
-theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
-    ContDiff ℝ 2 (fun x => batchnormForward w x (N := N)) := by
+/-- **BatchNorm Smoothness**: Batch Normalization is $C^2$ provided ε > 0. -/
+theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) {ε : ℝ} (hε : 0 < ε) :
+    ContDiff ℝ 2 (fun x => batchnormForward w x (N := N) ε) := by
   unfold batchnormForward
   apply contDiff_piLp'
   intro p
@@ -100,14 +99,14 @@ theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
   · apply ContDiff.mul
     · exact contDiff_const
     · have h1 : ContDiff ℝ 2
-          (fun x : W (Fin N × Fin D) => vectorNormalize (batchSlice x d) 0.00001) := by
+          (fun x : W (Fin N × Fin D) => vectorNormalize (batchSlice x d) ε) := by
         have hA : ContDiff ℝ 2 (fun x : W (Fin N × Fin D) => batchSlice x d) := by
           unfold batchSlice
           apply contDiff_piLp'
           intro i
           exact contDiff_piLp_apply (p := 2) (i := (i, d)) |>.of_le le_top
-        have hB : ContDiff ℝ 2 (fun x : W (Fin N) => vectorNormalize x 0.00001) :=
-          contDiff_vectorNormalize (Fin N) (by norm_num) |>.of_le le_top
+        have hB : ContDiff ℝ 2 (fun x : W (Fin N) => vectorNormalize x ε) :=
+          contDiff_vectorNormalize (Fin N) hε |>.of_le le_top
         exact hB.comp hA
       have h2 : ContDiff ℝ 2 (fun (x : W (Fin N)) => (WithLp.equiv 2 _ x) n) :=
         contDiff_piLp_apply (p := 2) (i := n) |>.of_le le_top
@@ -115,43 +114,40 @@ theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
   · exact contDiff_const
 
 /-- **BatchNorm Forward Lipschitz**: The output of BatchNorm is locally Lipschitz continuous
-    on `Metric.ball 0 1000`.
-
-    **Proof**: `batchnormForward w` is globally $C^2$ (proven by
-    `contDiff_batchnormForward`). The Extreme Value Theorem on `closedBall 0 1000` yields
-    a maximum Fréchet derivative norm `K`, and the Mean Value Theorem gives
-    `LipschitzOnWith K` on the ball. -/
-theorem batchnorm_forward_lipschitz {N D : ℕ} (w : W (NormParam (Fin D))) :
-    ∃ K, LipschitzOnWith K (fun x => batchnormForward w x (N := N)) (Metric.ball 0 1000) := by
-  let f := fun x => batchnormForward w x (N := N)
-  have h_c2 : ContDiff ℝ 2 f := contDiff_batchnormForward w
+    on `Metric.ball 0 R` for any R > 0, provided ε > 0. -/
+theorem batchnorm_forward_lipschitz {N D : ℕ} (w : W (NormParam (Fin D))) (ε : ℝ) (hε : 0 < ε)
+    (R : ℝ) (hR : 0 < R) :
+    ∃ K, LipschitzOnWith K (fun x => batchnormForward w x (N := N) ε) (Metric.ball 0 R) := by
+  let f := fun x => batchnormForward w x (N := N) ε
+  have h_c2 : ContDiff ℝ 2 f := contDiff_batchnormForward w hε
   have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
   have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
-  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin N × Fin D)) 1000) :=
-    isCompact_closedBall (0 : W (Fin N × Fin D)) 1000
+  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin N × Fin D)) R) :=
+    isCompact_closedBall (0 : W (Fin N × Fin D)) R
   have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
     continuous_norm.comp h_cont_deriv
-  have h_nonempty : (Metric.closedBall (0 : W (Fin N × Fin D)) 1000).Nonempty :=
-    Metric.nonempty_closedBall.mpr (by norm_num)
+  have h_nonempty : (Metric.closedBall (0 : W (Fin N × Fin D)) R).Nonempty :=
+    Metric.nonempty_closedBall.mpr hR.le
   obtain ⟨x0, _, h_max⟩ :=
     IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
   let K := ‖fderiv ℝ f x0‖₊
   use K
-  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 1000) := by
+  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 R) := by
     apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
     · exact fun x _ => h_diff x
     · exact fun x hx => h_max hx
-    · exact convex_closedBall 0 1000
+    · exact convex_closedBall 0 R
   exact h_lips.mono Metric.ball_subset_closedBall
 
 /-- **BatchNorm Stability Certificate**: Bundles the BatchNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
-noncomputable def batchNormCertificate (N D : ℕ) (w : W (NormParam (Fin D))) :
+noncomputable def batchNormCertificate (N D : ℕ) (w : W (NormParam (Fin D))) (ε : ℝ) (hε : 0 < ε)
+    (R : ℝ) (hR : 0 < R) :
     StabilityCertificate (W (Fin N × Fin D)) (W (Fin N × Fin D)) where
-  f := batchnormForward w
-  S := Metric.ball 0 1000
-  K := (batchnorm_forward_lipschitz w).choose
-  h_lipschitz := (batchnorm_forward_lipschitz w).choose_spec
-  h_smooth := (contDiff_batchnormForward w).contDiffOn
+  f := fun x => batchnormForward w x ε
+  S := Metric.ball 0 R
+  K := (batchnorm_forward_lipschitz w ε hε R hR).choose
+  h_lipschitz := (batchnorm_forward_lipschitz w ε hε R hR).choose_spec
+  h_smooth := (contDiff_batchnormForward w hε).contDiffOn
 
 end LeanSharp
