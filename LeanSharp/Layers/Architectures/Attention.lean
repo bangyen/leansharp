@@ -4,13 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Models
-import Mathlib.Analysis.InnerProductSpace.PiL2
 import LeanSharp.Layers.Basic.Activation
 import LeanSharp.Theory.Alignment
-import Mathlib.Topology.Order.Basic
-import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Topology.Order.Basic
 
 namespace LeanSharp
 
@@ -25,6 +25,12 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 * `attentionForward`: Scaled dot-product attention.
 * `mhaLayer`: A full Multi-Head Attention layer.
 * `attentionCertificate`: Stability certificate bounding the Lipschitz and smoothness criteria.
+
+## Main theorems
+
+* `contDiff_attentionForward_global`: The attention forward pass is globally $C^2$.
+* `attention_forward_lipschitz`: The attention forward pass is locally Lipschitz on
+  `Metric.ball 0 1000` (proved via the Extreme Value Theorem on compact sets).
 -/
 
 variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]

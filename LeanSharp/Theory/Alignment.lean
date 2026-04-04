@@ -85,8 +85,10 @@ noncomputable def StabilityCertificate.comp {α β γ : Type*}
   f := c2.f ∘ c1.f
   S := c1.S ∩ (c1.f ⁻¹' c2.S)
   K := c2.K * c1.K
-  h_lipschitz := c2.h_lipschitz.comp (c1.h_lipschitz.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
-  h_smooth := ContDiffOn.comp c2.h_smooth (c1.h_smooth.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
+  h_lipschitz := c2.h_lipschitz.comp
+    (c1.h_lipschitz.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
+  h_smooth := ContDiffOn.comp c2.h_smooth
+    (c1.h_smooth.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
 
 /-- **Hadamard Inner Product Identity**:
     The inner product of a Hadamard product `hadamard a b` with `v` is the

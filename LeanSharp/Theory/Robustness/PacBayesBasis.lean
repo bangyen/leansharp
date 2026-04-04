@@ -7,14 +7,14 @@ import LeanSharp.Core.Landscape
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 import Mathlib.Data.ENNReal.Basic
+import Mathlib.InformationTheory.KullbackLeibler.Basic
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Decomposition.Lebesgue
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import Mathlib.MeasureTheory.Measure.MeasureSpace
 import Mathlib.MeasureTheory.Measure.Tilted
-import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
-import Mathlib.InformationTheory.KullbackLeibler.Basic
 
 /-!
 # PAC-Bayes Basis
@@ -129,7 +129,7 @@ omit [Fintype ι] in
     - `hllr : Integrable (llr P Q) P` — equivalent to KL(P||Q) < ∞ -/
 theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ)
     [IsProbabilityMeasure P] [IsProbabilityMeasure Q]
-    [SigmaFinite P] [SigmaFinite Q]
+    [SigmaFinite Q]
     (hPQ : P ≪ Q)
     (hf : Integrable f P)
     (hef : Integrable (fun w => exp (f w)) Q)
@@ -142,7 +142,7 @@ theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ
   -- Using Mathlib's `toReal_klDiv_of_measure_eq` from InformationTheory.KullbackLeibler.Basic
   have h_klDiv_eq : (InformationTheory.klDiv P Q).toReal = ∫ w, llr P Q w ∂P := by
     apply InformationTheory.toReal_klDiv_of_measure_eq hPQ
-    simp [IsProbabilityMeasure.measure_univ]
+    simp only [IsProbabilityMeasure.measure_univ]
   -- KL(P||Q) as defined in LeanSharp equals the Mathlib KL value
   have h_kl_eq_mathlib : (klDivergenceW P Q).toReal = (klDiv P Q).toReal := by
     have hnn := integral_llr_add_sub_measure_univ_nonneg hPQ hllr

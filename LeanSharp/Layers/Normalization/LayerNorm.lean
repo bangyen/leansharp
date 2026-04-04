@@ -7,10 +7,10 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
 import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Theory.Alignment
-import Mathlib.Topology.Order.Basic
-import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Topology.Order.Basic
 
 /-!
 # Normalization Layers
@@ -73,7 +73,7 @@ theorem layernorm_mean_zero [Nonempty ι] (x : W ι) :
   exact vectorMean_normalize x 0.00001
 
 /-- **LayerNorm Smoothness**: Layer Normalization is $C^2$. -/
-theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
+theorem contDiff_layernormForward (w : W (NormParam ι)) :
     ContDiff ℝ 2 (layernormForward w) := by
   unfold layernormForward
   apply contDiff_piLp'
@@ -96,7 +96,7 @@ theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
     continuous. The Extreme Value Theorem on the compact `closedBall 0 1000` yields
     a maximum derivative norm `K`, and the Mean Value Theorem for convex sets
     gives `LipschitzOnWith K` on the ball. -/
-theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
+theorem layernorm_forward_lipschitz (w : W (NormParam ι)) :
     ∃ K, LipschitzOnWith K (layernormForward w) (Metric.ball 0 1000) := by
   let f := layernormForward w
   have h_c2 : ContDiff ℝ 2 f := contDiff_layernormForward w
@@ -120,7 +120,7 @@ theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
 
 /-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
-noncomputable def layerNormCertificate [Nonempty ι] (w : W (NormParam ι)) :
+noncomputable def layerNormCertificate (w : W (NormParam ι)) :
     StabilityCertificate (W ι) (W ι) where
   f := layernormForward w
   S := Metric.ball 0 1000

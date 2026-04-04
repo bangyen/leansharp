@@ -7,10 +7,10 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
 import LeanSharp.Layers.Normalization.LayerNorm
 import LeanSharp.Theory.Alignment
-import Mathlib.Topology.Order.Basic
-import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Normed.Module.FiniteDimension
+import Mathlib.Topology.Order.Basic
 
 namespace LeanSharp
 
