@@ -7,6 +7,7 @@ Authors: Bangyen Pham
 import LeanSharp.Stochastic.Convergence
 import LeanSharp.Stochastic.Foundations
 import LeanSharp.Stochastic.Mechanics
+import LeanSharp.Stochastic.Rate
 
 /-!
 # Stochastic Aggregator
