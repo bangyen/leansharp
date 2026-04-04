@@ -20,25 +20,24 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 ## Key Accomplishments
 
-- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and established $50\%$ outlier stability through formalized breakdown-point analysis.
+- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and established geometric convergence ($O(c^T)$) for strongly convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
 - **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
-- **Formal Stability & Regularity**: Introduced `StabilityCertificate` contracts ($C^2$ enforcement) across the ML layer stack, ensuring compatibility with Hessian-based second-order analysis.
-- **Scaling & Generalization**: Rigorously connected landscape curvature to population risk via PAC-Bayes bounds and established infinite-width limits ($|ι| \to \infty$) for NTK analysis.
+- **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`.
+- **Generalization Theory**: Fully formalized the **PAC-Bayesian** population risk bounds by proving the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery.
 
 ## Immediate Roadmap
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Stability Certificates** | High | Implement $C^2$ regularity proofs for `BatchNorm`, `LayerNorm`, and `Attention`. |
-| **Stochastic Convergence Rate** | High | Finalize the $O(1/T)$ rate theorem from existing sequence-level lemmas. |
-| **PAC-Bayesian Proofs** | Medium | Formalize the Donsker-Varadhan inequality and the population risk bound. |
+| **Z-Score CLT** | High | Formally characterize the statistical limit of the filtered gradient as $|ι| \to \infty$. |
+| **Non-Convex Population Risk** | Medium | Extend PAC-Bayes analysis to non-convex landscapes using local stability certificates. |
+| **Transformer Invariance** | Medium | Prove permutation and scaling invariance properties for the formalized MHA architecture. |
 
 ## Extensions & Future Work
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **Stochastic Generalization** | High | Extend alignment to heavy-tailed noise distributions. |
-| **Z-Score CLT** | Medium | Characterize the statistical limit of the filtered distribution. |
 | **NTK Dynamics** | Low | Prove network initialization and NTK-regime bounds. |
 | **Optimality Bound** | Low | Prove statistical lower bounds via information theory. |
 | **Diffusion Stability** | Low | Formalize SDE objectives and stability for DDPMs. |
