@@ -7,6 +7,10 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
 import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Theory.Alignment
+import Mathlib.Topology.Order.Basic
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
 # Normalization Layers
@@ -68,10 +72,6 @@ theorem layernorm_mean_zero [Nonempty ι] (x : W ι) :
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   exact vectorMean_normalize x 0.00001
 
-/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is locally Lipschitz. -/
-theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
-    ∃ K, LipschitzWith K (layernormForward w) := sorry
-
 /-- **LayerNorm Smoothness**: Layer Normalization is $C^2$. -/
 theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
     ContDiff ℝ 2 (layernormForward w) := by
@@ -88,14 +88,44 @@ theorem contDiff_layernormForward [Nonempty ι] (w : W (NormParam ι)) :
       exact ContDiff.comp h2 h1
   · exact contDiff_const
 
+/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is locally Lipschitz
+    on `Metric.ball 0 1000`.
+
+    **Proof**: `layernormForward w` is globally $C^2$ (proven above via
+    `contDiff_layernormForward`). By differentiability, the Fréchet derivative is
+    continuous. The Extreme Value Theorem on the compact `closedBall 0 1000` yields
+    a maximum derivative norm `K`, and the Mean Value Theorem for convex sets
+    gives `LipschitzOnWith K` on the ball. -/
+theorem layernorm_forward_lipschitz [Nonempty ι] (w : W (NormParam ι)) :
+    ∃ K, LipschitzOnWith K (layernormForward w) (Metric.ball 0 1000) := by
+  let f := layernormForward w
+  have h_c2 : ContDiff ℝ 2 f := contDiff_layernormForward w
+  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
+  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
+  have h_compact : IsCompact (Metric.closedBall (0 : W ι) 1000) :=
+    isCompact_closedBall (0 : W ι) 1000
+  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
+    continuous_norm.comp h_cont_deriv
+  have h_nonempty : (Metric.closedBall (0 : W ι) 1000).Nonempty :=
+    Metric.nonempty_closedBall.mpr (by norm_num)
+  obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
+  let K := ‖fderiv ℝ f x0‖₊
+  use K
+  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 1000) := by
+    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
+    · exact fun x _ => h_diff x
+    · exact fun x hx => h_max hx
+    · exact convex_closedBall 0 1000
+  exact h_lips.mono Metric.ball_subset_closedBall
+
 /-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
 noncomputable def layerNormCertificate [Nonempty ι] (w : W (NormParam ι)) :
     StabilityCertificate (W ι) (W ι) where
   f := layernormForward w
-  S := Set.univ
+  S := Metric.ball 0 1000
   K := (layernorm_forward_lipschitz w).choose
-  h_lipschitz := (layernorm_forward_lipschitz w).choose_spec.lipschitzOnWith (s := Set.univ)
-  h_smooth := (contDiff_layernormForward w).contDiffOn (s := Set.univ)
+  h_lipschitz := (layernorm_forward_lipschitz w).choose_spec
+  h_smooth := (contDiff_layernormForward w).contDiffOn
 
 end LeanSharp

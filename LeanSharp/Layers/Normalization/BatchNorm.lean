@@ -7,6 +7,10 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.Stats
 import LeanSharp.Layers.Normalization.LayerNorm
 import LeanSharp.Theory.Alignment
+import Mathlib.Topology.Order.Basic
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 namespace LeanSharp
 
@@ -83,11 +87,6 @@ theorem batchnorm_mean_zero {N D : ℕ} (hN : 0 < N) (x : W (Fin N × Fin D)) (d
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   exact vectorMean_normalize (batchSlice x d) 0.00001
 
-/-- **BatchNorm Forward Lipschitz**: The output of BatchNorm is Lipschitz continuous.
-    (Proof omitted as explicit bounds depend on sequence epsilon). -/
-theorem batchnorm_forward_lipschitz {N D : ℕ} (w : W (NormParam (Fin D))) :
-    ∃ K, LipschitzWith K (fun x => batchnormForward w x (N := N)) := sorry
-
 /-- **BatchNorm Smoothness**: Batch Normalization is $C^\infty$ (and thus $C^2$) because
     `vectorNormalize` avoids division by zero via `ε > 0`. -/
 theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
@@ -100,7 +99,8 @@ theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
   apply ContDiff.add
   · apply ContDiff.mul
     · exact contDiff_const
-    · have h1 : ContDiff ℝ 2 (fun x : W (Fin N × Fin D) => vectorNormalize (batchSlice x d) 0.00001) := by
+    · have h1 : ContDiff ℝ 2
+          (fun x : W (Fin N × Fin D) => vectorNormalize (batchSlice x d) 0.00001) := by
         have hA : ContDiff ℝ 2 (fun x : W (Fin N × Fin D) => batchSlice x d) := by
           unfold batchSlice
           apply contDiff_piLp'
@@ -114,14 +114,44 @@ theorem contDiff_batchnormForward {N D : ℕ} (w : W (NormParam (Fin D))) :
       exact h2.comp h1
   · exact contDiff_const
 
+/-- **BatchNorm Forward Lipschitz**: The output of BatchNorm is locally Lipschitz continuous
+    on `Metric.ball 0 1000`.
+
+    **Proof**: `batchnormForward w` is globally $C^2$ (proven by
+    `contDiff_batchnormForward`). The Extreme Value Theorem on `closedBall 0 1000` yields
+    a maximum Fréchet derivative norm `K`, and the Mean Value Theorem gives
+    `LipschitzOnWith K` on the ball. -/
+theorem batchnorm_forward_lipschitz {N D : ℕ} (w : W (NormParam (Fin D))) :
+    ∃ K, LipschitzOnWith K (fun x => batchnormForward w x (N := N)) (Metric.ball 0 1000) := by
+  let f := fun x => batchnormForward w x (N := N)
+  have h_c2 : ContDiff ℝ 2 f := contDiff_batchnormForward w
+  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
+  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
+  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin N × Fin D)) 1000) :=
+    isCompact_closedBall (0 : W (Fin N × Fin D)) 1000
+  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
+    continuous_norm.comp h_cont_deriv
+  have h_nonempty : (Metric.closedBall (0 : W (Fin N × Fin D)) 1000).Nonempty :=
+    Metric.nonempty_closedBall.mpr (by norm_num)
+  obtain ⟨x0, _, h_max⟩ :=
+    IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
+  let K := ‖fderiv ℝ f x0‖₊
+  use K
+  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 1000) := by
+    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
+    · exact fun x _ => h_diff x
+    · exact fun x hx => h_max hx
+    · exact convex_closedBall 0 1000
+  exact h_lips.mono Metric.ball_subset_closedBall
+
 /-- **BatchNorm Stability Certificate**: Bundles the BatchNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
 noncomputable def batchNormCertificate (N D : ℕ) (w : W (NormParam (Fin D))) :
     StabilityCertificate (W (Fin N × Fin D)) (W (Fin N × Fin D)) where
   f := batchnormForward w
-  S := Set.univ
+  S := Metric.ball 0 1000
   K := (batchnorm_forward_lipschitz w).choose
-  h_lipschitz := (batchnorm_forward_lipschitz w).choose_spec.lipschitzOnWith (s := Set.univ)
-  h_smooth := (contDiff_batchnormForward w).contDiffOn (s := Set.univ)
+  h_lipschitz := (batchnorm_forward_lipschitz w).choose_spec
+  h_smooth := (contDiff_batchnormForward w).contDiffOn
 
 end LeanSharp
