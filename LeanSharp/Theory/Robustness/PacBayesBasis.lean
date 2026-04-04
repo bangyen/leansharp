@@ -110,6 +110,7 @@ def PacBayesGeneralizationBound (L_D L_S : W ι → ℝ) (P μ_prior : Measure (
   ∫ w, L_D w ∂P ≤ ∫ w, L_S w ∂P +
     sqrt (((klDivergenceW P μ_prior).toReal + log (1 / δ)) / (2 * n))
 
+omit [Fintype ι] in
 /-- **Theorem**: The Donsker-Varadhan Variational Inequality holds for probability
     measures P, Q with P ≪ Q when f and exp(f) are suitably integrable.
 
@@ -145,7 +146,7 @@ theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ
   -- KL(P||Q) as defined in LeanSharp equals the Mathlib KL value
   have h_kl_eq_mathlib : (klDivergenceW P Q).toReal = (klDiv P Q).toReal := by
     have hnn := integral_llr_add_sub_measure_univ_nonneg hPQ hllr
-    simp [IsProbabilityMeasure.measure_univ, measureReal_def] at hnn
+    simp only [measureReal_def, measure_univ, ENNReal.toReal_one, add_sub_cancel_right] at hnn
     simp only [klDivergenceW, hPQ, ↓reduceIte]
     -- klDivergenceW uses ∫ log (dP/dQ), which equals ∫ llr P Q = ∫ llr P Q
     -- klDiv's toReal on probability measures equals ∫ llr P Q (h_klDiv_eq)
@@ -160,8 +161,10 @@ theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ
     have hac_tilt : P ≪ Q.tilted f :=
       hPQ.trans (absolutelyContinuous_tilted hef)
     have := integral_llr_add_sub_measure_univ_nonneg hac_tilt hllr_tilt
-    simp [IsProbabilityMeasure.measure_univ, measureReal_def,
-      isProbabilityMeasure_tilted hef] at this
+    simp only [
+      measureReal_def, isProbabilityMeasure_tilted hef,
+      measure_univ, ENNReal.toReal_one, add_sub_cancel_right
+    ] at this
     exact this
   -- Final arithmetic from h_llr_eq:
   -- ∫ llr P (Q.tilted f) ∂P = ∫ llr P Q ∂P - ∫ f ∂P + log ∫ exp f ∂Q
@@ -169,6 +172,7 @@ theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ
   --            = KL(P||Q) + log ∫ exp f ∂Q
   linarith [h_klDiv_eq, h_kl_eq_mathlib, h_kl_nn, h_llr_eq]
 
+omit [Fintype ι] in
 /-- **Theorem**: The general PAC-Bayes Generalization Bound holds.
     The generalization bound follows from the Donsker-Varadhan inequality applied to the
     empirical loss, using the PAC-Bayes inversion of McDiarmid's inequality. The full

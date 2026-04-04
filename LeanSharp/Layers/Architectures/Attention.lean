@@ -131,7 +131,9 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
     (g_w, g_x)
 
 /-- **Attention Global Smoothness**: Extracted global $C^2$ operation. -/
-theorem contDiff_attentionForward_global (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+theorem contDiff_attentionForward_global
+      (S D : ℕ) [NeZero S] [NeZero D]
+      (w : W (ATTParam (Fin D))) :
     ContDiff ℝ 2 ((mhaLayer S D).forward w) := by
   have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
   apply contDiff_piLp'
@@ -171,16 +173,19 @@ theorem contDiff_attentionForward_global (S D : ℕ) [NeZero S] [NeZero D] (w : 
     · apply contDiff_piLp_apply
     · apply contDiff_const
 
-/-- **Attention Forward Lipschitz**: Softmax-based attention is locally Lipschitz continuous bounding domains. -/
+/-- **Attention Forward Lipschitz**:
+    Softmax-based attention is locally Lipschitz continuous bounding domains. -/
 theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
     ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 1000) := by
   let f := (mhaLayer S D).forward w
   have h_c2 : ContDiff ℝ 2 f := contDiff_attentionForward_global S D w
   have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
   have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
-  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin S × Fin D)) 1000) := isCompact_closedBall (0 : W (Fin S × Fin D)) 1000
+  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin S × Fin D)) 1000) :=
+    isCompact_closedBall (0 : W (Fin S × Fin D)) 1000
   have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) := continuous_norm.comp h_cont_deriv
-  have h_nonempty : (Metric.closedBall (0 : W (Fin S × Fin D)) 1000).Nonempty := Metric.nonempty_closedBall.mpr (by norm_num)
+  have h_nonempty : (Metric.closedBall (0 : W (Fin S × Fin D)) 1000).Nonempty :=
+    Metric.nonempty_closedBall.mpr (by norm_num)
   obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
   let K := ‖fderiv ℝ f x0‖₊
   use K
