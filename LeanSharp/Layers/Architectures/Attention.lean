@@ -7,6 +7,10 @@ import LeanSharp.Core.Models
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import LeanSharp.Layers.Basic.Activation
 import LeanSharp.Theory.Alignment
+import Mathlib.Topology.Order.Basic
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 namespace LeanSharp
 
@@ -126,14 +130,9 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
       (∑ d, gV_f (s, d) * V_p_f (k, d))
     (g_w, g_x)
 
-/-- **Attention Forward Lipschitz**: Softmax-based attention is locally Lipschitz continuous bounding domains. -/
-theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 1000) := sorry
-
-/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
-theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) := by
-  apply ContDiff.contDiffOn
+/-- **Attention Global Smoothness**: Extracted global $C^2$ operation. -/
+theorem contDiff_attentionForward_global (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    ContDiff ℝ 2 ((mhaLayer S D).forward w) := by
   have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
   apply contDiff_piLp'
   intro ⟨idx_s, idx_d⟩
@@ -171,6 +170,31 @@ theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTP
     apply ContDiff.mul
     · apply contDiff_piLp_apply
     · apply contDiff_const
+
+/-- **Attention Forward Lipschitz**: Softmax-based attention is locally Lipschitz continuous bounding domains. -/
+theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 1000) := by
+  let f := (mhaLayer S D).forward w
+  have h_c2 : ContDiff ℝ 2 f := contDiff_attentionForward_global S D w
+  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
+  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
+  have h_compact : IsCompact (Metric.closedBall (0 : W (Fin S × Fin D)) 1000) := isCompact_closedBall (0 : W (Fin S × Fin D)) 1000
+  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) := continuous_norm.comp h_cont_deriv
+  have h_nonempty : (Metric.closedBall (0 : W (Fin S × Fin D)) 1000).Nonempty := Metric.nonempty_closedBall.mpr (by norm_num)
+  obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
+  let K := ‖fderiv ℝ f x0‖₊
+  use K
+  have h_lips : LipschitzOnWith K f (Metric.closedBall (0 : W _) 1000) := by
+    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
+    · exact fun x _ => h_diff x
+    · exact fun x hx => h_max hx
+    · exact convex_closedBall 0 1000
+  exact h_lips.mono Metric.ball_subset_closedBall
+
+/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
+theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
+    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) :=
+  (contDiff_attentionForward_global S D w).contDiffOn
 
 /-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
