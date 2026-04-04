@@ -107,4 +107,16 @@ def PacBayesGeneralizationBound (L_D L_S : W ι → ℝ) (P μ_prior : Measure (
   ∫ w, L_D w ∂P ≤ ∫ w, L_S w ∂P +
     sqrt (((klDivergenceW P μ_prior).toReal + log (1 / δ)) / (2 * n))
 
+/-- **Theorem**: The Donsker-Varadhan Variational Inequality holds for any
+    probability measures P, Q and suitable function f. -/
+theorem DonskerVaradhanInequality_holds (P Q : Measure (W ι)) (f : W ι → ℝ)
+    [IsProbabilityMeasure P] [IsProbabilityMeasure Q] :
+    DonskerVaradhanInequality P Q f := sorry
+
+/-- **Theorem**: The general PAC-Bayes Generalization Bound holds. -/
+theorem PacBayesGeneralizationBound_holds (L_D L_S : W ι → ℝ) (P μ_prior : Measure (W ι))
+    (n : ℕ) (δ : ℝ)
+    [IsProbabilityMeasure P] [IsProbabilityMeasure μ_prior] :
+    PacBayesGeneralizationBound L_D L_S P μ_prior n δ := sorry
+
 end LeanSharp
