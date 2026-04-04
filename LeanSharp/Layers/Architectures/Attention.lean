@@ -132,7 +132,45 @@ theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (AT
 
 /-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
 theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D))) :
-    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) := sorry
+    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 1000) := by
+  apply ContDiff.contDiffOn
+  have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
+  apply contDiff_piLp'
+  intro ⟨idx_s, idx_d⟩
+  dsimp only [mhaLayer, Layer.forward, attentionForward]
+  simp only [WithLp.equiv_apply, WithLp.equiv_symm_apply]
+  apply ContDiff.sum
+  intro j _
+  apply ContDiff.mul
+  · apply ContDiff.comp (contDiff_piLp_apply (p := 2) (i := j))
+    apply ContDiff.comp contDiff_softmax
+    apply contDiff_piLp'
+    intro j'
+    apply ContDiff.div
+    · apply ContDiff.sum
+      intro k _
+      apply ContDiff.mul
+      · apply ContDiff.sum
+        intro d _
+        apply ContDiff.mul
+        · apply contDiff_piLp_apply
+        · apply contDiff_const
+      · apply ContDiff.sum
+        intro d _
+        apply ContDiff.mul
+        · apply contDiff_piLp_apply
+        · apply contDiff_const
+    · exact contDiff_const
+    · intro _
+      apply ne_of_gt
+      apply Real.sqrt_pos.mpr
+      have : (0 : ℝ) < ↑D := Nat.cast_pos.mpr (NeZero.pos D)
+      exact this
+  · apply ContDiff.sum
+    intro d _
+    apply ContDiff.mul
+    · apply contDiff_piLp_apply
+    · apply contDiff_const
 
 /-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/
