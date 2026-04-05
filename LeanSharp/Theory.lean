@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Theory.Alignment
+import LeanSharp.Theory.Concentration
 import LeanSharp.Theory.Dynamics
 import LeanSharp.Theory.InfiniteLimit
 import LeanSharp.Theory.Robustness
