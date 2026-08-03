@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
-import LeanSharp.Theory.Dynamics.ChainConvergence
 import LeanSharp.Theory.Dynamics.Convergence
 import LeanSharp.Theory.Dynamics.Generalization
 import LeanSharp.Theory.Dynamics.SamBound
