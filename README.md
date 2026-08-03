@@ -31,19 +31,20 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Chain-Level Convergence** | Medium | Extend convergence from single layers to composed `Chain` architectures. This requires the composed loss to be strongly convex in the flattened parameters (an idealized assumption) and a certificate-based smoothness composition argument; a genuine treatment is still open. |
+| **SAM-ZSharp Update Convergence** | High | Prove descent/convergence for the `samZSharpUpdate` step (gradient at the SAM perturbation, Z-score filtered). The update is defined but unproven; the smoothness bound (`sam_taylor_bound`) and the filter's $L_2$ contraction already exist. |
+| **Filter Bias under Heavy-Tailed Noise** | Medium | Prove the Z-score filtered estimator's bias behavior under heavy-tailed ($\alpha$-stable) noise: unbiased in the symmetric case, bounded otherwise. This is the filter's statistical justification. |
+| **Z-Score Mask Breakdown Point** | Medium | Formalize how many outliers the mask survives before collapsing, reusing the existing breakdown-point framework. |
+
+> **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
+> robustness, and the statistical properties of the filter. It deliberately does not develop general learning
+> theory (e.g., PAC-Bayes risk bounds) or convergence results that require idealized assumptions unmet by deep
+> networks; material in those categories is out of scope.
 
 > **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
 > a classical Central Limit Theorem for the filtered gradient is not formally derivable here.
 > Instead, the project provides non-asymptotic concentration (discrete Chebyshev) and
 > infinite-width filtered-statistic domination as the CLT substitute — formalized in
 > `Theory/Concentration` and `Theory/InfiniteLimit`.
-
-## Extensions & Future Work
-
-| Task | Priority | Justification |
-| :--- | :--- | :--- |
-| **Optimality Bound** | Low | Prove statistical lower bounds via information theory. |
 
 ## Installation & Building
 
