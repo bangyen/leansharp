@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Theory.Robustness.PacBayesBasis
+import Mathlib.Probability.Moments.SubGaussian
 
 /-!
 # PAC-Bayes-Hoeffding Bounds
@@ -16,6 +17,8 @@ moment-generating-function assumption on the loss excess.
 
 * `pacBayesHoeffdingInequality`: The λ-parametrized PAC-Bayes bound from DV.
 * `pacBayesBoundSqrtKL`: The √KL PAC-Bayes bound at the optimal λ.
+* `boundedLossSubGaussian`: Hoeffding's bridge from bounded losses to the
+  sub-Gaussian MGF hypothesis, making the PAC-Bayes bound applicable to $[0,1]$-losses.
 -/
 
 namespace LeanSharp
@@ -124,5 +127,39 @@ theorem pacBayesBoundSqrtKL (L_D L_S : W ι → ℝ) (P μ : Measure (W ι)) (σ
         rw [abs_of_nonneg]
         positivity
   linarith
+
+omit [Fintype ι] in
+/-- **Bounded-Loss Sub-Gaussian Bridge (Hoeffding)**: If the loss excess `X = L_D - L_S`
+is almost surely in the interval `[a, b]` under the prior `μ` and has zero mean, then it
+satisfies the sub-Gaussian moment-generating-function hypothesis required by
+`pacBayesHoeffdingInequality` with parameter `σ² = ((b - a) / 2)²`. In the classical
+setting $0 \le L \le 1$, this gives `σ² = 1/4`.
+
+    **Proof**: `hasSubgaussianMGF_of_mem_Icc_of_integral_eq_zero` (Hoeffding's lemma)
+    bounds the centered MGF by `exp(σ² t² / 2)` for all `t`; taking logarithms yields
+    the `h_subg` form. -/
+theorem boundedLossSubGaussian {μ : Measure (W ι)} [IsProbabilityMeasure μ]
+    (X : W ι → ℝ) {a b : ℝ}
+    (hm : AEMeasurable X μ)
+    (hb : ∀ᵐ w ∂μ, X w ∈ Set.Icc a b)
+    (hmean : ∫ w, X w ∂μ = 0) :
+    ∀ l : ℝ,
+      log (∫ w, exp (l * X w) ∂μ) ≤ l ^ 2 * (((‖b - a‖₊ : ℝ) / 2) ^ 2) / 2 := by
+  intro l
+  have hsub := ProbabilityTheory.hasSubgaussianMGF_of_mem_Icc_of_integral_eq_zero
+    (μ := μ) (X := X) (a := a) (b := b) hm hb hmean
+  have hmgf : ∫ w, exp (l * X w) ∂μ ≤
+      Real.exp (((‖b - a‖₊ : ℝ) / 2) ^ 2 * l ^ 2 / 2) := by
+    exact hsub.mgf_le l
+  have hpos : 0 < ∫ w, exp (l * X w) ∂μ :=
+    integral_exp_pos (μ := μ) (f := fun w => l * X w) (by
+      have h_int : Integrable (fun w => exp (l * X w)) μ :=
+        (hsub.integrable_exp_mul l).congr (Filter.Eventually.of_forall (fun w => by ring))
+      exact h_int)
+  have hlog_le : log (∫ w, exp (l * X w) ∂μ) ≤
+      log (Real.exp (((‖b - a‖₊ : ℝ) / 2) ^ 2 * l ^ 2 / 2)) := by
+    exact Real.log_le_log hpos hmgf
+  rw [Real.log_exp] at hlog_le
+  nlinarith [hlog_le]
 
 end LeanSharp

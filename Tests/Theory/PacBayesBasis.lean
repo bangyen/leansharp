@@ -63,4 +63,18 @@ noncomputable example (L_D L_S : W ι → ℝ) (P μ : Measure (W ι)) (σ : ℝ
       Real.sqrt (2 * (klDivergenceW P μ).toReal * σ ^ 2) :=
   pacBayesBoundSqrtKL L_D L_S P μ σ hPQ h_int_LD h_int_LS h_subg h_int_exp hllr hσ hKL
 
+/-- Test the bounded-loss Hoeffding bridge wiring: a zero-mean loss excess in `[0, 1]`
+yields the sub-Gaussian MGF hypothesis with parameter `1/4`. -/
+example (μ : Measure (W ι)) [IsProbabilityMeasure μ]
+    (X : W ι → ℝ)
+    (hm : AEMeasurable X μ)
+    (hb : ∀ᵐ w ∂μ, X w ∈ Set.Icc (0 : ℝ) 1)
+    (hmean : ∫ w, X w ∂μ = 0) (l : ℝ) :
+    log (∫ w, exp (l * X w) ∂μ) ≤ l ^ 2 / 8 := by
+  have hbnd := boundedLossSubGaussian (μ := μ) X hm hb hmean l
+  have hnorm : (‖(1 : ℝ) - 0‖₊ : ℝ) / 2 = 1 / 2 := by norm_num
+  rw [hnorm] at hbnd
+  convert hbnd using 1
+  ring
+
 end LeanSharp.Tests

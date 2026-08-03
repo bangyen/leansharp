@@ -31,7 +31,7 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **McAllester PAC-Bayes Bound with Confidence** | High | Derive the sample-dependent bound $\sqrt{(\text{KL}(P\|\mu) + \log(1/\delta)) / (2n)}$ from Donsker-Varadhan and Hoeffding's lemma on bounded losses ($0 \le L \le 1$). Currently stated as a signature in `PacBayesGeneralizationBound`/`StabilityPacBayesBound`; the existing √KL result is the generic, parameter-free version. This includes bridging the sub-Gaussian MGF hypothesis to bounded losses via mathlib's `hasSubgaussianMGF_of_mem_Icc`. |
+| **McAllester PAC-Bayes Bound with Confidence** | High | Derive the sample-dependent bound $\sqrt{(\text{KL}(P\|\mu) + \log(1/\delta)) / (2n)}$ from Donsker-Varadhan and Hoeffding's lemma on bounded losses ($0 \le L \le 1$). The sub-Gaussian bridge (`boundedLossSubGaussian`) is proven; the sample-indexed `n`/`δ` form remains open. |
 | **Chain-Level Convergence** | Medium | Extend convergence from single layers to composed `Chain` architectures. This requires the composed loss to be strongly convex in the flattened parameters (an idealized assumption) and a certificate-based smoothness composition argument; a genuine treatment is still open. |
 
 > **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
