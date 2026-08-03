@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Theory.Robustness.PacBayesMcAllesterBound
+import LeanSharp.Theory.Robustness.ZSharpMcAllester
 
 /-!
 # McAllester PAC-Bayes Bound Verification Tests
@@ -18,7 +19,7 @@ namespace LeanSharp.Tests
 
 open MeasureTheory ProbabilityTheory Real
 
-variable {ι : Type*}
+variable {ι : Type*} [Fintype ι]
 variable {Ω X : Type*} [MeasurableSpace X] [MeasurableSpace Ω]
   {PΩ : Measure Ω} [IsProbabilityMeasure PΩ]
   {D : Measure X} [IsProbabilityMeasure D]
@@ -72,5 +73,30 @@ example (C : RiskExcessCtx PΩ D n Xᵢ ℓ L_D) (P μ : Measure (W ι))
         (∫ w, empiricalRisk n Xᵢ ℓ w ω ∂P) +
           Real.sqrt (((klDivergenceW P μ).toReal + log (1 / δ)) / (2 * n))} :=
   pacBayesMcAllesterBound C P μ hPQ hL_D_int hℓ_w_int hllr hL_D_meas hℓ_prod δ hδ0 hδ1 hKL
+
+/-- Test witness (ZSharp instantiation): under the pointwise Z-Score sharpness bound,
+with probability at least `1 - δ` the posterior risk is bounded by the empirical risk
+plus the better of the √KL sample term and the filtered-sharpness penalty. -/
+example (C : RiskExcessCtx PΩ D n Xᵢ ℓ L_D) (P μ : Measure (W ι))
+    [IsProbabilityMeasure P] [IsProbabilityMeasure μ] [SigmaFinite μ]
+    (hPQ : P ≪ μ) (hL_D_int : Integrable L_D P) (hℓ_w_int : ∀ x, Integrable (fun w => ℓ w x) P)
+    (hllr : Integrable (llr P μ) P) (hL_D_meas : Measurable L_D)
+    (hℓ_prod : Measurable (fun p : W ι × X => ℓ p.1 p.2))
+    (ρ z c0 : ℝ)
+    (hZSharp : ∀ w ω,
+      ZSharpPacBayesBound L_D (fun u => empiricalRisk n Xᵢ ℓ u ω) w ρ z c0)
+    (hZSharp_int : ∀ ω, Integrable (fun w =>
+      ‖filteredGradient (gradient (fun u => empiricalRisk n Xᵢ ℓ u ω) w) z‖ * ρ) P)
+    (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ < 1) (hKL : 0 < (klDivergenceW P μ).toReal) :
+    (1 : ℝ) - δ ≤
+      PΩ.real {ω |
+        (∫ w, L_D w ∂P) ≤
+          min (∫ w, empiricalRisk n Xᵢ ℓ w ω ∂P +
+                Real.sqrt (((klDivergenceW P μ).toReal + log (1 / δ)) / (2 * n)))
+              ((∫ w, empiricalRisk n Xᵢ ℓ w ω ∂P) +
+                (∫ w, ‖filteredGradient
+                  (gradient (fun u => empiricalRisk n Xᵢ ℓ u ω) w) z‖ * ρ ∂P) + c0)} :=
+  zSharpMcAllesterInstantiation C P μ hPQ hL_D_int hℓ_w_int hllr hL_D_meas hℓ_prod
+    ρ z c0 hZSharp hZSharp_int δ hδ0 hδ1 hKL
 
 end LeanSharp.Tests
