@@ -23,7 +23,7 @@ For a detailed overview of the project's design patterns, including the `W` para
 - **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and a matching $O(1/T)$ rate for strongly convex objectives, plus an $O(1/\sqrt{T})$ rate for non-convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
 - **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
 - **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`. Proved that layer-wise Z-score filtering bounds the total network update norm by the raw backpropagation gradients, and that the Z-score mask is scale-invariant.
-- **Generalization Theory**: Proved the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery, and derived from it the $\lambda$-parametrized PAC-Bayes-Hoeffding inequality and its $\sqrt{\text{KL}}$ form under a sub-Gaussian MGF assumption, together with localized bounds for non-convex landscapes.
+- **Generalization Theory**: Proved the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery, and derived from it the $\lambda$-parametrized PAC-Bayes-Hoeffding inequality, its $\sqrt{\text{KL}}$ form under a sub-Gaussian MGF assumption, and localized bounds over `StabilityCertificate` regions for non-convex landscapes.
 - **Heavy-Tail Robustness**: Proved almost-sure convergence of the objective under heavy-tailed noise (Cauchy, $\alpha$-stable) via non-Gaussian probability oracles.
 - **Concentration & Infinite-Width Stability**: Formalized discrete vector concentration (Chebyshev) bounding the Z-score mask coverage, plus infinite-width filtered-norm domination and analytical limit stability.
 
@@ -31,7 +31,6 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Localized PAC-Bayes Bound** | High | Prove that `StabilityPacBayesBound` holds under `StabilityCertificate` hypotheses; it is currently a stated signature. |
 | **Chain-Level Convergence** | Medium | Extend convergence results from single layers to composed `Chain` architectures. |
 | **Infinite-Width Filtered Statistics** | Medium | Prove limit statements for filtered mean/std given `HasAnalyticalMean`/`HasAnalyticalStd`, completing the CLT-substitute program. |
 
