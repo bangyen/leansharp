@@ -7,6 +7,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.Normed.Lp.MeasurableSpace
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
@@ -20,6 +21,7 @@ Sharpness-Aware Minimization (SAM).
 * `gradient`: The gradient of a loss function, defined via the Riesz representation.
 * `hessian`: The Hessian operator, defined as the derivative of the gradient.
 * `TwiceDifferentiable`: Bundles a function $L$ with its second-order regularity properties.
+* `MeasurableSpace (W ι)`: The product Borel structure on the parameter space.
 
 ## Main Theorems
 * `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
@@ -40,6 +42,11 @@ variable {ι : Type*} [Fintype ι]
 
 /-- The parameter space $W = \mathbb{R}^d$, represented as a Euclidean space. -/
 abbrev W (ι : Type*) := EuclideanSpace ℝ ι
+
+/-- The parameter space is measurable (from the product Borel structure on `ι → ℝ`). -/
+noncomputable instance : MeasurableSpace (W ι) :=
+  letI : MeasurableSpace (ι → ℝ) := MeasurableSpace.pi
+  inferInstance
 
 /-- The gradient of a loss function at point `w`.
 Defined as the Riesz representation of the Fréchet derivative. -/

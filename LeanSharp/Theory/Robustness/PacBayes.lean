@@ -6,7 +6,6 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Filters
 import LeanSharp.Theory.Dynamics.Generalization
 import LeanSharp.Theory.Dynamics.SamBound
-import LeanSharp.Theory.Robustness.PacBayesBasis
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!

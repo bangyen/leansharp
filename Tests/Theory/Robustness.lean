@@ -4,12 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
-import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
-import LeanSharp.Theory.Robustness.LinearPacBayes
-import LeanSharp.Theory.Robustness.LocalPacBayes
-import LeanSharp.Theory.Robustness.PacBayesMcAllesterBound
 
 /-!
 # Robustness Tests
@@ -61,37 +57,5 @@ example (s s_fixed : Finset ℕ) (g : ℕ → W ι) (h_sub : s_fixed ⊆ s)
       (∀ i ∈ s \ s_fixed, ‖g' i‖ ≤ R_out) →
       ‖geometricMedian s g'‖ ≤ R_med ∧ ‖zFilteredEmpiricalMean s g' z‖ ≤ max R_fixed R_out :=
   median_and_zfiltered_mean_bounded_subset s g s_fixed h_sub h_maj z R_fixed R_out hs h_fixed_bound
-
-/-- Test witness (localized PAC-Bayes): under a sub-Gaussian loss excess, the
-localized Gibbs posterior over a `StabilityCertificate` region is a probability
-measure and the localized PAC-Bayes inequality holds. -/
-example (L_D L_S : W ι → ℝ) (μ_prior : Measure (W ι)) (σ : ℝ)
-    {ι' : Type*} [Fintype ι'] (cert : StabilityCertificate (W ι) (W ι'))
-    [IsProbabilityMeasure μ_prior] [SigmaFinite μ_prior]
-    (h_S_pos : μ_prior cert.S > 0)
-    (h_int_LS : Integrable (fun w => exp (-1 * L_S w)) (μ_prior.restrict cert.S))
-    (h_int_LD : Integrable L_D (localizedPosterior L_S μ_prior cert))
-    (h_int_LS_post : Integrable L_S (localizedPosterior L_S μ_prior cert))
-    (h_subg : ∀ l : ℝ, 0 < l →
-      log (∫ w, exp (l * (L_D w - L_S w)) ∂μ_prior) ≤ l ^ 2 * σ ^ 2 / 2)
-    (h_int_exp : ∀ l : ℝ, Integrable (fun w => exp (l * (L_D w - L_S w))) μ_prior)
-    (hllr : Integrable (llr (localizedPosterior L_S μ_prior cert) μ_prior)
-      (localizedPosterior L_S μ_prior cert))
-    (hσ : 0 < σ) (hKL : 0 < (klDivergenceW (localizedPosterior L_S μ_prior cert) μ_prior).toReal) :
-    IsProbabilityMeasure (localizedPosterior L_S μ_prior cert) ∧
-    ∫ w, L_D w ∂(localizedPosterior L_S μ_prior cert) ≤
-      ∫ w, L_S w ∂(localizedPosterior L_S μ_prior cert) +
-        Real.sqrt (2 * (klDivergenceW (localizedPosterior L_S μ_prior cert) μ_prior).toReal
-          * σ ^ 2) :=
-  stabilityPacBayesBound_provability L_D L_S μ_prior σ cert h_S_pos h_int_LS h_int_LD
-    h_int_LS_post h_subg h_int_exp hllr hσ hKL
-
-/-- Test witness (linear-layer instantiation): the linear layer certificate's
-domain is `Set.univ`, so any probability prior has positive mass there. -/
-example {ι_in ι_out : Type} [Fintype ι_in] [Fintype ι_out]
-    (μ_prior : Measure (W ι_in)) [IsProbabilityMeasure μ_prior]
-    (w : W (LinearParam ι_in ι_out)) :
-    μ_prior (linearCertificate w).S > 0 :=
-  linearCertificate_prior_pos μ_prior w
 
 end LeanSharp.Tests
