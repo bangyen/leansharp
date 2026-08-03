@@ -32,7 +32,7 @@ For a detailed overview of the project's design patterns, including the `W` para
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **SAM-ZSharp Update Convergence** | High | Prove descent/convergence for the `samZSharpUpdate` step (gradient at the SAM perturbation, Z-score filtered). The update is defined but unproven; the smoothness bound (`sam_taylor_bound`) and the filter's $L_2$ contraction already exist. |
-| **Filter Bias under Heavy-Tailed Noise** | Medium | The unbiasedness core is proven: filtering noise from a symmetric law is unbiased (`E[filteredGradient η z] = 0`, `FilterBias`), the filter's statistical justification. Remaining: the bounded-bias statement for non-symmetric heavy-tailed noise and the i.i.d. sample version. |
+| **Filter Bias under Heavy-Tailed Noise** | Medium | The unbiasedness claim is proven for the filter (`E[filteredGradient η z] = 0`) and for the sample estimator it uses (`E[zFilteredEmpiricalMean] = 0`) under symmetric heavy-tailed laws (`FilterBias`). The bounded-bias statement for non-symmetric noise is left open; it requires bounding an expectation over a data-dependent truncation for a general law. |
 | **Z-Score Mask Breakdown Point** | Medium | Formalize how many outliers the mask survives before collapsing, reusing the existing breakdown-point framework. |
 
 > **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
