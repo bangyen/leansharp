@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Landscape
+import LeanSharp.Layers.Basic.Linear
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
+import LeanSharp.Theory.Robustness.LinearPacBayes
 import LeanSharp.Theory.Robustness.LocalPacBayes
 
 /-!
@@ -82,5 +84,13 @@ example (L_D L_S : W ι → ℝ) (μ_prior : Measure (W ι)) (σ : ℝ)
           * σ ^ 2) :=
   stabilityPacBayesBound_provability L_D L_S μ_prior σ cert h_S_pos h_int_LS h_int_LD
     h_int_LS_post h_subg h_int_exp hllr hσ hKL
+
+/-- Test witness (linear-layer instantiation): the linear layer certificate's
+domain is `Set.univ`, so any probability prior has positive mass there. -/
+example {ι_in ι_out : Type} [Fintype ι_in] [Fintype ι_out]
+    (μ_prior : Measure (W ι_in)) [IsProbabilityMeasure μ_prior]
+    (w : W (LinearParam ι_in ι_out)) :
+    μ_prior (linearCertificate w).S > 0 :=
+  linearCertificate_prior_pos μ_prior w
 
 end LeanSharp.Tests

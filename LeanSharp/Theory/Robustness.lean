@@ -8,6 +8,7 @@ import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilteredMeanProps
+import LeanSharp.Theory.Robustness.LinearPacBayes
 import LeanSharp.Theory.Robustness.LocalPacBayes
 import LeanSharp.Theory.Robustness.MedianComparison
 import LeanSharp.Theory.Robustness.PacBayes
