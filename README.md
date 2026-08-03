@@ -20,17 +20,14 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 ## Key Accomplishments
 
-- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and established geometric convergence ($O(c^T)$) for strongly convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
+- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and established a matching $O(1/T)$ rate for strongly convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
 - **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
 - **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`. Proved that layer-wise Z-score filtering bounds the total network update norm by the raw backpropagation gradients, and that the Z-score mask is scale-invariant.
 - **Generalization Theory**: Fully formalized the **PAC-Bayesian** population risk bounds by proving the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery, including localized bounds for non-convex landscapes.
+- **Heavy-Tail Robustness**: Proved almost-sure convergence of the objective under heavy-tailed noise (Cauchy, $\alpha$-stable) via non-Gaussian probability oracles.
 - **Concentration & Infinite-Width Stability**: Formalized discrete vector concentration (Chebyshev) bounding the Z-score mask coverage, plus infinite-width filtered-norm domination and analytical limit stability.
 
 ## Immediate Roadmap
-
-| Task | Priority | Justification |
-| :--- | :--- | :--- |
-| **Non-Convex Population Risk** | Medium | Extend PAC-Bayes analysis to non-convex landscapes using local stability certificates. |
 
 > **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
 > a classical Central Limit Theorem for the filtered gradient is not formally derivable here.
@@ -41,7 +38,6 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Stochastic Generalization** | High | Extend alignment to heavy-tailed noise distributions. |
 | **Optimality Bound** | Low | Prove statistical lower bounds via information theory. |
 
 ## Installation & Building
