@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
+import LeanSharp.Theory.Robustness.FilteredMeanProps.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.MeasureSpace
+import Mathlib.Probability.HasLaw
 
 /-!
 # Z-Score Filter Bias
@@ -25,11 +27,13 @@ the Z-Score filter.
 * `zScoreMask_neg`: the mask is even (sign-invariant).
 * `filteredGradient_neg`: the filtered gradient is odd.
 * `filtered_noise_mean_zero`: filtering symmetric noise is unbiased (`E[filteredGradient η z] = 0`).
+* `zFilteredEmpiricalMean_symmetric_noise_mean_zero`: the filtered empirical mean of an
+  i.i.d. sample from a symmetric law has zero expectation.
 -/
 
 namespace LeanSharp
 
-open MeasureTheory
+open MeasureTheory ProbabilityTheory
 
 variable {ι : Type*} [Fintype ι]
 
@@ -106,6 +110,41 @@ lemma filtered_noise_mean_zero (D : Measure (W ι)) (z : ℝ)
     (h_int : Integrable (fun g => filteredGradient g z) D) :
     (∫ g, filteredGradient g z ∂D) = 0 := by
   exact integral_odd_eq_zero_of_symmetric D h_sym h_int (fun g => filteredGradient_neg g z)
+
+/-- **Filter bias on a sample**: the Z-Score filtered empirical mean of an i.i.d. sample
+from a symmetric law has zero expectation. This is the unbiasedness guarantee for the
+sample aggregation the algorithm actually uses. -/
+lemma zFilteredEmpiricalMean_symmetric_noise_mean_zero
+    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+    {α : Type*} (s : Finset α) (η : α → Ω → W ι) (z : ℝ)
+    (D : Measure (W ι)) (h_sym : D.map (fun g => -g) = D)
+    (h_law : ∀ i ∈ s, HasLaw (η i) D P)
+    (h_int : ∀ i ∈ s, Integrable (fun g => filteredGradient g z) D) :
+    (∫ ω, zFilteredEmpiricalMean s (fun i => η i ω) z ∂P) = 0 := by
+  have h_int_P : ∀ i ∈ s, Integrable (fun ω => filteredGradient (η i ω) z) P := by
+    intro i hi
+    have hg : Integrable (fun g => filteredGradient g z) (P.map (η i)) := by
+      simpa only [(h_law i hi).map_eq] using h_int i hi
+    exact hg.comp_aemeasurable (h_law i hi).aemeasurable
+  calc
+    (∫ ω, zFilteredEmpiricalMean s (fun i => η i ω) z ∂P)
+        = (∫ ω, (1 / (s.card : ℝ)) • ∑ i ∈ s, filteredGradient (η i ω) z ∂P) := by
+          rfl
+    _ = (1 / (s.card : ℝ)) • ∑ i ∈ s, (∫ ω, filteredGradient (η i ω) z ∂P) := by
+          rw [integral_smul]
+          rw [integral_finset_sum s h_int_P]
+    _ = (1 / (s.card : ℝ)) • ∑ i ∈ s, (∫ g, filteredGradient g z ∂D) := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro i hi
+          exact HasLaw.integral_comp (h_law i hi) (h_int i hi).aestronglyMeasurable
+    _ = (1 / (s.card : ℝ)) • ∑ i ∈ s, 0 := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro i hi
+          exact filtered_noise_mean_zero D z h_sym (h_int i hi)
+    _ = 0 := by
+          simp only [Finset.sum_const_zero, smul_zero]
 
 end
 

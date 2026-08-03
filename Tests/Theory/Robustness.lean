@@ -78,4 +78,14 @@ example (D : Measure (W ι)) (z : ℝ)
     (∫ g, filteredGradient g z ∂D) = 0 :=
   filtered_noise_mean_zero D z h_sym h_int
 
+/-- Test witness (sample filter bias): the filtered empirical mean of an i.i.d. sample
+from a symmetric law has zero expectation. -/
+example {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+    (s : Finset ℕ) (η : ℕ → Ω → W ι) (z : ℝ)
+    (D : Measure (W ι)) (h_sym : D.map (fun g => -g) = D)
+    (h_law : ∀ i ∈ s, HasLaw (η i) D P)
+    (h_int : ∀ i ∈ s, Integrable (fun g => filteredGradient g z) D) :
+    (∫ ω, zFilteredEmpiricalMean s (fun i => η i ω) z ∂P) = 0 :=
+  zFilteredEmpiricalMean_symmetric_noise_mean_zero s η z D h_sym h_law h_int
+
 end LeanSharp.Tests
