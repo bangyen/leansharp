@@ -41,12 +41,13 @@ open BigOperators
 
 variable {ι : Type*} [Fintype ι]
 
-/-- The Z-score Mask operator. Returns a new vector in `W`. -/
+/-- The Z-score Mask operator. Returns a new vector in `W` with `1` on components
+    within the Z-score threshold of the mean (the inliers) and `0` on outliers. -/
 noncomputable def zScoreMask (g : W ι) (z : ℝ) : W ι :=
   let μ := vectorMean g
   let σ := vectorStd g
   WithLp.equiv 2 (ι → ℝ) |>.symm fun i =>
-    if |(WithLp.equiv 2 (ι → ℝ) g) i - μ| ≥ z * σ then 1 else 0
+    if |(WithLp.equiv 2 (ι → ℝ) g) i - μ| ≤ z * σ then 1 else 0
 
 /-- Element-wise multiplication (Hadamard product) of vectors in $W$. -/
 noncomputable def hadamard (a b : W ι) : W ι :=
@@ -89,34 +90,35 @@ theorem norm_filtered_gradient_le (g : W ι) (z : ℝ) :
   exact h_sqrt
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
-If all components were filtered out, the empirical variance would be less than itself. -/
-private lemma zscore_mask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) (hz_le : z ≤ 1)
+If all components were filtered out (each beyond the threshold), the empirical variance
+would be larger than itself. -/
+private lemma zscore_mask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : ℝ) (hz_ge : 1 ≤ z)
     (h_filtered : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 0) :
     False := by
   haveI : Nonempty ι := inferInstance
-  have h_sq : ∀ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 <
-      (vectorStd g)^2 := by
+  have h_sq : ∀ i : ι, (vectorStd g)^2 <
+      ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2 := by
     intro i
     have hi := h_filtered i
     unfold zScoreMask at hi
     rw [Equiv.apply_symm_apply] at hi
     split_ifs at hi with h_cond
     · norm_num at hi
-    · have h_abs := not_le.mp h_cond
+    · have h_abs : z * vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| := by
+        exact not_le.mp h_cond
       have h_nonneg : 0 ≤ vectorStd g := Real.sqrt_nonneg _
-      have hsz : z * vectorStd g ≤ vectorStd g := mul_le_of_le_one_left h_nonneg hz_le
-      have h_lt : |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| < vectorStd g :=
-        h_abs.trans_le hsz
+      have hsz : vectorStd g ≤ z * vectorStd g := le_mul_of_one_le_left h_nonneg hz_ge
+      have h_lt : vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| :=
+        hsz.trans_lt h_abs
       rw [sq_lt_sq, abs_of_nonneg h_nonneg]
       exact h_lt
-  -- Step 2: Use the Variance Sum Equality and Sum of Squares Bound (inlined)
-  have h_sum_lt : (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2) <
-      (Fintype.card ι : ℝ) * (vectorStd g)^2 := by
-    calc (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2)
-        < (∑ i : ι, (vectorStd g)^2) :=
+  have h_sum_lt : (Fintype.card ι : ℝ) * (vectorStd g)^2 <
+      (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2) := by
+    calc (Fintype.card ι : ℝ) * (vectorStd g)^2
+        = ∑ i : ι, (vectorStd g)^2 := by
+          rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+      _ < (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2) :=
           Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun i _ => h_sq i)
-      _ = (Fintype.card ι : ℝ) * (vectorStd g)^2 := by
-        rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   have h_sum_eq : (∑ i : ι, ((WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g)^2) =
       (Fintype.card ι : ℝ) * (vectorStd g)^2 := by
     have h_var_pos : 0 ≤ vectorVariance g := by unfold vectorVariance; positivity
@@ -127,32 +129,29 @@ private lemma zscore_mask_nonempty_contradiction [Nonempty ι] (g : W ι) (z : �
     field_simp [hd]
   linarith
 
-/-- **Filter Sparsity (Non-emptiness)**: For z ≤ 1, the filter always preserves at least
+/-- **Filter Sparsity (Non-emptiness)**: For z ≥ 1, the filter always preserves at least
 one component of the gradient. -/
-theorem zscore_mask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
+theorem zscore_mask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_ge : 1 ≤ z) :
     ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1 := by
   let σ := vectorStd g
   haveI : 0 < Fintype.card ι := Fintype.card_pos
   by_cases hσ : σ = 0
-  · use Classical.arbitrary ι; simp only [
-      zScoreMask,
-      WithLp.equiv_apply,
-      hσ,
-      mul_zero,
-      ge_iff_le,
-      abs_nonneg,
-      ↓reduceIte,
-      WithLp.equiv_symm_apply,
-      σ
-    ]
+  · use Classical.arbitrary ι
+    have hstd : vectorStd g = 0 := by simpa only [σ] using hσ
+    have h_var : vectorVariance g = 0 := by
+      have hsqrt : Real.sqrt (vectorVariance g) = 0 := by simpa only [vectorStd] using hstd
+      exact (Real.sqrt_eq_zero (by unfold vectorVariance; positivity)).mp hsqrt
+    have h_eq : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) g) i = vectorMean g :=
+      eq_mean_of_vectorVariance_eq_zero g h_var
+    simp only [zScoreMask, WithLp.equiv_apply, h_eq, hstd, mul_zero, ↓reduceIte,
+      WithLp.equiv_symm_apply, sub_self, abs_zero, le_refl]
   · by_contra h
     push_neg at h
-    refine zscore_mask_nonempty_contradiction g z hz_le (fun i => ?_)
+    refine zscore_mask_nonempty_contradiction g z hz_ge (fun i => ?_)
     have hi := h i
     unfold zScoreMask at hi ⊢
     rw [Equiv.apply_symm_apply] at hi ⊢
     split_ifs with h_cond <;> simp only [
-      ge_iff_le,
       ↓reduceIte,
       ne_eq,
       not_true_eq_false,
@@ -161,13 +160,18 @@ theorem zscore_mask_nonempty [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1
 
 /-- **Zero Signal Stability**: If all components of the gradient are identical (zero variance),
 the filter preserves the entire gradient because every component is exactly at the mean. -/
-theorem filtered_gradient_eq_self_of_std_zero (g : W ι) (z : ℝ)
+theorem filtered_gradient_eq_self_of_std_zero [Nonempty ι] (g : W ι) (z : ℝ)
     (h_std : vectorStd g = 0) :
     filteredGradient g z = g := by
+  have h_var : vectorVariance g = 0 := by
+    have hsqrt : Real.sqrt (vectorVariance g) = 0 := by simpa only [vectorStd] using h_std
+    exact (Real.sqrt_eq_zero (by unfold vectorVariance; positivity)).mp hsqrt
+  have h_eq : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) g) i = vectorMean g :=
+    eq_mean_of_vectorVariance_eq_zero g h_var
   unfold filteredGradient hadamard zScoreMask
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext i
-  simp only [h_std, mul_zero, ge_iff_le, abs_nonneg, ↓reduceIte,
+  simp only [h_std, h_eq, mul_zero, sub_self, abs_zero, ↓reduceIte, le_refl,
     Equiv.apply_symm_apply, mul_one]
 
 /-- **Mask Idempotency**: The Z-score mask is its own Hadamard product

@@ -17,7 +17,7 @@ These are "Green Zone" foundational proofs that do not require external assumpti
 
 * `filtered_gradient_coord_eq_mask_mul`.
 * `filtered_gradient_coord_preservation`.
-* `filtered_gradient_zero_of_not_outlier`.
+* `filtered_gradient_zero_of_outlier`.
 * `single_outlier_extraction`.
 * `z_score_mask_scale_invariance`.
 -/
@@ -45,33 +45,37 @@ theorem filtered_gradient_coord_preservation (g : W ι) (z : ℝ) (i : ι)
     (WithLp.equiv 2 (ι → ℝ) g) i := by
   rw [filtered_gradient_coord_eq_mask_mul, h_mask, one_mul]
 
-/-- **Non-Outlier Extraction**: If a component is NOT an outlier, it is zeroed out by the filter. -/
-theorem filtered_gradient_zero_of_not_outlier (g : W ι) (z : ℝ) (i : ι)
-    (h_not_outlier : |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| < z * vectorStd g) :
+/-- **Outlier Removal**: If a component is an outlier (beyond the Z-score threshold),
+it is zeroed out by the filter. -/
+theorem filtered_gradient_zero_of_outlier (g : W ι) (z : ℝ) (i : ι)
+    (h_outlier : z * vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g|) :
     (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i = 0 := by
   zsharp_solve
 
-/-- **Signal-to-Noise Amplification (Idealized)**: In the case where there is exactly
-one outlier and the mean is zero, the filtered gradient is exactly that outlier. -/
+/-- **Outlier Removal (Idealized)**: In the case where there is exactly one outlier and
+the mean is zero, the filtered gradient is the original gradient with that outlier zeroed
+and every inlier preserved. -/
 theorem single_outlier_extraction (g : W ι) (z : ℝ) (i : ι)
     [DecidableEq ι]
     (h_μ : vectorMean g = 0)
-    (h_outlier : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vectorStd g)
-    (h_others : ∀ j : ι, j ≠ i → |(WithLp.equiv 2 (ι → ℝ) g) j| < z * vectorStd g) :
+    (h_outlier : z * vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i|)
+    (h_others : ∀ j : ι, j ≠ i → |(WithLp.equiv 2 (ι → ℝ) g) j| ≤ z * vectorStd g) :
     filteredGradient g z = (WithLp.equiv 2 (ι → ℝ)).symm
-      (fun j => if j = i then (WithLp.equiv 2 (ι → ℝ) g) i else 0) := by
+      (fun j => if j = i then 0 else (WithLp.equiv 2 (ι → ℝ) g) j) := by
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext j
-  rw [
-    Equiv.apply_symm_apply,
-    WithLp.equiv_apply
-  ]
+  rw [Equiv.apply_symm_apply, WithLp.equiv_apply]
   split_ifs with hj
-  · rw [hj]; zsharp_solve
-  · have h_not := h_others j hj
-    have h_μ_j : |(WithLp.equiv 2 (ι → ℝ) g) j - vectorMean g| < z * vectorStd g := by
-      rw [h_μ, sub_zero]; exact h_not
-    exact filtered_gradient_zero_of_not_outlier g z j h_μ_j
+  · rw [hj]
+    apply filtered_gradient_zero_of_outlier g z i
+    rwa [h_μ, sub_zero]
+  · have h_in : |(WithLp.equiv 2 (ι → ℝ) g) j - vectorMean g| ≤ z * vectorStd g := by
+      rw [h_μ, sub_zero]
+      exact h_others j hj
+    apply filtered_gradient_coord_preservation g z j
+    unfold zScoreMask
+    rw [Equiv.apply_symm_apply]
+    simp only [h_in, ↓reduceIte]
 
 /-- **Scale Invariance**: The Z-score mask is invariant to global gradient scaling.
 This ensures the algorithm's behavior is scale-agnostic. -/

@@ -42,11 +42,11 @@ example [Nonempty ι] (s : Finset ℕ) (g : ℕ → W ι) (i0 : ℕ) (hi0 : i0 �
     (∃ g' : ℕ → W ι, (∀ i ≠ i0, g' i = g i) ∧ ‖empiricalMean s g'‖ > C) :=
   median_bounded_mean_unbounded_one_outlier_of_majority s g i0 hi0 h_maj C
 
-/-- Test witness (threshold limit): for nonpositive Z thresholds, every coordinate
-passes the mask test, so the filtered mean equals the ordinary empirical mean. -/
-example (s : Finset ℕ) (g : ℕ → W ι) {z : ℝ} (hz : z ≤ 0) :
-    zFilteredEmpiricalMean s g z = empiricalMean s g :=
-  z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold s g hz
+/-- Test witness (threshold limit): for a strictly negative Z threshold and a
+non-constant gradient, the filter zeroes every component. -/
+example (g : W ι) {z : ℝ} (hz : z < 0) (hσ : vectorStd g ≠ 0) :
+    filteredGradient g z = 0 :=
+  filtered_gradient_eq_zero_of_neg_threshold g hz hσ
 
 /-- Test witness (majority safety): both the median and filtered mean stay bounded
 when a strict majority of points are fixed and outliers are bounded. -/

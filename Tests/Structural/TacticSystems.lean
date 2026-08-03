@@ -42,9 +42,8 @@ example (g : W ι) (z : ℝ) (i : ι)
 /-- Unit test for `zsharp_solve` with explicit mean-zero outlier logic. -/
 example (g : W ι) (z : ℝ) (i : ι)
     (h_μ : vectorMean g = 0)
-    (h_out : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vectorStd g) :
-    (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i =
-    (WithLp.equiv 2 (ι → ℝ) g) i := by
+    (h_out : z * vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i|) :
+    (WithLp.equiv 2 (ι → ℝ) (filteredGradient g z)) i = 0 := by
   zsharp_solve
 
 end LeanSharp.Tests

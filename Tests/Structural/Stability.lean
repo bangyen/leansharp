@@ -68,26 +68,26 @@ example (g : W ι) (z : ℝ) :
     hadamard (zScoreMask g z) (zScoreMask g z) = zScoreMask g z :=
   zscore_mask_idempotent g z
 
-/-- Interface test: for $z \le 1$, the filter always preserves at least one
+/-- Interface test: for $z \ge 1$, the filter always preserves at least one
 component of the gradient. -/
-example [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
+example [Nonempty ι] (g : W ι) {z : ℝ} (hz_ge : 1 ≤ z) :
     ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1 :=
-  zscore_mask_nonempty g hz_le
+  zscore_mask_nonempty g hz_ge
 
 /-- Interface test: constant gradients (zero standard deviation) are preserved
 by the filter. -/
-example (g : W ι) (z : ℝ) (h_std : vectorStd g = 0) :
+example [Nonempty ι] (g : W ι) (z : ℝ) (h_std : vectorStd g = 0) :
     filteredGradient g z = g :=
   filtered_gradient_eq_self_of_std_zero g z h_std
 
 /-- Interface test: with a single outlier and zero mean, the filtered gradient
-extracts exactly that outlier. -/
+zeroes that outlier and preserves every inlier. -/
 example (g : W ι) (z : ℝ) (i : ι) [DecidableEq ι]
     (h_μ : vectorMean g = 0)
-    (h_outlier : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vectorStd g)
-    (h_others : ∀ j : ι, j ≠ i → |(WithLp.equiv 2 (ι → ℝ) g) j| < z * vectorStd g) :
+    (h_outlier : z * vectorStd g < |(WithLp.equiv 2 (ι → ℝ) g) i|)
+    (h_others : ∀ j : ι, j ≠ i → |(WithLp.equiv 2 (ι → ℝ) g) j| ≤ z * vectorStd g) :
     filteredGradient g z = (WithLp.equiv 2 (ι → ℝ)).symm
-      (fun j => if j = i then (WithLp.equiv 2 (ι → ℝ) g) i else 0) :=
+      (fun j => if j = i then 0 else (WithLp.equiv 2 (ι → ℝ) g) j) :=
   single_outlier_extraction g z i h_μ h_outlier h_others
 
 /-- Interface test: layer-wise Z-score filtering bounds the total chain update

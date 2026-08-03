@@ -16,7 +16,7 @@ median and mean robustness lemmas into user-facing statements.
 
 * `median_bounded_mean_unbounded_one_outlier_of_majority`.
 * `median_and_zfiltered_mean_bounded_subset`.
-* `z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold`.
+* `filtered_gradient_eq_zero_of_neg_threshold`.
 -/
 
 namespace LeanSharp
@@ -72,34 +72,24 @@ theorem median_and_zfiltered_mean_bounded_subset
   }
   exact z_filtered_empirical_mean_bounded_subset_max S z hs g' hg_fixed hg_out
 
-/-- **Degenerate-threshold identity**: for nonpositive Z thresholds, every coordinate
-passes the mask test, so the filtered empirical mean equals the ordinary empirical mean.
-This theorem exists to expose the exact regime where filtered aggregation reduces to
-the classical mean and therefore inherits its robustness profile. -/
-@[simp] theorem z_filtered_empirical_mean_eq_empirical_mean_of_nonpos_threshold
-    (s : Finset α) (g : α → W ι) {z : ℝ} (hz : z ≤ 0) :
-    zFilteredEmpiricalMean s g z = empiricalMean s g := by
-  unfold zFilteredEmpiricalMean
-  congr 1
-  funext i
+/-- **Negative-threshold zeroing**: for a strictly negative Z threshold and a
+non-constant gradient, every component is an outlier, so the filter zeroes the
+entire gradient. -/
+theorem filtered_gradient_eq_zero_of_neg_threshold (g : W ι) {z : ℝ} (hz : z < 0)
+    (hσ : vectorStd g ≠ 0) :
+    filteredGradient g z = 0 := by
+  unfold filteredGradient hadamard zScoreMask
   apply (WithLp.equiv 2 (ι → ℝ)).injective
   ext j
-  apply filtered_gradient_coord_preservation
-  unfold zScoreMask
-  rw [Equiv.apply_symm_apply]
-  have h_keep :
-      |(WithLp.equiv 2 (ι → ℝ) (g i)) j - vectorMean (g i)| ≥ z * vectorStd (g i) := by
-    have hzσ : z * vectorStd (g i) ≤ 0 :=
-      mul_nonpos_of_nonpos_of_nonneg hz (Real.sqrt_nonneg _)
-    exact le_trans hzσ (abs_nonneg _)
-  exact by simpa only [
-    WithLp.equiv_apply,
-    ge_iff_le,
-    ite_eq_left_iff,
-    not_le,
-    zero_ne_one,
-    imp_false,
-    not_lt
-  ] using h_keep
+  have hσ_pos : 0 < vectorStd g :=
+    lt_of_le_of_ne (Real.sqrt_nonneg _) (Ne.symm hσ)
+  have hzσ : z * vectorStd g < 0 := mul_neg_of_neg_of_pos hz hσ_pos
+  have h_not : ¬ |g.ofLp j - vectorMean g| ≤ z * vectorStd g := by
+    intro h
+    have h_abs_nonneg : 0 ≤ |g.ofLp j - vectorMean g| := abs_nonneg _
+    linarith
+  simp only [Equiv.apply_symm_apply, WithLp.equiv_apply]
+  rw [if_neg h_not, mul_zero]
+  rfl
 
 end LeanSharp
