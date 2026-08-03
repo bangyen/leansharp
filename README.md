@@ -20,7 +20,7 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 ## Key Accomplishments
 
-- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and a matching $O(1/T)$ rate for strongly convex objectives, plus an $O(1/\sqrt{T})$ rate for non-convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
+- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and a matching $O(1/T)$ rate for strongly convex objectives, plus an $O(1/\sqrt{T})$ rate for non-convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis. Extended convergence to composed `Chain` architectures via their flattened parameter spaces.
 - **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
 - **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`. Proved that layer-wise Z-score filtering bounds the total network update norm by the raw backpropagation gradients, and that the Z-score mask is scale-invariant.
 - **Generalization Theory**: Proved the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery, and derived from it the $\lambda$-parametrized PAC-Bayes-Hoeffding inequality, its $\sqrt{\text{KL}}$ form under a sub-Gaussian MGF assumption, and localized bounds over `StabilityCertificate` regions for non-convex landscapes.
@@ -31,7 +31,6 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Chain-Level Convergence** | Medium | Extend convergence results from single layers to composed `Chain` architectures. |
 | **Infinite-Width Filtered Statistics** | Medium | Prove limit statements for filtered mean/std given `HasAnalyticalMean`/`HasAnalyticalStd`, completing the CLT-substitute program. |
 
 > **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
