@@ -37,9 +37,7 @@ theorem zsharp_objective_as_convergence_of_bridge
     (h_bridge : ZSharpSupermartingaleAsBridge L_smooth f w η σsq)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
-    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_desc_step : ∀ t, ZSharpDescentEnvelope L_smooth f w η z σsq g_adv ℱ t)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
@@ -66,9 +64,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence
     (hbdd_neg : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
-    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_desc_step : ∀ t, ZSharpDescentEnvelope L_smooth f w η z σsq g_adv ℱ t)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
@@ -86,22 +82,7 @@ theorem zsharp_robbins_monro_almost_sure_convergence
       · exact h_adapted_neg
       · intro t; exact (h_int t).neg
       · exact h_step_neg
-    have h_ae_tendsto_neg :
-        ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => -f (w t ω)) Filter.atTop
-          (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)) :=
-      h_sub_neg.ae_tendsto_limitProcess hbdd_neg
-    filter_upwards [h_ae_tendsto_neg] with ω hω
-    refine ⟨-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω), ?_⟩
-    have h_neg_cont :
-        Filter.Tendsto (fun x : ℝ => -x)
-          (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))
-          (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
-      continuous_neg.tendsto (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)
-    have h_tendsto_obj :
-        Filter.Tendsto (fun t => -(-f (w t ω))) Filter.atTop
-          (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
-      h_neg_cont.comp hω
-    simpa only [neg_neg] using h_tendsto_obj
+    exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
 
 /-- **End-to-end almost-sure convergence theorem from concrete model-level ZSharp
 hypotheses**: returns both the descent-envelope inequality family and the

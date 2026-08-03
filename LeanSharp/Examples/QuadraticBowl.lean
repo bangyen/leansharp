@@ -18,8 +18,8 @@ in `W ι` can be explicitly evaluated on Euclidean vectors.
 
 ## Main definitions
 
-* `L_toy`: A simple 2D quadratic loss function $L(w_0, w_1) = w_0^2 + w_1^2$.
-* `exactGradientToy`: The explicit analytical gradient of `L_toy`.
+* `toyLoss`: A simple 2D quadratic loss function $L(w_0, w_1) = w_0^2 + w_1^2$.
+* `exactGradientToy`: The explicit analytical gradient of `toyLoss`.
 * `wInit`: A concrete initial weight vector $[1, 3]$.
 
 ## Main theorems
@@ -36,12 +36,12 @@ open BigOperators
 local notation "W2" => W (Fin 2)
 
 /-- A simple 2D quadratic loss function $L(w_0, w_1) = w_0^2 + w_1^2$. -/
-noncomputable def L_toy (w : W2) : ℝ :=
+noncomputable def toyLoss (w : W2) : ℝ :=
   let w0 := (WithLp.equiv 2 (Fin 2 → ℝ) w) 0
   let w1 := (WithLp.equiv 2 (Fin 2 → ℝ) w) 1
   w0^2 + w1^2
 
-/-- The analytical gradient of `L_toy` is $\nabla L(w) = [2w_0, 2w_1]$. -/
+/-- The analytical gradient of `toyLoss` is $\nabla L(w) = [2w_0, 2w_1]$. -/
 noncomputable def exactGradientToy (w : W2) : W2 :=
   WithLp.equiv 2 (Fin 2 → ℝ) |>.symm fun i =>
     2 * (WithLp.equiv 2 (Fin 2 → ℝ) w) i
@@ -53,6 +53,6 @@ noncomputable def wInit : W2 :=
 /-- **Toy Perturbation**: For the quadratic bowl at $w=[1, 3]$, the perturbation
 direction is aligned with the gradient $[2, 6]$. -/
 noncomputable def toyPerturbation (ρ : ℝ) : W2 :=
-  samPerturbation L_toy wInit ρ
+  samPerturbation toyLoss wInit ρ
 
 end LeanSharp.QuadraticBowl

@@ -128,12 +128,8 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
     (h_int_L : ∀ t, Integrable (fun ω => L (weightSequence w0 η z g_adv t ω)))
     (h_int_grad : ∀ t, Integrable
       (fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2) ℙ)
-    (h_desc : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => L (stochasticZSharpStep
-        (weightSequence w0 η z g_adv t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      L (weightSequence w0 η z g_adv t ω) - (η t / 4) *
-        ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2 +
-      ((η t) ^ 2 * L_smooth / 2) * σsq)
+    (h_desc : ∀ t, ZSharpDescentEnvelope L_smooth L (weightSequence w0 η z g_adv)
+      η z σsq g_adv ℱ t)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
     (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
       𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2])

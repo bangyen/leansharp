@@ -15,7 +15,7 @@ SAM recurrence proofs can depend on a focused interface.
 ## Theorems
 
 * `sam_taylor_bound`: smoothness-based upper bound on the SAM objective.
-* `smooth_one_step_descent`: one-step descent inequality under a step-size bound.
+* `z_sharp_gap_benefit`: gradient-norm contraction benefit of the filter.
 -/
 
 namespace LeanSharp
@@ -62,52 +62,5 @@ theorem sam_taylor_bound (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
     have hdescent := smooth_descent L w ε
     have h_terms := sam_taylor_terms_bound L.smoothness ρ hρ (gradient L.toFun w) ε hε_norm
     linarith [hdescent, h_terms]
-
-/-- **One-Step Descent Recurrence**: For an L-smooth function, a gradient descent step
-with learning rate $\eta \le 1/L$ ensures a decrease proportional to the gradient norm squared:
-$L(w - \eta \nabla L(w)) \le L(w) - \frac{\eta}{2} \|\nabla L(w)\|^2$. -/
-theorem smooth_one_step_descent (L : SmoothObjective ι) (w : W ι) (η : ℝ)
-    (h_eta_nonneg : 0 ≤ η)
-    (h_eta_bound : η * (L.smoothness : ℝ) ≤ 1) :
-    L.toFun (w - η • gradient L.toFun w) ≤
-      L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 := by
-  set g := gradient L.toFun w
-  have h_descent := smooth_descent L w (-(η • g))
-  have h_step : w - η • g = w + -(η • g) := sub_eq_add_neg w (η • g)
-  have h_bound : (L.smoothness : ℝ) * η ≤ 1 := by
-    simpa only [mul_comm] using h_eta_bound
-  have h_inner_desc : inner ℝ g (-(η • g)) = -η * ‖g‖ ^ 2 := by
-    rw [
-      inner_neg_right,
-      inner_smul_right,
-      inner_self_eq_norm_sq_to_K,
-      RCLike.ofReal_real_eq_id,
-      id_eq,
-      neg_mul
-    ]
-  have h_norm_desc : ‖-(η • g)‖ ^ 2 = η ^ 2 * ‖g‖ ^ 2 := by
-    rw [norm_neg, norm_smul, norm_eq_abs, mul_pow, sq_abs]
-  calc L.toFun (w - η • g)
-    _ = L.toFun (w + -(η • g)) := by rw [h_step]
-    _ ≤ L.toFun w + inner ℝ g (-(η • g)) +
-        (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 :=
-      h_descent
-    _ ≤ L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
-      have hquad : (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2 ≤ (η / 2) * ‖g‖ ^ 2 := by
-        rw [h_norm_desc]
-        have hMη_norm : ((L.smoothness : ℝ) * η) * ‖g‖ ^ 2 ≤ ‖g‖ ^ 2 := by
-          nlinarith [h_bound, sq_nonneg ‖g‖]
-        calc
-          (L.smoothness : ℝ) / 2 * (η ^ 2 * ‖g‖ ^ 2)
-              = (η / 2) * (((L.smoothness : ℝ) * η) * ‖g‖ ^ 2) := by ring
-          _ ≤ (η / 2) * ‖g‖ ^ 2 :=
-            mul_le_mul_of_nonneg_left hMη_norm (by nlinarith [h_eta_nonneg])
-      calc
-        L.toFun w + inner ℝ g (-(η • g)) + (L.smoothness : ℝ) / 2 * ‖-(η • g)‖ ^ 2
-            ≤ L.toFun w + inner ℝ g (-(η • g)) + (η / 2) * ‖g‖ ^ 2 := by
-              nlinarith [hquad]
-        _ = L.toFun w - (η / 2) * ‖g‖ ^ 2 := by
-          rw [h_inner_desc]
-          ring
 
 end LeanSharp

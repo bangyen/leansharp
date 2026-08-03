@@ -92,26 +92,9 @@ theorem contDiff_layernormForward (w : W (NormParam ι)) {ε : ℝ} (hε : 0 < �
     on `Metric.ball 0 R` for any R > 0, provided ε > 0. -/
 theorem layernorm_forward_lipschitz (w : W (NormParam ι)) (ε : ℝ) (hε : 0 < ε) (R : ℝ)
     (hR : 0 < R) :
-    ∃ K, LipschitzOnWith K (fun x => layernormForward w x ε) (Metric.ball 0 R) := by
-  let f := fun x => layernormForward w x ε
-  have h_c2 : ContDiff ℝ 2 f := contDiff_layernormForward w hε
-  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
-  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
-  have h_compact : IsCompact (Metric.closedBall (0 : W ι) R) :=
-    isCompact_closedBall (0 : W ι) R
-  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
-    continuous_norm.comp h_cont_deriv
-  have h_nonempty : (Metric.closedBall (0 : W ι) R).Nonempty :=
-    Metric.nonempty_closedBall.mpr hR.le
-  obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
-  let K := ‖fderiv ℝ f x0‖₊
-  use K
-  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 R) := by
-    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
-    · exact fun x _ => h_diff x
-    · exact fun x hx => h_max hx
-    · exact convex_closedBall 0 R
-  exact h_lips.mono Metric.ball_subset_closedBall
+    ∃ K, LipschitzOnWith K (fun x => layernormForward w x ε) (Metric.ball 0 R) :=
+  lipschitzOnWith_closedBall_of_contDiff_two (fun x => layernormForward w x ε) R hR
+    (contDiff_layernormForward w hε)
 
 /-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
     with its Lipschitz constant and $C^2$ smoothness proof. -/

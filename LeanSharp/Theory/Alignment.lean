@@ -6,11 +6,16 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Models
 import LeanSharp.Stochastic.Mechanics.DescentSteps.ZScore
 import LeanSharp.Theory.Robustness.SensitivityBounds
+import Mathlib.Analysis.Calculus.FDeriv.Basic
+import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Probability.Moments.Basic
 import Mathlib.Probability.Notation
 import Mathlib.Tactic.Linarith
+import Mathlib.Topology.MetricSpace.Basic
 
 namespace LeanSharp
 
@@ -34,6 +39,8 @@ theoretical analysis remains consistent across different dynamical regimes.
 * `inner_hadamard_comm`: Geometric identity for Hadamard products.
 * `alignment_filtered_gradient`: Proof that Z-score filtering preserves alignment.
 * `alignment_condition_of_signal_noise`: Bridge theorem for stochastic models.
+* `deterministic_implies_stochastic_alignment`: Deterministic alignment implies
+  the stochastic variant under a degenerate distribution.
 -/
 
 variable {ι : Type*} [Fintype ι]
@@ -89,6 +96,35 @@ noncomputable def StabilityCertificate.comp {α β γ : Type*}
     (c1.h_lipschitz.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
   h_smooth := ContDiffOn.comp c2.h_smooth
     (c1.h_smooth.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
+
+/-- **Locally-Lipschitz from $C^2$**: Any globally $C^2$ function between finite
+dimensional Euclidean spaces is Lipschitz on every centered ball $B(0, R)$, with
+Lipschitz constant the maximum Fréchet-derivative norm on the closed ball
+(obtained via the Extreme Value Theorem). This factors out the shared boilerplate
+of the layer Lipschitz proofs. -/
+theorem lipschitzOnWith_closedBall_of_contDiff_two {E F : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+    [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (f : E → F) (R : ℝ) (hR : 0 < R)
+    (h_c2 : ContDiff ℝ 2 f) :
+    ∃ K, LipschitzOnWith K f (Metric.ball 0 R) := by
+  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
+  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
+  have h_compact : IsCompact (Metric.closedBall (0 : E) R) :=
+    isCompact_closedBall (0 : E) R
+  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
+    continuous_norm.comp h_cont_deriv
+  have h_nonempty : (Metric.closedBall (0 : E) R).Nonempty :=
+    Metric.nonempty_closedBall.mpr hR.le
+  obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
+  let K := ‖fderiv ℝ f x0‖₊
+  use K
+  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 R) := by
+    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
+    · exact fun x _ => h_diff x
+    · exact fun x hx => h_max hx
+    · exact convex_closedBall 0 R
+  exact h_lips.mono Metric.ball_subset_closedBall
 
 /-- **Hadamard Inner Product Identity**:
     The inner product of a Hadamard product `hadamard a b` with `v` is the
@@ -166,5 +202,48 @@ theorem alignment_condition_of_signal_noise (Ω : Type*) [MeasureSpace Ω]
   constructor
   · exact alignment_filtered_gradient (m.observed ω) (w - w_star) μ z h_align h_safe
   · exact h_norm
+
+/-- **Alignment Bridging Theorem**: A mathematically formal bridge showing that
+any deterministic gradient satisfying the deterministic AlignmentCondition also
+satisfies the StochasticAlignmentCondition relative to a degenerate volume distribution,
+provided the step-size respects the theoretical local "tightness" threshold bounding
+smoothness against strong convexity. -/
+theorem deterministic_implies_stochastic_alignment (Ω : Type*) [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L : W ι → ℝ) (w w_star : W ι) (ε : W ι)
+    (z μ L_smooth : ℝ) (η : ℕ → ℝ) (t : ℕ)
+    (h_align : AlignmentCondition w w_star (filteredGradient (gradient L (w + ε)) z) μ L_smooth)
+    (h_tight : η t * L_smooth ^ 2 ≤ μ) (h_eta : 0 ≤ η t) :
+    StochasticAlignmentCondition (Ω := Ω) w w_star (fun _ => gradient L (w + ε)) (η t) μ z := by
+  unfold StochasticAlignmentCondition AlignmentCondition at *
+  let g_f := filteredGradient (gradient L (w + ε)) z
+  have h1 : Integrable (fun _ : Ω => g_f) := integrable_const _
+  have h2 : Integrable (fun _ : Ω => ‖g_f‖ ^ 2) := integrable_const _
+  refine ⟨h1, h2, ?_⟩
+  rw [integral_const, probReal_univ, one_smul]
+  rw [integral_const, probReal_univ, one_smul]
+  have h_mu : μ * ‖w - w_star‖^2 ≤ inner (𝕜 := ℝ) g_f (w - w_star) := h_align.1
+  have h_L : ‖g_f‖ ≤ L_smooth * ‖w - w_star‖ := h_align.2
+  have h_L_sq : ‖g_f‖^2 ≤ L_smooth^2 * ‖w - w_star‖^2 := by
+    nlinarith [h_L, norm_nonneg g_f, norm_nonneg (w - w_star)]
+  have h_tight_w : (η t) * (η t * L_smooth^2 * ‖w - w_star‖^2) ≤ η t * (μ * ‖w - w_star‖^2) := by
+    apply mul_le_mul_of_nonneg_left
+    · apply mul_le_mul_of_nonneg_right h_tight (sq_nonneg ‖w - w_star‖)
+    · exact h_eta
+  calc η t * μ * ‖w - w_star‖^2
+    _ = 2 * η t * (μ * ‖w - w_star‖^2) - η t * (μ * ‖w - w_star‖^2) := by ring
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) - η t * (μ * ‖w - w_star‖^2) := by
+      apply sub_le_sub_right
+      apply mul_le_mul_of_nonneg_left h_mu
+      nlinarith [h_eta]
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) -
+        (η t) * (η t * L_smooth^2 * ‖w - w_star‖^2) := by
+      apply sub_le_sub_left h_tight_w
+    _ = 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) -
+        (η t)^2 * (L_smooth^2 * ‖w - w_star‖^2) := by ring
+    _ ≤ 2 * η t * inner (𝕜 := ℝ) g_f (w - w_star) - (η t)^2 * ‖g_f‖^2 := by
+      apply sub_le_sub_left
+      apply mul_le_mul_of_nonneg_left h_L_sq
+      nlinarith [sq_nonneg (η t)]
 
 end LeanSharp

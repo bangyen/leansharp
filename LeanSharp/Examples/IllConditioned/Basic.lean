@@ -16,11 +16,11 @@ This module provides the core definitions and derivative proofs for a quadratic
 landscape with high condition number.
 
 ## Main Definitions
-* `L_advanced`: An ill-conditioned 2D quadratic loss function.
-* `exactGradientAdvanced`: Analytical gradient of `L_advanced`.
+* `advancedLoss`: An ill-conditioned 2D quadratic loss function.
+* `exactGradientAdvanced`: Analytical gradient of `advancedLoss`.
 
 ## Main Theorems
-* `hasFDerivAt_L_advanced`: Proves the analytical derivative of `L_advanced`.
+* `hasFDerivAt_advancedLoss`: Proves the analytical derivative of `advancedLoss`.
 * `gradient_advanced_eq`: Shows that the computed gradient matches the analytical one.
 -/
 
@@ -31,7 +31,7 @@ open BigOperators
 local notation "W2" => W (Fin 2)
 
 /-- An ill-conditioned 2D quadratic loss function $L(w_0, w_1) = 10w_0^2 + w_1^2$. -/
-noncomputable def L_advanced (w : W2) : ℝ :=
+noncomputable def advancedLoss (w : W2) : ℝ :=
   10 * (w 0) ^ 2 + (w 1) ^ 2
 
 /-- The analytical gradient is $\nabla L(w) = [20w_0, 2w_1]$. -/
@@ -41,8 +41,8 @@ noncomputable def exactGradientAdvanced (w : W2) : W2 :=
     else 2 * w 1
 
 /-- The analytical Fréchet derivative of $L_{advanced}$. -/
-lemma hasFDerivAt_L_advanced (w : W2) :
-    HasFDerivAt L_advanced (((20 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) +
+lemma hasFDerivAt_advancedLoss (w : W2) :
+    HasFDerivAt advancedLoss (((20 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) +
       ((2 : ℝ) * w 1) • (EuclideanSpace.proj 1 : W2 →L[ℝ] ℝ)) w := by
   let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 0
   let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 1
@@ -72,7 +72,7 @@ lemma hasFDerivAt_L_advanced (w : W2) :
       ContinuousLinearMap.add_apply,
       p1
     ]; ring
-  rw [show L_advanced = fun w => 10 * (w 0) ^ 2 + (w 1) ^ 2 by ext; rfl]
+  rw [show advancedLoss = fun w => 10 * (w 0) ^ 2 + (w 1) ^ 2 by ext; rfl]
   apply HasFDerivAt.add
   · convert HasFDerivAt.const_smul h0_sq (10 : ℝ) using 1
     ext; simp only [
@@ -94,10 +94,10 @@ lemma coordinate_dual_apply (g : W2 →L[ℝ] ℝ) (i : Fin 2) :
   rw [← hv, InnerProductSpace.toDual_symm_apply]
 
 theorem gradient_advanced_eq (w : W2) :
-    gradient L_advanced w = exactGradientAdvanced w := by
+    gradient advancedLoss w = exactGradientAdvanced w := by
   let g_analytical : W2 →L[ℝ] ℝ := ((20 : ℝ) * w 0) • EuclideanSpace.proj 0 +
     ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
-  have hL : HasFDerivAt L_advanced g_analytical w := hasFDerivAt_L_advanced w
+  have hL : HasFDerivAt advancedLoss g_analytical w := hasFDerivAt_advancedLoss w
   unfold gradient
   rw [hL.fderiv]
   ext i

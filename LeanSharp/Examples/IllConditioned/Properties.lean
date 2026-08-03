@@ -28,7 +28,7 @@ open BigOperators
 local notation "W2" => W (Fin 2)
 
 /-- **L-Smoothness**: The gradient is Lipschitz with $L_{smooth} = 20$. -/
-theorem advanced_L_smooth : IsLSmooth L_advanced 20 := by
+theorem advanced_L_smooth : IsLSmooth advancedLoss 20 := by
   constructor
   · norm_num
   · intro w v
@@ -52,12 +52,12 @@ theorem advanced_L_smooth : IsLSmooth L_advanced 20 := by
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
 /-- **Strong Convexity**: The function is $\mu$-strongly convex with $\mu = 2$. -/
-theorem advanced_strongly_convex : IsStronglyConvex L_advanced 2 := by
+theorem advanced_strongly_convex : IsStronglyConvex advancedLoss 2 := by
   constructor
   · norm_num
   · intro w v
     simp only [
-      L_advanced,
+      advancedLoss,
       Fin.isValue,
       inner,
       gradient_advanced_eq,
@@ -84,10 +84,10 @@ theorem advanced_strongly_convex : IsStronglyConvex L_advanced 2 := by
     nlinarith [sq_nonneg (v 0 - w 0), sq_nonneg (v 1 - w 1)]
 
 /-- Bundled strongly convex objective for the 2D ill-conditioned landscape. -/
-noncomputable def L_advanced_bundled : StronglyConvexObjective (Fin 2) where
-  toFun := L_advanced
+noncomputable def advancedLossBundled : StronglyConvexObjective (Fin 2) where
+  toFun := advancedLoss
   smoothness := 20
-  differentiable := fun _ => (hasFDerivAt_L_advanced _).differentiableAt
+  differentiable := fun _ => (hasFDerivAt_advancedLoss _).differentiableAt
   lipschitz := by
     apply LipschitzWith.of_dist_le_mul
     intro w v; simpa only [dist_eq_norm] using advanced_L_smooth.2 w v

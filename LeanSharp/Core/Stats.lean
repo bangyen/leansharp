@@ -77,6 +77,7 @@ lemma vectorVariance_nonneg (g : W ι) : 0 ≤ vectorVariance g := by
   unfold vectorVariance; positivity
 
 /-- The variance of a scalar-multiple vector. -/
+@[simp]
 lemma vectorVariance_smul (k : ℝ) (g : W ι) :
     vectorVariance (k • g) = k^2 * vectorVariance g := by
   unfold vectorVariance

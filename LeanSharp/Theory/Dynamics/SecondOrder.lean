@@ -5,7 +5,6 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Taylor.SamBounds
 import LeanSharp.Theory.Dynamics.Convergence
-import LeanSharp.Theory.Structural.HessianContraction
 
 /-!
 # Second-Order Descent Lemma
@@ -17,7 +16,7 @@ functional descent of the loss objective.
 ## Main theorems
 
 * `zsharp_second_order_descent`: The primary descent lemma incorporating the
-  local curvature matrix and the generalized filter condition.
+  curvature of the filtered direction.
 -/
 
 namespace LeanSharp
@@ -29,10 +28,7 @@ variable {ι : Type*} [Fintype ι]
 /-- **Second-Order Descent Lemma**:
 For an $L$-smooth function $f$, the descent achieved by a filtered step
 $-\eta g_f$ is bounded by the alignment with the gradient and the quadratic
-curvature form of the filtered direction.
-
-This theorem explicitly uses the `localCurvatureMatrix` to bridge the
-structural filter properties to the dynamic descent. -/
+curvature form of the filtered direction. -/
 theorem zsharp_second_order_descent
     (f : W ι → ℝ) (w g_base g_f : W ι) (η L_smooth κ : ℝ)
     (h_diff : Differentiable ℝ f)

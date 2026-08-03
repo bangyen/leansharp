@@ -52,11 +52,6 @@ def Chain.length {In Out : Type} : Chain In Out → ℕ
   | .single _ => 1
   | .append prev _ => prev.length + 1
 
-/-- Concatenate two chains. -/
-def Chain.concat {In Mid Out : Type} (c1 : Chain In Mid) : Chain Mid Out → Chain In Out
-  | .single L => Chain.append c1 L
-  | .append prev L => Chain.append (Chain.concat c1 prev) L
-
 /-- Data (parameters or gradients) for a specific chain. -/
 inductive ChainData : {In Out : Type} → Chain In Out → Type 1 where
   | single {In Out : Type} (L : Layer In Out) :
@@ -149,22 +144,6 @@ noncomputable def broadcastLayer (κ : Type) [Fintype κ] {ι_in ι_out : Type}
     let g_w := ∑ k, (g_step k).1
     let g_x := WithLp.equiv 2 _ |>.symm fun (k, i) =>
       (WithLp.equiv 2 _ (g_step k).2) i
-    (g_w, g_x)
-
-/-- **Map Layer**: Lifts a layer $f: \mathbb{R} \to \mathbb{R}$ to operate on a
-    vector space $W \iota$ by applying it element-wise. -/
-noncomputable def mapLayer (ι : Type) [Fintype ι]
-    (f : Layer ℝ ℝ) : Layer (W ι) (W ι) where
-  ParamDim := f.ParamDim
-  fintypeParamDim := f.fintypeParamDim
-  forward w x :=
-    WithLp.equiv 2 _ |>.symm fun i => f.forward w ((WithLp.equiv 2 _ x) i)
-  backward w x g_out :=
-    let x_f := WithLp.equiv 2 _ x
-    let g_out_f := WithLp.equiv 2 _ g_out
-    let g_step (i : ι) := f.backward w (x_f i) (g_out_f i)
-    let g_w := ∑ i, (g_step i).1
-    let g_x := WithLp.equiv 2 _ |>.symm fun i => (g_step i).2
     (g_w, g_x)
 
 /-- The parameter index type for a chain. -/

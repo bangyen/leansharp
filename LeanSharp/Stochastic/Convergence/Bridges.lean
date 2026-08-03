@@ -25,6 +25,7 @@ assumptions.
 ## Theorems
 
 * `zsharp_objective_as_convergence_of_submartingale`.
+* `zsharp_objective_as_convergence_of_neg_submartingale`.
 * `zsharp_objective_as_convergence_of_bridge_contract`.
 -/
 
@@ -82,6 +83,36 @@ theorem zsharp_objective_as_convergence_of_submartingale
     h_sub.ae_tendsto_limitProcess hbdd
   filter_upwards [h_ae_tendsto] with ω hω
   exact ⟨ℱ.limitProcess (fun t ω => f (w t ω)) ℙ ω, hω⟩
+
+omit [Fintype ι] in
+/-- **Neg-submartingale objective convergence**: if `-t ↦ f (w t ·)` is a
+submartingale and uniformly L¹-bounded, then `t ↦ f (w t ·)` converges almost
+surely. This is the shared tail of the heavy-tail and Robbins-Monro convergence
+proofs: build the negated submartingale from descent hypotheses, then apply
+Mathlib's a.e. martingale convergence and negate the limit. -/
+theorem zsharp_objective_as_convergence_of_neg_submartingale
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι)
+    (ℱ : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (R : NNReal)
+    (h_sub : Submartingale (fun t ω => -f (w t ω)) ℱ ℙ)
+    (hbdd : ∀ t, eLpNorm (fun ω => -f (w t ω)) 1 ℙ ≤ R) :
+    ZSharpObjectiveAsConvergence f w := by
+  have h_ae_tendsto_neg :
+      ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => -f (w t ω)) Filter.atTop
+        (nhds (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω)) :=
+    h_sub.ae_tendsto_limitProcess hbdd
+  filter_upwards [h_ae_tendsto_neg] with ω hω
+  refine ⟨-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω), ?_⟩
+  have h_neg_cont :
+      Filter.Tendsto (fun x : ℝ => -x)
+        (nhds (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))
+        (nhds (-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+    continuous_neg.tendsto (ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω)
+  have h_tendsto_obj :
+      Filter.Tendsto (fun t => -(-f (w t ω))) Filter.atTop
+        (nhds (-(ℱ.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
+    h_neg_cont.comp hω
+  simpa only [neg_neg] using h_tendsto_obj
 
 omit [IsProbabilityMeasure (volume : Measure Ω)] in
 /-- **Bridge-contract eliminator**: this theorem turns the project-level

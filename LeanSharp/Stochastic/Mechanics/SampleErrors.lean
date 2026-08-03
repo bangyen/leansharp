@@ -20,12 +20,11 @@ This module formalizes advanced bounds on the variance of the ZSharp algorithm
 in stochastic settings.
 
 A key theoretical property of the Z-score filter is that it is a contraction
-with respect to the $L_2$ norm. This ensures that the filtered gradient does
-not increase the variance of the stochastic estimator.
+with respect to the $L_2$ norm (see `Core/Filters`). This ensures that the
+filtered gradient does not increase the variance of the stochastic estimator.
 
 ## Main theorems
 
-* `norm_sq_filtered_gradient_le`: Proves the $L_2$ norm contraction of the filter.
 * `zsharp_variance_bound`: Proves that the variance of the filtered stochastic
   gradient is bounded by the variance of the original estimator plus a
   curvature term.

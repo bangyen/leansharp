@@ -10,7 +10,7 @@ import LeanSharp.Theory.Robustness.PacBayesBasis
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
-# PAC-Bayes & Rademacher Complexity for Filtered SAM
+# PAC-Bayes Bounds for Filtered SAM
 
 This module formalizes the generalization benefits of Z-score gradient filtering.
 We establish that filtering outliers acts as a structural regularizer that
@@ -20,8 +20,6 @@ reduces the effective complexity of the hypothesis class.
 
 * `ZSharpPacBayesBound`: A predicate for the generalization bound
   of a filtered objective in the Taylor regime.
-* `FilteredRademacherComplexity`: The Rademacher complexity of the filtered
-  gradient space.
 
 ## Main theorems
 
@@ -29,7 +27,6 @@ reduces the effective complexity of the hypothesis class.
   term in the generalization bound.
 * `standard_bound_of_z_sharp`: Proves that a ZSharp PAC-Bayes bound implies
   a standard SAM sharpness bound (showing ZSharp is the stricter/tighter condition).
-* `filtered_rademacher_le`: Proves the reduction of effective Rademacher complexity.
 * `z_sharp_pac_bayes_expected`: Proves that pointwise ZSharp bounds integrate
   to a distributional bound compatible with `PacBayesGeneralizationBound`.
 -/
@@ -56,29 +53,6 @@ theorem standard_bound_of_z_sharp (L_D L_S : W ι → ℝ) (w : W ι) (ρ z C : 
   unfold PacBayesSharpnessBound
   have h_benefit := z_sharp_gap_benefit (gradient L_S w) z ρ hρ
   linarith
-
-/-- **Filtered Rademacher Complexity**:
-    The Rademacher complexity of a function class $\mathcal{F}$ scaled by the
-    Z-score filter contraction. -/
-noncomputable def FilteredRademacherComplexity (R_base : ℝ) (g : W ι) (z : ℝ) : ℝ :=
-  (‖filteredGradient g z‖ / ‖g‖) * R_base
-
-/-- **Complexity Reduction Lemma**:
-    The filtered Rademacher complexity is always no greater than the base
-    Rademacher complexity. -/
-theorem filtered_rademacher_le (R_base : ℝ) (g : W ι) (z : ℝ) (hR : 0 ≤ R_base) :
-    FilteredRademacherComplexity R_base g z ≤ R_base := by
-  unfold FilteredRademacherComplexity
-  have h_norm := norm_filtered_gradient_le g z
-  by_cases hg : ‖g‖ = 0
-  · -- Leverage Lean's x / 0 = 0 behavior
-    rw [hg]
-    simp only [div_zero, zero_mul, hR]
-  · have hg_pos : 0 < ‖g‖ := lt_of_le_of_ne (norm_nonneg g) (Ne.symm hg)
-    have h_ratio : ‖filteredGradient g z‖ / ‖g‖ ≤ 1 := by
-      rw [div_le_one hg_pos]
-      exact h_norm
-    nlinarith
 
 /-- **ZSharp to Distributional PAC-Bayes**:
     A pointwise `ZSharpPacBayesBound` integrates to an expected-risk inequality

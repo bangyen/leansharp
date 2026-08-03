@@ -27,13 +27,13 @@ example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
     (h_align : ∀ w : W (Fin 2),
                 let g_f := filteredGradient
-                  (gradient IllConditioned.L_advanced
-                    (w + samPerturbation IllConditioned.L_advanced w ρ)) z
+                  (gradient IllConditioned.advancedLoss
+                    (w + samPerturbation IllConditioned.advancedLoss w ρ)) z
                 AlignmentCondition w 0 g_f 2 20) :
-    ZSharpConvergenceHolds IllConditioned.L_advanced 0
+    ZSharpConvergenceHolds IllConditioned.advancedLoss 0
       (cosineDecaySchedule η0 0 T) ρ z 20 2 := by
   let M : ZSharpModel (Fin 2) := {
-    L := IllConditioned.L_advanced_bundled,
+    L := IllConditioned.advancedLossBundled,
     w_star := 0,
     ρ := ρ,
     z := z,

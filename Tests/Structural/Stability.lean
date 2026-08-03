@@ -4,20 +4,30 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import LeanSharp.Core.Filters
+import LeanSharp.Theory.Structural.ChainStability
+import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HardThresholding
 import LeanSharp.Theory.Structural.StabilityProperties
 
 /-!
 # Structural Stability Tests
 
-This module exists to verify that hard-thresholding and filtered-update
-stability theorems remain directly consumable by downstream proof modules.
+This module exists to verify that hard-thresholding, filtered-update
+stability, and filter-characterization theorems remain directly consumable
+by downstream proof modules.
 
 ## Examples
 
 * `test_hard_threshold_scalar_not_lipschitz_interface`.
 * `test_localized_filtered_update_norm_bound_interface`.
 * `test_uniform_filtered_process_stability_interface`.
+* `test_z_score_mask_scale_invariance_interface`.
+* `test_zscore_mask_idempotent_interface`.
+* `test_zscore_mask_nonempty_interface`.
+* `test_filtered_gradient_std_zero_interface`.
+* `test_single_outlier_extraction_interface`.
+* `test_zsharp_chain_stability_interface`.
 -/
 
 namespace LeanSharp.Tests
@@ -46,5 +56,46 @@ example (w : ℕ → W ι) (g : ℕ → W ι) (η : ℕ → ℝ) (z R : ℝ)
     (hR : ∀ t, ‖g t‖ ≤ R) :
     ∀ T : ℕ, ‖w T - w 0‖ ≤ Finset.sum (Finset.range T) (fun t => |η t| * R) := by
   exact uniform_filtered_process_stability w g η z R h_step hR
+
+/-- Interface test: the Z-score mask is invariant under global gradient scaling,
+so the algorithm's behavior is scale-agnostic. -/
+example (g : W ι) (z : ℝ) {k : ℝ} (hk : k ≠ 0) :
+    zScoreMask (k • g) z = zScoreMask g z :=
+  z_score_mask_scale_invariance g z hk
+
+/-- Interface test: the Z-score mask is idempotent under the Hadamard product. -/
+example (g : W ι) (z : ℝ) :
+    hadamard (zScoreMask g z) (zScoreMask g z) = zScoreMask g z :=
+  zscore_mask_idempotent g z
+
+/-- Interface test: for $z \le 1$, the filter always preserves at least one
+component of the gradient. -/
+example [Nonempty ι] (g : W ι) {z : ℝ} (hz_le : z ≤ 1) :
+    ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1 :=
+  zscore_mask_nonempty g hz_le
+
+/-- Interface test: constant gradients (zero standard deviation) are preserved
+by the filter. -/
+example (g : W ι) (z : ℝ) (h_std : vectorStd g = 0) :
+    filteredGradient g z = g :=
+  filtered_gradient_eq_self_of_std_zero g z h_std
+
+/-- Interface test: with a single outlier and zero mean, the filtered gradient
+extracts exactly that outlier. -/
+example (g : W ι) (z : ℝ) (i : ι) [DecidableEq ι]
+    (h_μ : vectorMean g = 0)
+    (h_outlier : |(WithLp.equiv 2 (ι → ℝ) g) i| ≥ z * vectorStd g)
+    (h_others : ∀ j : ι, j ≠ i → |(WithLp.equiv 2 (ι → ℝ) g) j| < z * vectorStd g) :
+    filteredGradient g z = (WithLp.equiv 2 (ι → ℝ)).symm
+      (fun j => if j = i then (WithLp.equiv 2 (ι → ℝ) g) i else 0) :=
+  single_outlier_extraction g z i h_μ h_outlier h_others
+
+/-- Interface test: layer-wise Z-score filtering bounds the total chain update
+norm by the norm of the raw backpropagation gradients. -/
+example {In Out : Type} {c : Chain In Out}
+    (z : ℝ) (p : ChainData c) (x : In) (g_out : Out) :
+    chainDataNormSq (backpropChain z p x g_out).1 ≤
+    chainDataNormSq (rawBackpropChain p x g_out).1 :=
+  zsharp_chain_stability z p x g_out
 
 end LeanSharp.Tests

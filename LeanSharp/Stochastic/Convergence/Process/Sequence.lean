@@ -12,6 +12,9 @@ import Mathlib.Tactic.Linarith
 This module aggregates individual descent steps into sequence-level bounds
 governing the entire optimization trajectory.
 
+## Main Definitions
+* `ZSharpDescentEnvelope`: Shared conditional-descent premise for a single step.
+
 ## Main Theorems
 * `stochastic_zsharp_sequence_descent`: Accumulation of descent steps over time.
 -/
@@ -23,6 +26,18 @@ open ProbabilityTheory MeasureTheory NNReal
 variable {ι : Type*} [Fintype ι]
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
 
+/-- **ZSharp Descent Envelope**: the conditional expected progress of the objective
+after a single stochastic ZSharp step at time `t`. This is the shared one-step
+descent premise used by all sequence-level convergence theorems: the expected
+objective at the next iterate is bounded by the current objective minus a
+gradient-norm term plus a variance term. -/
+def ZSharpDescentEnvelope (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ) : Prop :=
+  ∀ᵐ ω ∂ℙ,
+    volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
+    f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq
+
 /-- **ZSharp Sequence Descent**:
 Aggregates the individual descent steps into a sequence-level bound.
 This is the fundamental lemma used to prove the $O(1/\sqrt{T})$ convergence rate. -/
@@ -31,9 +46,7 @@ theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
     (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
       w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
-    (h_desc_step : ∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_desc_step : ∀ t, ZSharpDescentEnvelope L_smooth f w η z σsq g_adv ℱ t)
     (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :

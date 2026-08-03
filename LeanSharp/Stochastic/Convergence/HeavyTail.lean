@@ -63,21 +63,6 @@ theorem zsharp_heavy_tail_convergence
     have hfun : (fun ω => -f (w t ω)) = -(fun ω => f (w t ω)) := rfl
     rw [hfun, eLpNorm_neg]
     exact hbdd t
-  have h_ae_tendsto_neg :
-      ∀ᵐ ω ∂ℙ, Filter.Tendsto (fun t => -f (w t ω)) Filter.atTop
-        (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)) :=
-    h_sub_neg.ae_tendsto_limitProcess hbdd_neg
-  filter_upwards [h_ae_tendsto_neg] with ω hω
-  refine ⟨-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω), ?_⟩
-  have h_neg_cont :
-      Filter.Tendsto (fun x : ℝ => -x)
-        (nhds (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))
-        (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
-    continuous_neg.tendsto (ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω)
-  have h_tendsto_obj :
-      Filter.Tendsto (fun t => -(-f (w t ω))) Filter.atTop
-        (nhds (-(ℱfil.limitProcess (fun t ω => -f (w t ω)) ℙ ω))) :=
-    h_neg_cont.comp hω
-  simpa only [neg_neg] using h_tendsto_obj
+  exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
 
 end LeanSharp

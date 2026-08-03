@@ -46,9 +46,7 @@ def ZSharpStrongestDescentHypotheses
       ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
       ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
     ∧ (∀ t, ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
-    ∧ (∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    ∧ (∀ t, ZSharpDescentEnvelope (L_smooth : ℝ) f w η z σsq g_adv ℱ t)
     ∧ (∀ t, Integrable (fun ω => f (w t ω)) ℙ)
     ∧ (∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
     ∧ (∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
@@ -66,10 +64,8 @@ def ZSharpModelDescentHypotheses
       ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
       ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
     ∧ (∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
-    ∧ (∀ t, ∀ᵐ ω ∂ℙ,
-      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z
-        (fun ω'' => gradient f (w t ω'')) ω') | ℱ t] ω ≤
-      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq)
+    ∧ (∀ t, ZSharpDescentEnvelope (L_smooth : ℝ) f w η z σsq
+      (fun t' ω => gradient f (w t' ω)) ℱ t)
 
 /-- Objective convergence hypothesis bundle for heavy-tailed (oracle-based) noise.
 This bundle replaces the bounded-variance assumption with a polynomial-tail
