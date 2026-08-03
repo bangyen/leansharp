@@ -7,6 +7,7 @@ import LeanSharp.Core.Filters
 import LeanSharp.Theory.Concentration
 import Mathlib.Order.Filter.Basic
 import Mathlib.Topology.Basic
+import Mathlib.Topology.Order.Basic
 
 /-!
 # Infinite-Width Analytical Limits
@@ -33,6 +34,8 @@ to their analytical distributions.
 * `std_analytical_nonneg`: Proves that topological limit scaling preserves standard
   deviation non-negativity natively bridging discrete constraints to infinite domains.
 * `ConcentrationStabilityTheorem`: Proves infinite-width Z-score mask coverage via Chebyshev.
+* `filteredNormDominated`: Proves the filtered gradient norms are eventually bounded above
+  in the infinite-width limit whenever the unfiltered norms converge.
 -/
 
 namespace LeanSharp
@@ -108,6 +111,22 @@ theorem ConcentrationStabilityTheorem (D : DimensionSequence)
   filter_upwards [] with n
   letI : Nonempty (D.ι n) := h_nonempty n
   exact chebyshev_vector (g n) hz (h_var_pos n)
+
+/-- **Filtered Norm Domination**: In the infinite-width limit, if the unfiltered gradient
+norms converge to `c`, then the Z-score filtered gradient norms are eventually bounded above
+by `c + ε` for any `ε > 0`. This is the asymptotic counterpart of `norm_filtered_gradient_le`:
+the filter never amplifies the gradient, so it cannot create growth in the limit. -/
+theorem filteredNormDominated {D : DimensionSequence} {g : GradientSequence D} {z c : ℝ}
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop, ‖FilteredSequence D g z n‖ ≤ c + ε := by
+  intro ε hε
+  have hg : ∀ᶠ n in atTop, ‖g n‖ < c + ε :=
+    h.eventually (IsOpen.mem_nhds isOpen_Iio (lt_add_of_pos_right c hε))
+  filter_upwards [hg] with n hn
+  calc
+    ‖FilteredSequence D g z n‖ = ‖filteredGradient (g n) z‖ := rfl
+    _ ≤ ‖g n‖ := norm_filtered_gradient_le (g n) z
+    _ ≤ c + ε := le_of_lt hn
 
 end DimensionSequence
 

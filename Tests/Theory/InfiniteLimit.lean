@@ -40,4 +40,11 @@ instance : IsInfiniteWidth standardDimSequence where
     simp only [standardDimSequence, Fintype.card_fin]
     exact tendsto_id
 
+/-- **Filtered Norm Domination wiring**: With a convergent unfiltered gradient norm,
+the filtered sequence is eventually bounded above by the limit plus epsilon. -/
+example (D : DimensionSequence) (g : D.GradientSequence) (z c : ℝ)
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop, ‖FilteredSequence D g z n‖ ≤ c + ε :=
+  filteredNormDominated h
+
 end LeanSharp.Tests
