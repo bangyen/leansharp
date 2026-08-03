@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Landscape
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
+import LeanSharp.Theory.Robustness.FilterBias
 
 /-!
 # Robustness Tests
@@ -57,5 +58,24 @@ example (s s_fixed : Finset ℕ) (g : ℕ → W ι) (h_sub : s_fixed ⊆ s)
       (∀ i ∈ s \ s_fixed, ‖g' i‖ ≤ R_out) →
       ‖geometricMedian s g'‖ ≤ R_med ∧ ‖zFilteredEmpiricalMean s g' z‖ ≤ max R_fixed R_out :=
   median_and_zfiltered_mean_bounded_subset s g s_fixed h_sub h_maj z R_fixed R_out hs h_fixed_bound
+
+/-- Test witness (mask is even): the Z-score mask is invariant under negation. -/
+example (g : W ι) (z : ℝ) :
+    zScoreMask (-g) z = zScoreMask g z :=
+  zScoreMask_neg g z
+
+/-- Test witness (filtered gradient is odd): filtering the negation of a gradient is
+the negation of the filtered gradient. -/
+example (g : W ι) (z : ℝ) :
+    filteredGradient (-g) z = -filteredGradient g z :=
+  filteredGradient_neg g z
+
+/-- Test witness (filter bias): filtering noise from a symmetric law is unbiased —
+the expected filtered gradient is zero. -/
+example (D : Measure (W ι)) (z : ℝ)
+    (h_sym : D.map (fun g => -g) = D)
+    (h_int : Integrable (fun g => filteredGradient g z) D) :
+    (∫ g, filteredGradient g z ∂D) = 0 :=
+  filtered_noise_mean_zero D z h_sym h_int
 
 end LeanSharp.Tests
