@@ -14,6 +14,10 @@ import LeanSharp.Theory.Robustness.MedianComparison
 import LeanSharp.Theory.Robustness.PacBayes
 import LeanSharp.Theory.Robustness.PacBayesBasis
 import LeanSharp.Theory.Robustness.PacBayesHoeffding
+import LeanSharp.Theory.Robustness.PacBayesMcAllester
+import LeanSharp.Theory.Robustness.PacBayesMcAllesterBound
+import LeanSharp.Theory.Robustness.PacBayesMcAllesterConfidence
+import LeanSharp.Theory.Robustness.PacBayesMcAllesterSample
 import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!

@@ -9,6 +9,7 @@ import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.LinearPacBayes
 import LeanSharp.Theory.Robustness.LocalPacBayes
+import LeanSharp.Theory.Robustness.PacBayesMcAllesterBound
 
 /-!
 # Robustness Tests
