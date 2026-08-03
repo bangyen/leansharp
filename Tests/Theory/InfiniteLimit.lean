@@ -47,4 +47,20 @@ example (D : DimensionSequence) (g : D.GradientSequence) (z c : ℝ)
     ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop, ‖FilteredSequence D g z n‖ ≤ c + ε :=
   filteredNormDominated h
 
+/-- **Filtered Mean Domination wiring**: the filtered mean is eventually bounded in the
+infinite-width limit. -/
+example (D : DimensionSequence) (g : D.GradientSequence) (z c : ℝ)
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop,
+      |vectorMean (FilteredSequence D g z n)| ≤ c + ε :=
+  filteredMeanDominated h
+
+/-- **Filtered Std Domination wiring**: the filtered standard deviation is eventually
+bounded in the infinite-width limit. -/
+example (D : DimensionSequence) (g : D.GradientSequence) (z c : ℝ)
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop,
+      vectorStd (FilteredSequence D g z n) ≤ c + ε :=
+  filteredStdDominated h
+
 end LeanSharp.Tests

@@ -25,18 +25,15 @@ For a detailed overview of the project's design patterns, including the `W` para
 - **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`. Proved that layer-wise Z-score filtering bounds the total network update norm by the raw backpropagation gradients, and that the Z-score mask is scale-invariant.
 - **Generalization Theory**: Proved the **Donsker-Varadhan Variational Inequality** using Mathlib's information-theoretic machinery, and derived from it the $\lambda$-parametrized PAC-Bayes-Hoeffding inequality, its $\sqrt{\text{KL}}$ form under a sub-Gaussian MGF assumption, and localized bounds over `StabilityCertificate` regions for non-convex landscapes.
 - **Heavy-Tail Robustness**: Proved almost-sure convergence of the objective under heavy-tailed noise (Cauchy, $\alpha$-stable) via non-Gaussian probability oracles.
-- **Concentration & Infinite-Width Stability**: Formalized discrete vector concentration (Chebyshev) bounding the Z-score mask coverage, plus infinite-width filtered-norm domination and analytical limit stability.
+- **Concentration & Infinite-Width Stability**: Formalized discrete vector concentration (Chebyshev) bounding the Z-score mask coverage, plus infinite-width filtered-norm, filtered-mean, and filtered-std domination under convergent gradient norms — completing the CLT-substitute program.
 
 ## Immediate Roadmap
 
-| Task | Priority | Justification |
-| :--- | :--- | :--- |
-| **Infinite-Width Filtered Statistics** | Medium | Prove limit statements for filtered mean/std given `HasAnalyticalMean`/`HasAnalyticalStd`, completing the CLT-substitute program. |
-
 > **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
 > a classical Central Limit Theorem for the filtered gradient is not formally derivable here.
-> Instead, the project provides non-asymptotic concentration (discrete Chebyshev) as the CLT
-> substitute — formalized in `Theory/Concentration` and `Theory/InfiniteLimit`.
+> Instead, the project provides non-asymptotic concentration (discrete Chebyshev) and
+> infinite-width filtered-statistic domination as the CLT substitute — formalized in
+> `Theory/Concentration` and `Theory/InfiniteLimit`.
 
 ## Extensions & Future Work
 

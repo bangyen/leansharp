@@ -5,6 +5,8 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Core.Objective
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.Ring.Abs
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Operations
@@ -14,6 +16,7 @@ import Mathlib.Analysis.Normed.Group.Bounded
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Finset.Sum
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.Order.Basic
 

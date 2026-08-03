@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
+import LeanSharp.Core.StatsBounds
 import LeanSharp.Theory.Concentration
 import Mathlib.Order.Filter.Basic
 import Mathlib.Topology.Basic
@@ -36,6 +37,9 @@ to their analytical distributions.
 * `ConcentrationStabilityTheorem`: Proves infinite-width Z-score mask coverage via Chebyshev.
 * `filteredNormDominated`: Proves the filtered gradient norms are eventually bounded above
   in the infinite-width limit whenever the unfiltered norms converge.
+* `filteredMeanDominated`: Proves the filtered mean is eventually bounded in the limit.
+* `filteredStdDominated`: Proves the filtered standard deviation is eventually bounded
+  in the limit.
 -/
 
 namespace LeanSharp
@@ -127,6 +131,39 @@ theorem filteredNormDominated {D : DimensionSequence} {g : GradientSequence D} {
     ‖FilteredSequence D g z n‖ = ‖filteredGradient (g n) z‖ := rfl
     _ ≤ ‖g n‖ := norm_filtered_gradient_le (g n) z
     _ ≤ c + ε := le_of_lt hn
+
+/-- **Filtered Mean Domination**: In the infinite-width limit, if the unfiltered gradient
+norms converge to `c`, then the empirical mean of the Z-score filtered gradient is
+eventually bounded above by `c + ε`. This is the infinite-width counterpart of
+`abs_vectorMean_le_norm`: the mean never exceeds the norm, so it inherits the norm's
+asymptotic boundedness. -/
+theorem filteredMeanDominated {D : DimensionSequence} {g : GradientSequence D} {z c : ℝ}
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop,
+      |vectorMean (FilteredSequence D g z n)| ≤ c + ε := by
+  intro ε hε
+  have hnrm := filteredNormDominated (D := D) (g := g) (z := z) h ε hε
+  filter_upwards [hnrm] with n hn
+  calc
+    |vectorMean (FilteredSequence D g z n)| ≤ ‖FilteredSequence D g z n‖ :=
+      abs_vectorMean_le_norm _
+    _ ≤ c + ε := hn
+
+/-- **Filtered Std Domination**: In the infinite-width limit, if the unfiltered gradient
+norms converge to `c`, then the empirical standard deviation of the Z-score filtered
+gradient is eventually bounded above by `c + ε`. This is the infinite-width counterpart of
+`vectorStd_le_norm`. -/
+theorem filteredStdDominated {D : DimensionSequence} {g : GradientSequence D} {z c : ℝ}
+    (h : Tendsto (fun n => ‖g n‖) atTop (nhds c)) :
+    ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop,
+      vectorStd (FilteredSequence D g z n) ≤ c + ε := by
+  intro ε hε
+  have hnrm := filteredNormDominated (D := D) (g := g) (z := z) h ε hε
+  filter_upwards [hnrm] with n hn
+  calc
+    vectorStd (FilteredSequence D g z n) ≤ ‖FilteredSequence D g z n‖ :=
+      vectorStd_le_norm _
+    _ ≤ c + ε := hn
 
 end DimensionSequence
 

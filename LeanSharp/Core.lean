@@ -9,6 +9,7 @@ import LeanSharp.Core.Landscape
 import LeanSharp.Core.Models
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Stats
+import LeanSharp.Core.StatsBounds
 import LeanSharp.Core.Taylor
 
 /-!
