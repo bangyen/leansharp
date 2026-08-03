@@ -12,6 +12,7 @@ import LeanSharp.Theory.Robustness.LocalPacBayes
 import LeanSharp.Theory.Robustness.MedianComparison
 import LeanSharp.Theory.Robustness.PacBayes
 import LeanSharp.Theory.Robustness.PacBayesBasis
+import LeanSharp.Theory.Robustness.PacBayesHoeffding
 import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!
