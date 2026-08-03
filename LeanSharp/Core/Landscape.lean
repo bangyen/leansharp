@@ -23,7 +23,8 @@ Sharpness-Aware Minimization (SAM).
 
 ## Main Theorems
 * `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
-
+* `norm_descent_step_sq`: The standard squared-norm expansion of the descent step.
+* `norm_sub_smul_sq`: $\|a - \eta b\|^2 = \|a\|^2 - 2\eta\langle a, b\rangle + \eta^2\|b\|^2$.
 ## Implementation notes
 
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (ι)`.

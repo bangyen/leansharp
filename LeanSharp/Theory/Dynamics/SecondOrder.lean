@@ -15,6 +15,7 @@ functional descent of the loss objective.
 
 ## Main theorems
 
+* `alignment_condition_of_curvature_bound`: Derives the alignment condition from curvature bounds.
 * `zsharp_second_order_descent`: The primary descent lemma incorporating the
   curvature of the filtered direction.
 -/

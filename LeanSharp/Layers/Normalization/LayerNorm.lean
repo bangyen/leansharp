@@ -24,6 +24,8 @@ This module formalizes normalization layers, specifically Layer Normalization.
 
 ## Main theorems
 
+* `contDiff_layernormForward`: Layer Normalization is $C^2$ under non-degenerate variance.
+* `layernorm_forward_lipschitz`: The LayerNorm forward pass is locally Lipschitz.
 * `layernorm_mean_zero`: Proves that LayerNorm output has mean zero.
 -/
 

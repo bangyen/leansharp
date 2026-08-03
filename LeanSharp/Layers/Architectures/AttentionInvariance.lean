@@ -19,10 +19,12 @@ of inputs commutes with the attention forward pass.
 
 ## Main Theorems
 
+* `permuteSeq_apply`: The coordinate of a permuted sequence is the reindexed original.
 * `softmax_perm`: Permuting the input to softmax permutes the output.
 * `attention_permutation_equivariance`: Permuting Q, K, V by σ before attention
   produces the same result as applying σ to the attention output.
 * `attention_output_sum_invariant`: The sum over rows is invariant under permutation.
+* `sum_perm_eq`: Inner products of rows are reindexed by the permutation.
 -/
 
 namespace LeanSharp

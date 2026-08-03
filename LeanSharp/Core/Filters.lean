@@ -26,6 +26,7 @@ Z-score masking.
 
 ## Main theorems
 
+* `norm_filtered_gradient_le`: Direct corollary of the $L_2$ contraction, as a norm-level interface.
 * `norm_sq_filtered_gradient_le`: Proves that the filter is an $L_2$ contraction.
 * `zscore_mask_nonempty`: Proves that the filter preserves at least one component
   when $z \le 1$.

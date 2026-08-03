@@ -16,6 +16,7 @@ Gibbs posterior → generalization bound.
 
 ## Main Theorems
 
+* `linearCertificate_prior_pos`: Positive prior mass on the linear certificate domain.
 * `linearLocalizedPacBayesBound`: The localized PAC-Bayes-Hoeffding bound holds
   for the linear layer certificate under a bounded, zero-mean loss excess.
 -/

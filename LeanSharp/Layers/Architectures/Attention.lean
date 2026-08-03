@@ -28,6 +28,7 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 
 ## Main theorems
 
+* `contDiff_attentionForward`: The attention forward pass is $C^2$.
 * `contDiff_attentionForward_global`: The attention forward pass is globally $C^2$.
 * `attention_forward_lipschitz`: The attention forward pass is locally Lipschitz on
   `Metric.ball 0 R` for any $R > 0$ (proved via the Extreme Value Theorem on compact sets).

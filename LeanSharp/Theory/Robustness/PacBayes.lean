@@ -23,12 +23,10 @@ reduces the effective complexity of the hypothesis class.
 
 ## Main theorems
 
-* `z_sharp_gap_benefit`: Proves that the Z-score filter reduces the gradient-norm
-  term in the generalization bound.
 * `standard_bound_of_z_sharp`: Proves that a ZSharp PAC-Bayes bound implies
   a standard SAM sharpness bound (showing ZSharp is the stricter/tighter condition).
 * `z_sharp_pac_bayes_expected`: Proves that pointwise ZSharp bounds integrate
-  to a distributional bound compatible with `PacBayesGeneralizationBound`.
+  to a distributional bound compatible with the general PAC-Bayes bound.
 -/
 
 namespace LeanSharp

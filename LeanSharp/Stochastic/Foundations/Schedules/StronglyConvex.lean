@@ -31,7 +31,7 @@ analyses.
 * `zsharp_strongly_convex_rate`: explicit `O(1/T)` rate under contraction assumptions.
 * `weight_sequence_step_eventually`: recursion identity for `weightSequence`.
 * `weight_sequence_robbins_monro_almost_sure_convergence_of_model_descent_hypotheses`:
-  almost-sure convergence for the concrete `weightSequence` process.
+  almost-sure convergence for the concrete weightSequence process.
 -/
 
 namespace LeanSharp

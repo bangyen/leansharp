@@ -13,6 +13,8 @@ characterization for the geometric median.
 
 ## Main Theorems
 * `median_breakdown`: strict minority of fixed points implies unbounded contamination effect.
+* `median_breakdown_lower_bound`: Outlier distances are at least the outlier count times the gap.
+* `median_breakdown_upper_bound`: Fixed distances are bounded by norms plus count times radius.
 -/
 
 namespace LeanSharp

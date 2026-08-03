@@ -27,7 +27,6 @@ open Real InnerProductSpace ProbabilityTheory MeasureTheory BigOperators
 This module unifies the deterministic and stochastic alignment conditions used
 in convergence proofs. By standardizing these contracts, we ensure that
 theoretical analysis remains consistent across different dynamical regimes.
-
 ## Main definitions
 
 * `AlignmentCondition`: Deterministic descent direction alignment.
@@ -41,6 +40,7 @@ theoretical analysis remains consistent across different dynamical regimes.
 * `alignment_condition_of_signal_noise`: Bridge theorem for stochastic models.
 * `deterministic_implies_stochastic_alignment`: Deterministic alignment implies
   the stochastic variant under a degenerate distribution.
+* `lipschitzOnWith_closedBall_of_contDiff_two`: A $C^2$ function is Lipschitz on closed balls.
 -/
 
 variable {ι : Type*} [Fintype ι]

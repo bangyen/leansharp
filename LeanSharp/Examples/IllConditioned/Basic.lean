@@ -20,6 +20,7 @@ landscape with high condition number.
 * `exactGradientAdvanced`: Analytical gradient of `advancedLoss`.
 
 ## Main Theorems
+* `coordinate_dual_apply`: Helper for coordinate-wise evaluation of the Riesz representative.
 * `hasFDerivAt_advancedLoss`: Proves the analytical derivative of `advancedLoss`.
 * `gradient_advanced_eq`: Shows that the computed gradient matches the analytical one.
 -/

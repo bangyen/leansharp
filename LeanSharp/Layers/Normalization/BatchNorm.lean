@@ -26,7 +26,9 @@ Normalization is performed across the batch dimension.
 
 ## Main theorems
 
+* `batchnorm_forward_lipschitz`: The BatchNorm forward pass is locally Lipschitz.
 * `batchnorm_mean_zero`: Proves that BatchNorm output has mean zero.
+* `contDiff_batchnormForward`: Batch Normalization is $C^2$ under non-degenerate variance.
 -/
 
 /-- Extracts a slice of the batch for a specific feature dimension `d`. -/

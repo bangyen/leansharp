@@ -17,6 +17,7 @@ This module defines the alignment condition between updates and gradients, and
 provides distance expansion lemmas.
 
 ## Main Theorems
+* `integral_inner_const`: The integral of an inner product with a constant factorizes.
 * `stochastic_dist_expansion`: Core identity for expected distance updates.
 -/
 

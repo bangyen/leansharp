@@ -21,6 +21,7 @@ This module formalizes linear (affine) layers $y = Wx + b$ within the `Layer` fr
 
 ## Theorems
 
+* `contDiff_linearForward`: Linear layers are $C^\infty$.
 * `linear_forward_lipschitz`.
 -/
 

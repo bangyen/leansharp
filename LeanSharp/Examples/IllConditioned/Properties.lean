@@ -17,8 +17,8 @@ ill-conditioned quadratic objective.
 * `SmoothObjective`: Uses the bundled assumption structure.
 
 ## Main Theorems
-* `smooth_advanced`: Proof of $L$-smoothness.
-* `convex_advanced`: Proof of strong convexity.
+* `advanced_L_smooth`: The gradient is Lipschitz with $L = 20$.
+* `advanced_strongly_convex`: The function is $\mu$-strongly convex.
 -/
 
 namespace LeanSharp.IllConditioned

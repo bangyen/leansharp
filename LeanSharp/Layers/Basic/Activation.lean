@@ -26,6 +26,8 @@ This module formalizes activation functions as neural network layers.
 
 ## Theorems
 
+* `contDiff_smoothRelu`: Softplus is $C^2$, resolving ReLU's non-smoothness.
+* `contDiff_softmax`: Softmax is $C^2$.
 * `relu_lipschitz`.
 -/
 

@@ -20,7 +20,9 @@ filtering, along with basic norm control lemmas.
 * `zFilteredEmpiricalMean`: Mean computed after coordinate-wise Z-score gating.
 
 ## Main Theorems
+* `norm_unit_vector`: The unit vector has norm one.
 * `z_filtered_empirical_mean_norm_le`: Quantitative handle for robust bounds.
+* `z_filtered_empirical_mean_norm_le_of_pointwise_bound`: Uniform bound for the filtered mean norm.
 -/
 
 namespace LeanSharp

@@ -35,7 +35,12 @@ gradient vectors so filtering proofs can share a common statistical foundation.
 
 ## Theorems
 
+* `contDiff_vectorMean`: The mean of a vector is $C^\infty$.
+* `contDiff_vectorNormalize`: Normalizing a vector is $C^\infty$.
+* `contDiff_vectorVariance`: The variance of a vector is $C^\infty$.
+* `vectorMean_normalize`: The mean of a normalized vector is zero.
 * `vectorMean_smul`.
+* `vectorMean_sub_mean`: The mean of a vector shifted by its own mean is zero.
 * `vectorVariance_nonneg`.
 * `vectorVariance_smul`.
 * `vectorStd_smul`.
