@@ -7,7 +7,6 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Taylor.Multilinear
 import LeanSharp.Core.Taylor.SamBounds
 import LeanSharp.Core.Taylor.SmoothDescent
-import LeanSharp.Core.Taylor.SobolevDescent
 
 /-!
 # Taylor Aggregator

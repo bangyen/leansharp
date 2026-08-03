@@ -10,9 +10,7 @@ import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HardThresholding
 import LeanSharp.Theory.Structural.HessianContraction
 import LeanSharp.Theory.Structural.SAMDifferentiability
-import LeanSharp.Theory.Structural.SobolevRegularity
 import LeanSharp.Theory.Structural.StabilityProperties
-import LeanSharp.Theory.Structural.ViTInvariance
 
 /-!
 # Structural Theory Aggregator

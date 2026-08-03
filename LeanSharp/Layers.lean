@@ -7,7 +7,6 @@ Authors: Bangyen Pham
 import LeanSharp.Layers.Architectures
 import LeanSharp.Layers.Basic
 import LeanSharp.Layers.Normalization
-import LeanSharp.Layers.Specialized
 
 /-!
 # Layers Aggregator

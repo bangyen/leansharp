@@ -9,7 +9,6 @@ import LeanSharp.Theory.Dynamics.Generalization
 import LeanSharp.Theory.Dynamics.SamBound
 import LeanSharp.Theory.Dynamics.Schedulers
 import LeanSharp.Theory.Dynamics.SecondOrder
-import LeanSharp.Theory.Dynamics.Universality
 
 /-!
 # Dynamics Theory Aggregator

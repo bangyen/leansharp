@@ -5,9 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Examples.IllConditioned
-import LeanSharp.Examples.PerceptronNetwork
 import LeanSharp.Examples.QuadraticBowl
-import LeanSharp.Examples.Rosenbrock
 
 /-!
 # Examples Aggregator

@@ -29,12 +29,6 @@ Sharpness-Aware Minimization (SAM).
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (ι)`.
 The gradient is computed as the Riesz representation `InnerProductSpace.toDual.symm`
 of the Fréchet derivative.
-
-### Research Note: Functional Analysis (Sobolev Spaces)
-
-Future transitions of the project foundations may rely on Sobolev spaces
-(specifically $H^1$ and $H^2$) for regularity, rather than just $C^k$.
-This would allow analyzing modern ML functions which may lack global $C^2$ smoothness.
 -/
 
 namespace LeanSharp

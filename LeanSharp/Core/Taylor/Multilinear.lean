@@ -18,7 +18,6 @@ order multilinear forms.
 ## Definitions
 
 * `SmoothObjectiveN`: n-th order smooth function bundle.
-* `HKSmoothObjectiveN`: `H^k`-aware n-th order smooth bundle.
 
 ## Theorems
 
@@ -43,15 +42,6 @@ structure SmoothObjectiveN (ι : Type*) [Fintype ι] (n : ℕ) where
       This directional formulation avoids Faa Di Bruno combination explosion. -/
   bound : ∀ (w ε : W ι) (y : ℝ), y ∈ Icc (0:ℝ) 1 →
     ‖iteratedDerivWithin n (fun t => toFun (w + t • ε)) (Icc 0 1) y‖ ≤ smoothness * ‖ε‖ ^ n
-
-/-- `H^k`-aware n-th order smooth objective bundle. This wrapper exists to let
-Taylor bounds be stated against Sobolev-style regularity contracts while
-remaining backward-compatible with existing `SmoothObjectiveN` clients. -/
-structure HKSmoothObjectiveN (ι : Type*) [Fintype ι] (n k : ℕ) where
-  /-- Underlying n-th order smooth objective data. -/
-  toSmoothObjectiveN : SmoothObjectiveN ι n
-  /-- `H^k` regularity contract placeholder used by higher-level interfaces. -/
-  hkRegularity : Prop
 
 instance {n : ℕ} : CoeFun (SmoothObjectiveN ι n) (fun _ => W ι → ℝ) where
   coe L := L.toFun
