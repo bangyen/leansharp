@@ -1,0 +1,74 @@
+/-
+Copyright (c) 2026 Bangyen Pham. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bangyen Pham
+-/
+import LeanSharp.Stochastic.Convergence.Process.Descent
+
+/-!
+# Stochastic SAM Descent
+
+This module contains SAM-specific stochastic descent bounds built on the
+general Z-score descent process.
+
+## Main Theorems
+* `sam_filtered_second_moment_le`: Perturbation-aware second-moment bound.
+-/
+
+namespace LeanSharp
+
+open ProbabilityTheory MeasureTheory NNReal
+
+variable {ι : Type*} [Fintype ι]
+variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+
+/-- The filtered update second moment is bounded by the noise variance and the
+base-point gradient norm plus the smoothness error from the SAM perturbation. -/
+theorem sam_filtered_second_moment_le
+    (L : SmoothObjective ι) (g : Ω → W ι) (w : W ι)
+    (ρ z σsq : ℝ) (hρ : 0 ≤ ρ)
+    (h_stoch : IsStochasticGradient L.toFun g
+      (w + samPerturbation L.toFun w ρ))
+    (h_var : HasBoundedVariance L.toFun g
+      (w + samPerturbation L.toFun w ρ) σsq)
+    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ) :
+    𝔼[fun ω => ‖filteredGradient (g ω) z‖ ^ 2] ≤
+      σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2 := by
+  have h_norm_le : 𝔼[fun ω => ‖filteredGradient (g ω) z‖ ^ 2] ≤
+      𝔼[fun ω => ‖g ω‖ ^ 2] :=
+    integral_mono h_int_f h_int (fun ω => norm_sq_filtered_gradient_le (g ω) z)
+  have h_raw_decomp := l2_bias_variance_decomposition g h_int h_stoch.1
+  rw [h_stoch.2] at h_raw_decomp
+  have h_input_bound : 𝔼[fun ω => ‖g ω‖ ^ 2] ≤
+      σsq + ‖gradient L.toFun (w + samPerturbation L.toFun w ρ)‖ ^ 2 := by
+    rw [h_raw_decomp]
+    unfold HasBoundedVariance at h_var
+    linarith [h_var]
+  have h_grad_diff := gradient_samPerturbation_error_le L w ρ hρ
+  have h_grad_adv_norm :
+      ‖gradient L.toFun (w + samPerturbation L.toFun w ρ)‖ ≤
+        ‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ := by
+    calc
+      ‖gradient L.toFun (w + samPerturbation L.toFun w ρ)‖ =
+          ‖(gradient L.toFun (w + samPerturbation L.toFun w ρ) -
+            gradient L.toFun w) + gradient L.toFun w‖ := by rw [sub_add_cancel]
+      _ ≤ ‖gradient L.toFun (w + samPerturbation L.toFun w ρ) -
+          gradient L.toFun w‖ + ‖gradient L.toFun w‖ := norm_add_le _ _
+      _ ≤ ‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ := by
+        linarith
+  have h_grad_adv_sq :
+      ‖gradient L.toFun (w + samPerturbation L.toFun w ρ)‖ ^ 2 ≤
+        (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2 := by
+    have h_rhs_nonneg : 0 ≤ ‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ :=
+      add_nonneg (norm_nonneg _) (mul_nonneg L.smoothness.coe_nonneg hρ)
+    have h_adv_nonneg : 0 ≤ ‖gradient L.toFun
+        (w + samPerturbation L.toFun w ρ)‖ := norm_nonneg _
+    nlinarith
+  have h_second_adv : σsq + ‖gradient L.toFun
+      (w + samPerturbation L.toFun w ρ)‖ ^ 2 ≤
+      σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2 := by
+    simpa only [add_comm] using add_le_add_left h_grad_adv_sq σsq
+  exact h_norm_le.trans (h_input_bound.trans h_second_adv)
+
+end LeanSharp

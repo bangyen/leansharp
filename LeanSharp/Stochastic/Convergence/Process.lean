@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Stochastic.Convergence.Process.Basic
 import LeanSharp.Stochastic.Convergence.Process.Descent
+import LeanSharp.Stochastic.Convergence.Process.SamDescent
 import LeanSharp.Stochastic.Convergence.Process.Sequence
 
 /-!
