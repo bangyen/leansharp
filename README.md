@@ -20,19 +20,19 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 ## Key Accomplishments
 
-- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and a matching $O(1/T)$ rate for strongly convex objectives, plus an $O(1/\sqrt{T})$ rate for non-convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis.
+- **Robust Convergence Theory**: Proved $O(1/T)$ stochastic convergence under $\alpha$-stable noise and a matching $O(1/T)$ rate for strongly convex objectives, plus an $O(1/\sqrt{T})$ rate for non-convex objectives. Established $50\%$ outlier stability through formalized breakdown-point analysis, and geometric convergence of the SAM-ZSharp update (`zsharp_convergence`) under smoothness, strong convexity, and the alignment condition.
 - **Unified Alignment Framework**: Established the definitive `AlignmentCondition` bridge, mathematically linking deterministic gradient geometry to stochastic Z-score filtering.
 - **Formal Stability & Regularity**: Completed `StabilityCertificate` $C^2$ smoothness and Lipschitz regularity proofs for the entire core stack, including `Linear`, `Softmax`, `Attention`, `LayerNorm`, and `BatchNorm`. Proved that layer-wise Z-score filtering bounds the total network update norm by the raw backpropagation gradients, and that the Z-score mask is scale-invariant.
 - **Generalization Theory**: Established the **ZSharp PAC-Bayes sharpness bound**: the Z-score filtered gradient satisfies a pointwise sharpness bound (`ZSharpPacBayesBound`) that is provably tighter than the standard SAM sharpness bound via the filter's $L_2$ contraction, and the pointwise bound integrates to a distributional expected-risk form.
 - **Heavy-Tail Robustness**: Proved almost-sure convergence of the objective under heavy-tailed noise (Cauchy, $\alpha$-stable) via non-Gaussian probability oracles.
 - **Concentration & Infinite-Width Stability**: Formalized discrete vector concentration (Chebyshev) bounding the Z-score mask coverage, plus infinite-width filtered-norm, filtered-mean, and filtered-std domination under convergent gradient norms — completing the CLT-substitute program.
+- **Filter Statistical Guarantees**: Proved the Z-score filter is unbiased on symmetric heavy-tailed noise (e.g., Cauchy, $\alpha$-stable): $E[\mathrm{filteredGradient}\ \eta] = 0$, and $E[\mathrm{zFilteredEmpiricalMean}\ \eta] = 0$ for the sample estimator the algorithm uses (`FilterBias`).
 
 ## Immediate Roadmap
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **SAM-ZSharp Update Convergence** | High | Prove descent/convergence for the `samZSharpUpdate` step (gradient at the SAM perturbation, Z-score filtered). The update is defined but unproven; the smoothness bound (`sam_taylor_bound`) and the filter's $L_2$ contraction already exist. |
-| **Filter Bias under Heavy-Tailed Noise** | Medium | The unbiasedness claim is proven for the filter (`E[filteredGradient η z] = 0`) and for the sample estimator it uses (`E[zFilteredEmpiricalMean] = 0`) under symmetric heavy-tailed laws (`FilterBias`). The bounded-bias statement for non-symmetric noise is left open; it requires bounding an expectation over a data-dependent truncation for a general law. |
+| **Non-Convex SAM-ZSharp Rate** | High | `zsharp_convergence` proves geometric convergence of the SAM-ZSharp update under strong convexity; the non-convex $O(1/\sqrt{T})$ analogue for the SAM step specifically is open. |
 | **Z-Score Mask Breakdown Point** | Medium | Formalize how many outliers the mask survives before collapsing, reusing the existing breakdown-point framework. |
 
 > **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
