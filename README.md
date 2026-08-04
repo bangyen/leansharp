@@ -35,23 +35,22 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 ## Scope & Limitations
 
-> **Note on the Z-Score filter's robustness**: the filter's robustness guarantee is the bounded-outlier
-> type — the filtered mean stays bounded when a strict majority of points are fixed and the outliers are
-> bounded (`z_filtered_empirical_mean_bounded_subset`, `median_and_zfiltered_mean_bounded_subset`). It is
-> not breakdown-robust in the unbounded sense: a single concentrated outlier vector (σ = 0) passes the
-> per-vector mask untouched, so the strict finite-sample breakdown point is zero, as for the ordinary mean.
+**Robustness.** The filter's robustness guarantee is the bounded-outlier type — the filtered mean stays
+bounded when a strict majority of points are fixed and the outliers are bounded
+(`z_filtered_empirical_mean_bounded_subset`, `median_and_zfiltered_mean_bounded_subset`). It is not
+breakdown-robust in the unbounded sense: a single concentrated outlier vector (σ = 0) passes the per-vector
+mask untouched, so the strict finite-sample breakdown point is zero, as for the ordinary mean.
 
-> **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
-> robustness, and the statistical properties of the filter. Within generalization, it develops pointwise and
-> distributional PAC-Bayes **sharpness** bounds (`ZSharpPacBayesBound`), but deliberately does not develop the
-> full KL-divergence PAC-Bayes risk form (with prior/posterior complexity term) or convergence results that
-> require idealized assumptions unmet by deep networks; that material is out of scope.
+**Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
+robustness, and the statistical properties of the filter. Within generalization, it develops pointwise and
+distributional PAC-Bayes **sharpness** bounds (`ZSharpPacBayesBound`), but deliberately does not develop the
+full KL-divergence PAC-Bayes risk form (with prior/posterior complexity term) or convergence results that
+require idealized assumptions unmet by deep networks; that material is out of scope.
 
-> **Note on the Z-Score CLT**: The discrete Z-score mask is a discontinuous function, so
-> a classical Central Limit Theorem for the filtered gradient is not formally derivable here.
-> Instead, the project provides non-asymptotic concentration (discrete Chebyshev) and
-> infinite-width filtered-statistic domination as the CLT substitute — formalized in
-> `Theory/Concentration` and `Theory/InfiniteLimit`.
+**CLT.** The discrete Z-score mask is a discontinuous function, so a classical Central Limit Theorem for the
+filtered gradient is not formally derivable here. Instead, the project provides non-asymptotic concentration
+(discrete Chebyshev) and infinite-width filtered-statistic domination as the CLT substitute — formalized in
+`Theory/Concentration` and `Theory/InfiniteLimit`.
 
 ## Installation & Building
 
