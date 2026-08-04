@@ -20,7 +20,6 @@ landscape with high condition number.
 * `exactGradientAdvanced`: Analytical gradient of `advancedLoss`.
 
 ## Main Theorems
-* `coordinate_dual_apply`: Helper for coordinate-wise evaluation of the Riesz representative.
 * `hasFDerivAt_advancedLoss`: Proves the analytical derivative of `advancedLoss`.
 * `gradient_advanced_eq`: Shows that the computed gradient matches the analytical one.
 -/
@@ -85,14 +84,6 @@ lemma hasFDerivAt_advancedLoss (w : W2) :
       p0
     ]; ring
   · convert h1_sq using 1
-
-/-- Helper for coordinate-wise evaluation of the Riesz representative. -/
-lemma coordinate_dual_apply (g : W2 →L[ℝ] ℝ) (i : Fin 2) :
-    ((InnerProductSpace.toDual ℝ W2).symm g) i = g (EuclideanSpace.single i (1 : ℝ)) := by
-  let v := (InnerProductSpace.toDual ℝ W2).symm g
-  have hv : @inner ℝ W2 _ v (EuclideanSpace.single i (1 : ℝ)) = v i := by
-    rw [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial, one_mul]
-  rw [← hv, InnerProductSpace.toDual_symm_apply]
 
 theorem gradient_advanced_eq (w : W2) :
     gradient advancedLoss w = exactGradientAdvanced w := by

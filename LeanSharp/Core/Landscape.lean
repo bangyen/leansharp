@@ -27,6 +27,7 @@ Sharpness-Aware Minimization (SAM).
 * `hessian_symmetric`: Proves that the Hessian is a self-adjoint operator for C² functions.
 * `norm_descent_step_sq`: The standard squared-norm expansion of the descent step.
 * `norm_sub_smul_sq`: $\|a - \eta b\|^2 = \|a\|^2 - 2\eta\langle a, b\rangle + \eta^2\|b\|^2$.
+* `coordinate_dual_apply`: Coordinate-wise evaluation of the Riesz representative.
 ## Implementation notes
 
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (ι)`.
@@ -135,5 +136,15 @@ lemma norm_descent_step_sq (w w_star g : W ι) (η : ℝ) :
     ‖w - w_star‖^2 - 2 * η * inner ℝ g (w - w_star) + η^2 * ‖g‖^2 := by
   have : (w - η • g) - w_star = (w - w_star) - η • g := by abel
   rw [this, norm_sub_smul_sq]
+
+/-- Coordinate-wise evaluation of the Riesz representative: the `i`-th coordinate
+of the vector representing `g` under the Riesz isometry is the evaluation of `g`
+on the `i`-th standard basis vector. -/
+lemma coordinate_dual_apply [DecidableEq ι] (g : W ι →L[ℝ] ℝ) (i : ι) :
+    ((InnerProductSpace.toDual ℝ (W ι)).symm g) i = g (EuclideanSpace.single i (1 : ℝ)) := by
+  let v := (InnerProductSpace.toDual ℝ (W ι)).symm g
+  have hv : @inner ℝ (W ι) _ v (EuclideanSpace.single i (1 : ℝ)) = v i := by
+    rw [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial, one_mul]
+  rw [← hv, InnerProductSpace.toDual_symm_apply]
 
 end LeanSharp

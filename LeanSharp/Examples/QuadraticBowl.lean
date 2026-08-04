@@ -26,7 +26,6 @@ in `W ι` can be explicitly evaluated on Euclidean vectors.
 
 * `hasFDerivAt_toyLoss`: The analytical Fréchet derivative of `toyLoss`.
 * `gradient_toy_eq`: Shows that the computed gradient matches the analytical one.
-* `coordinate_dual_apply`: Helper for coordinate-wise evaluation of the Riesz representative.
 -/
 
 namespace LeanSharp.QuadraticBowl
@@ -87,14 +86,6 @@ lemma hasFDerivAt_toyLoss (w : W2) :
   apply HasFDerivAt.add
   · convert h0_sq using 1
   · convert h1_sq using 1
-
-/-- Helper for coordinate-wise evaluation of the Riesz representative. -/
-lemma coordinate_dual_apply (g : W2 →L[ℝ] ℝ) (i : Fin 2) :
-    ((InnerProductSpace.toDual ℝ W2).symm g) i = g (EuclideanSpace.single i (1 : ℝ)) := by
-  let v := (InnerProductSpace.toDual ℝ W2).symm g
-  have hv : @inner ℝ W2 _ v (EuclideanSpace.single i (1 : ℝ)) = v i := by
-    rw [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial, one_mul]
-  rw [← hv, InnerProductSpace.toDual_symm_apply]
 
 /-- **Toy Gradient Correctness**: The computed gradient matches the analytical one
 $\nabla L(w) = [2w_0, 2w_1]$. -/
