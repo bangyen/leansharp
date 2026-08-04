@@ -14,9 +14,11 @@ governing the entire optimization trajectory.
 
 ## Main Definitions
 * `ZSharpDescentEnvelope`: Shared conditional-descent premise for a single step.
+* `SAMDescentEnvelope`: SAM-specific conditional-descent premise with perturbation penalty.
 
 ## Main Theorems
 * `stochastic_zsharp_sequence_descent`: Accumulation of descent steps over time.
+* `sam_sequence_descent`: Accumulation of SAM descent envelopes over time.
 -/
 
 namespace LeanSharp
@@ -36,7 +38,15 @@ def ZSharpDescentEnvelope (L_smooth : ℝ) (f : W ι → ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ) : Prop :=
   ∀ᵐ ω ∂ℙ,
     volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω ≤
-    f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq
+      f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 + (η t ^ 2 * L_smooth / 2) * σsq
+
+/-- **SAM Descent Envelope**: Conditional descent with the SAM perturbation
+error absorbed into the effective variance term. The quarter-gradient form
+matches the sequence-level interface used by the existing stochastic theorem. -/
+def SAMDescentEnvelope (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq ρ : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ) : Prop :=
+  ZSharpDescentEnvelope L_smooth f w η z (σsq + 2 * L_smooth ^ 2 * ρ ^ 2) g_adv ℱ t
 
 /-- **ZSharp Sequence Descent**:
 Aggregates the individual descent steps into a sequence-level bound.
@@ -72,5 +82,25 @@ theorem stochastic_zsharp_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
         stochastic_expected_descent_step L_smooth f w η z σsq t g_adv ℱ
           (h_step t) (h_desc_step t) (h_int t) (h_int_grad t) (h_meas t)
       linarith
+
+/-- **SAM Sequence Descent**: Accumulates SAM descent envelopes using the
+effective variance `σ² + 2L²ρ²`. -/
+theorem sam_sequence_descent (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq ρ : ℝ) (T : ℕ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω)
+    (h_step : ∀ t, ∀ᵐ ω ∂ℙ,
+      w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
+    (h_desc_step : ∀ t, SAMDescentEnvelope L_smooth f w η z σsq ρ g_adv ℱ t)
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad : ∀ t, Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace) :
+    (∑ t ∈ Finset.range T, (η t / 4) *
+        𝔼[fun ω => ‖gradient f (w t ω)‖ ^ 2]) ≤
+      𝔼[fun ω => f (w 0 ω)] - 𝔼[fun ω => f (w T ω)] +
+      (∑ t ∈ Finset.range T,
+        (η t ^ 2 * L_smooth / 2) * (σsq + 2 * L_smooth ^ 2 * ρ ^ 2)) := by
+  exact stochastic_zsharp_sequence_descent L_smooth f w η z
+    (σsq + 2 * L_smooth ^ 2 * ρ ^ 2) T g_adv ℱ h_step
+    (fun t => h_desc_step t) h_int h_int_grad h_meas
 
 end LeanSharp
