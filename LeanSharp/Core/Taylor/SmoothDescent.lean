@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Objective
 import Mathlib.Algebra.Order.Field.Basic
@@ -26,6 +27,8 @@ place.
 
 * `smooth_descent_on_segment`: local segment-form descent bound.
 * `smooth_descent`: global corollary of the segment-form bound.
+* `gradient_samPerturbation_error_le`: smoothness bound on the SAM gradient error.
+* `sam_filtered_smooth_descent_step`: one-step descent for a deterministic SAM-filtered update.
 -/
 
 namespace LeanSharp
@@ -44,6 +47,20 @@ structure SmoothObjective (ι : Type*) [Fintype ι] where
   differentiable : Differentiable ℝ toFun
   /-- Proof that the gradient is L-Lipschitz. -/
   lipschitz : LipschitzWith smoothness (gradient toFun)
+
+/-- The gradient change caused by the first-order SAM perturbation is bounded by
+the smoothness constant times the perturbation radius. -/
+lemma gradient_samPerturbation_error_le (L : SmoothObjective ι) (w : W ι) (ρ : ℝ)
+    (hρ : 0 ≤ ρ) :
+    ‖gradient L.toFun (w + samPerturbation L.toFun w ρ) - gradient L.toFun w‖ ≤
+      (L.smoothness : ℝ) * ρ := by
+  have h_lip := L.lipschitz.dist_le_mul (w + samPerturbation L.toFun w ρ) w
+  have h_perturb := norm_samPerturbation_le L.toFun w ρ hρ
+  have h_dist : dist (w + samPerturbation L.toFun w ρ) w ≤ ρ := by
+    simpa only [dist_eq_norm, add_sub_cancel_left] using h_perturb
+  have h_smooth_nonneg : 0 ≤ (L.smoothness : ℝ) := L.smoothness.coe_nonneg
+  simpa only [dist_eq_norm, add_sub_cancel_left] using
+    h_lip.trans (mul_le_mul_of_nonneg_left h_dist h_smooth_nonneg)
 
 /-- Auxiliary: the derivative of `t ↦ L(p + t•ε)` is `inner ℝ (∇L) ε`. -/
 private lemma path_hasDerivAt (L : W ι → ℝ) (p ε : W ι) (t : ℝ)
@@ -181,5 +198,34 @@ theorem smooth_descent (L : SmoothObjective ι) (w ε : W ι) :
     intro t _
     exact L.differentiable (w + t • ε)
   exact smooth_descent_on_segment L.toFun w ε L.smoothness h_path_cont h_diff_path L.lipschitz
+
+/-- One-step smooth descent for the deterministic SAM-filtered update. -/
+theorem sam_filtered_smooth_descent_step (L : SmoothObjective ι) (w : W ι)
+    (η z ρ : ℝ) :
+    L.toFun (w - η • filteredGradient
+      (gradient L.toFun (w + samPerturbation L.toFun w ρ)) z) ≤
+      L.toFun w - η * inner ℝ (gradient L.toFun w)
+        (filteredGradient (gradient L.toFun (w + samPerturbation L.toFun w ρ)) z) +
+        ((L.smoothness : ℝ) / 2) * η ^ 2 *
+          ‖filteredGradient
+            (gradient L.toFun (w + samPerturbation L.toFun w ρ)) z‖ ^ 2 := by
+  let g_f := filteredGradient
+    (gradient L.toFun (w + samPerturbation L.toFun w ρ)) z
+  have h_taylor := smooth_descent L w (-η • g_f)
+  have h_term1 : inner ℝ (gradient L.toFun w) (-η • g_f) =
+      -η * inner ℝ (gradient L.toFun w) g_f := by
+    rw [inner_smul_right, real_inner_comm]
+  have h_term2 : ‖-η • g_f‖ ^ 2 = η ^ 2 * ‖g_f‖ ^ 2 := by
+    simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+  have h_taylor' : L.toFun (w - η • g_f) ≤
+      L.toFun w - η * inner ℝ (gradient L.toFun w) g_f +
+        ((L.smoothness : ℝ) / 2) * η ^ 2 * ‖g_f‖ ^ 2 := by
+    rw [h_term1, h_term2] at h_taylor
+    have h_lhs : w - η • g_f = w + -η • g_f := by
+      rw [sub_eq_add_neg, neg_smul]
+    rw [h_lhs]
+    convert h_taylor using 1
+    all_goals ring
+  simpa only [g_f] using h_taylor'
 
 end LeanSharp

@@ -29,6 +29,7 @@ set, and first-order update identities that the rest of LeanSharp builds on.
 
 * `sam_objective_ge_self`.
 * `differentiable_at_sam_perturbation`.
+* `norm_samPerturbation_le`.
 -/
 
 open Topology
@@ -53,6 +54,18 @@ noncomputable def samPerturbation (L : W ι → ℝ) (w : W ι) (ρ : ℝ) : W �
   let g := gradient L w
   let norm_g := ‖g‖
   if norm_g = 0 then 0 else (ρ / norm_g) • g
+
+/-- The first-order SAM perturbation stays inside the radius-`ρ` ball. -/
+lemma norm_samPerturbation_le (L : W ι → ℝ) (w : W ι) (ρ : ℝ) (hρ : 0 ≤ ρ) :
+    ‖samPerturbation L w ρ‖ ≤ ρ := by
+  simp only [samPerturbation]
+  by_cases h_grad : gradient L w = 0
+  · simpa only [h_grad, norm_zero, ite_true] using hρ
+  · have h_norm : ‖gradient L w‖ ≠ 0 := norm_ne_zero_iff.mpr h_grad
+    simp only [h_norm, ite_false, norm_smul, Real.norm_eq_abs, abs_div,
+      abs_of_nonneg hρ, abs_of_pos (norm_pos_iff.mpr h_grad)]
+    field_simp
+    exact le_rfl
 
 /-- **SAM Objective Supremum Property**: The SAM objective at point `w` is always
 greater than or equal to the base loss `L w`, provided the neighborhood is
