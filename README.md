@@ -29,7 +29,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Non-Convex SAM-ZSharp Rate** | Medium | The $O(1/\sqrt{T})$ rate for the SAM-perturbed step remains open; the existing rate covers plain filtered descent.<br><br>**Needed:** a gradient-Lipschitz bound, a SAM-aligned descent envelope, and an argument absorbing the perturbation error into the variance term. The resulting rate would be weaker than the unfiltered/plain-step rate. |
+| **Conditional Non-Convex SAM-ZSharp Rate** | Medium | The complete $O(1/\sqrt{T})$ rate is formalized in `sam_nonconvex_rate_complete` under the conditional `SAMDescentEnvelope`, with perturbation penalty $2L^2\rho^2$. **Remaining:** derive that conditional envelope for the filtered sequence from `sam_stochastic_descent_step`, including the required filtration and measurability bridge. |
 
 ## Scope & Limitations
 
