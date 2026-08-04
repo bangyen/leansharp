@@ -32,7 +32,7 @@ For a detailed overview of the project's design patterns, including the `W` para
 
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
-| **Non-Convex SAM-ZSharp Rate** | High | `zsharp_convergence` proves geometric convergence of the SAM-ZSharp update under strong convexity; the non-convex $O(1/\sqrt{T})$ analogue for the SAM step specifically is open. |
+| **Non-Convex SAM-ZSharp Rate** | Medium | The non-convex $O(1/\sqrt{T})$ analogue for the SAM-perturbed step is open (the existing rate covers plain filtered descent). A formal treatment needs a gradient-Lipschitz bound, a SAM-aligned descent envelope (the perturbation turns `E[g] = ∇f(w)` into `E[g] = ∇f(w+ε)`), and absorbs the perturbation error into the variance term — yielding a rate weaker than the unfiltered/plain-step one. Audit-scoped. |
 | **Z-Score Mask Breakdown Point** | Medium | Formalize how many outliers the mask survives before collapsing, reusing the existing breakdown-point framework. |
 
 > **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
