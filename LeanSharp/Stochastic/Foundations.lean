@@ -8,6 +8,7 @@ import LeanSharp.Stochastic.Foundations.Integrability
 import LeanSharp.Stochastic.Foundations.Martingale
 import LeanSharp.Stochastic.Foundations.Oracles
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
+import LeanSharp.Stochastic.Foundations.SAMOracle
 import LeanSharp.Stochastic.Foundations.Schedules
 
 /-!
