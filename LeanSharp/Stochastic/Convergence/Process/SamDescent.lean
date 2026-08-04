@@ -13,6 +13,7 @@ general Z-score descent process.
 
 ## Main Theorems
 * `sam_filtered_second_moment_le`: Perturbation-aware second-moment bound.
+* `sam_stochastic_descent_step`: Complete perturbation-aware one-step bound.
 -/
 
 namespace LeanSharp
@@ -70,5 +71,35 @@ theorem sam_filtered_second_moment_le
       σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2 := by
     simpa only [add_comm] using add_le_add_left h_grad_adv_sq σsq
   exact h_norm_le.trans (h_input_bound.trans h_second_adv)
+
+/-- **Complete SAM-filtered stochastic one-step bound**: Unbiasedness and
+bounded variance at the perturbed point combine with base-point alignment to
+give expected descent with an explicit `Lρ` perturbation error. -/
+theorem sam_stochastic_descent_step
+    (L : SmoothObjective ι) (g : Ω → W ι) (w : W ι)
+    (η z ρ σsq : ℝ) (hρ : 0 ≤ ρ) (hη : 0 < η)
+    (h_stoch : IsStochasticGradient L.toFun g
+      (w + samPerturbation L.toFun w ρ))
+    (h_var : HasBoundedVariance L.toFun g
+      (w + samPerturbation L.toFun w ρ) σsq)
+    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable
+      (fun ω => L.toFun (w - η • filteredGradient (g ω) z)) ℙ)
+    (h_align : ‖gradient L.toFun w‖ ^ 2 ≤
+      2 * inner ℝ (gradient L.toFun w)
+        (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => L.toFun (w - η • filteredGradient (g ω) z)] ≤
+      L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) *
+          (σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2) := by
+  have h_int_gf : Integrable (fun ω => filteredGradient (g ω) z) ℙ :=
+    h_stoch.1.mono h_meas_f
+      (Filter.Eventually.of_forall (fun ω => norm_filtered_gradient_le (g ω) z))
+  have h_second := sam_filtered_second_moment_le L g w ρ z σsq hρ
+    h_stoch h_var h_int h_int_f
+  exact sam_expected_descent_step L g w η z ρ σsq hη h_int_gf h_int_f
+    h_int_f_val h_second h_align
 
 end LeanSharp
