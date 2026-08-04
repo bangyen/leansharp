@@ -16,6 +16,7 @@ rearrangement lemmas in a dedicated unit.
 
 * `zsharp_nonconvex_rate`: `O(1/√T)` bound for average gradient norm squared.
 * `z_score_nonconvex_rate_complete`: z-score non-convex rate bound.
+* `sam_nonconvex_rate_from_envelope`: SAM non-convex rate with an explicit perturbation penalty.
 -/
 
 namespace LeanSharp
@@ -50,10 +51,10 @@ private lemma nonconvex_telescoping_descent (L : W ι → ℝ) (w0 : W ι)
         (∑ t ∈ Finset.range T, (η0 ^ 2 * L_smooth / 2) * σsq) := Finset.sum_add_distrib
     _ = (𝔼[fun ω => L (weightSequence w0 η z g_adv 0 ω)] -
         𝔼[fun ω => L (weightSequence w0 η z g_adv T ω)]) +
-        (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
-      rw [Finset.sum_range_sub' (fun t => 𝔼[fun ω => L (weightSequence w0 η z g_adv t ω)])]
-      rw [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
-      ring
+       (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
+       rw [Finset.sum_range_sub' (fun t => 𝔼[fun ω => L (weightSequence w0 η z g_adv t ω)])]
+       rw [Finset.sum_const, nsmul_eq_mul, Finset.card_range]
+       ring
     _ = (L w0 - 𝔼[fun ω => L (weightSequence w0 η z g_adv T ω)]) +
         (T : ℝ) * (η0 ^ 2 * L_smooth / 2) * σsq := by
       have h_init : (fun ω => L (weightSequence w0 η z g_adv 0 ω)) = fun _ => L w0 := by
@@ -165,16 +166,41 @@ theorem z_score_nonconvex_rate_complete (L : W ι → ℝ) (w0 : W ι) (z L_smoo
   · apply div_le_div_of_nonneg_right _ (Real.sqrt_pos.mpr hT_pos).le
     nlinarith [h_inf, csInf_le h_bdd (Set.mem_range_self w0)]
   · calc (η 0 / 4) * (∑ t ∈ Finset.range T, 𝔼[fun ω => ‖gradient L (W_seq t ω)‖ ^ 2])
-      _ ≤ 𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
-          (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := h_sequence_desc_fixed
-      _ = (L w0 - 𝔼[fun ω => L (W_seq T ω)]) +
-          (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
-          have h0 : (fun ω => L (W_seq 0 ω)) = fun _ => L w0 := by
-            ext ω; dsimp only [W_seq]; rw [weightSequence]
-          rw [h0, integral_const, probReal_univ, one_smul]
-          congr 1
-          rw [Finset.sum_congr rfl (fun t _ => by rw [h_eta_iden t]),
-              Finset.sum_const, nsmul_eq_mul, Finset.card_range]
-          ring
+       _ ≤ 𝔼[fun ω => L (W_seq 0 ω)] - 𝔼[fun ω => L (W_seq T ω)] +
+           (∑ t ∈ Finset.range T, η t ^ 2 * L_smooth / 2 * σsq) := h_sequence_desc_fixed
+       _ = (L w0 - 𝔼[fun ω => L (W_seq T ω)]) +
+           (T : ℝ) * (η 0 ^ 2 * L_smooth / 2) * σsq := by
+         have h0 : (fun ω => L (W_seq 0 ω)) = fun _ => L w0 := by
+           ext ω; dsimp only [W_seq]; rw [weightSequence]
+         rw [h0, integral_const, probReal_univ, one_smul]
+         congr 1
+         rw [Finset.sum_congr rfl (fun t _ => by rw [h_eta_iden t]),
+             Finset.sum_const, nsmul_eq_mul, Finset.card_range]
+         ring
+
+/-- **SAM Non-convex Rate ($O(1/\sqrt{T})$)**:
+Given a SAM descent envelope whose perturbation error has been absorbed into
+the effective variance term, the average gradient norm has the standard
+non-convex rate with penalty `2 L²ρ²`. -/
+theorem sam_nonconvex_rate_from_envelope
+    (L : W ι → ℝ) (w0 : W ι) (z L_smooth σsq ρ : ℝ)
+    (η : ℕ → ℝ) (g_adv : ℕ → Ω → W ι) (T : ℕ) (hT : T > 0)
+    (h_step : ∀ t, η t = 1 / Real.sqrt T)
+    (h_bdd : BddBelow (Set.range L))
+    (h_int_L : ∀ t, Integrable (fun ω => L (weightSequence w0 η z g_adv t ω)))
+    (h_sam_descent : ∀ t, 𝔼[fun ω =>
+      L (weightSequence w0 η z g_adv (t + 1) ω)] ≤
+      𝔼[fun ω => L (weightSequence w0 η z g_adv t ω)] -
+      (η t / 2) * 𝔼[fun ω =>
+        ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2] +
+      ((η t) ^ 2 * L_smooth / 2) * (σsq + 2 * L_smooth ^ 2 * ρ ^ 2)) :
+    (1 / (T : ℝ)) * (∑ t ∈ Finset.range T,
+      𝔼[fun ω => ‖gradient L (weightSequence w0 η z g_adv t ω)‖ ^ 2])
+      ≤ (2 * (L w0 - sInf (Set.range L)) +
+        L_smooth * (σsq + 2 * L_smooth ^ 2 * ρ ^ 2)) /
+        Real.sqrt (T : ℝ) := by
+  exact zsharp_nonconvex_rate L w0 z L_smooth
+    (σsq + 2 * L_smooth ^ 2 * ρ ^ 2) η g_adv T hT h_step h_bdd h_int_L
+    h_sam_descent
 
 end LeanSharp
