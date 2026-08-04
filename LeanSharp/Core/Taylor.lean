@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import LeanSharp.Core.Taylor.Multilinear
 import LeanSharp.Core.Taylor.SamBounds
 import LeanSharp.Core.Taylor.SmoothDescent
 
