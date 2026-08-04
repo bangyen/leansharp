@@ -9,8 +9,6 @@
 
 LeanSharp is the formal, mathematical sister project to [ZSharp](https://github.com/bangyen/zsharp). While ZSharp provides an empirical PyTorch implementation of Z-Score filtered SAM, reporting [a 5.26 percentage-point accuracy improvement over SGD](https://github.com/bangyen/zsharp#results), this repository develops a formal foundation for the algorithm using the [Lean 4](https://leanprover.github.io/) interactive theorem prover. Convergence proofs for deep learning optimizers often rely on informal heuristics or hidden assumptions about the loss landscape; the formal proofs here are checked by Lean's trusted kernel, from the Fréchet derivative of the loss function to the contraction properties of the gradient filter.
 
-**Status:** Research prototype. LeanSharp is a formal verification and theory project, not a drop-in training library or production optimizer. The formalization is actively evolving, and the roadmap records known gaps.
-
 ## Architecture
 
 For a detailed overview of the project's design patterns, including the `W` parameter space abstraction and the recursive `Chain`/`ChainData` architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
