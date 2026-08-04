@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Stochastic.Foundations.Schedules.Nonconvex
+import LeanSharp.Stochastic.Foundations.Schedules.SamNonconvex
 import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
 
 /-!
