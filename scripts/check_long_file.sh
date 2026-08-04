@@ -4,7 +4,7 @@
 # Hard max fails CI; soft min/max emit warnings only.
 #
 # Environment variables:
-# - MAX_LEAN_FILE_LINES: hard maximum line count (default: 300)
+# - MAX_LEAN_FILE_LINES: hard maximum line count (default: 250)
 # - SOFT_LEAN_FILE_MIN_LINES: advisory minimum line count (default: 20)
 # - SOFT_LEAN_FILE_MAX_LINES: advisory maximum line count (default: 250)
 # - SOFT_SKIP_AGGREGATORS: if 1, skip soft checks for aggregator files (default: 1)
