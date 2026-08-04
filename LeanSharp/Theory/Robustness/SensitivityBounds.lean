@@ -83,9 +83,10 @@ lemma noise_expected_norm_sq (m : SignalNoiseModel ι Ω) (σsq : ℝ)
     · rw [Finset.sum_const, nsmul_eq_mul, Fintype.card]
   · intro i _; exact h_int_sq i
 
-/-- The event that the $i$-th component is preserved by the Z-score filter. -/
+/-- The event that the $i$-th component is preserved by the Z-score filter, i.e. it
+lies within the Z-score threshold of the mean and is therefore kept. -/
 def PreservationEvent (m : SignalNoiseModel ι Ω) (z : ℝ) (i : ι) : Set Ω :=
-  {ω | |(WithLp.equiv 2 (ι → ℝ) (m.observed ω)) i - vectorMean (m.observed ω)| ≥
+  {ω | |(WithLp.equiv 2 (ι → ℝ) (m.observed ω)) i - vectorMean (m.observed ω)| ≤
     z * vectorStd (m.observed ω)}
 
 /-- **Noise Norm Tail Bound**: Probability that noise norm exceeds a threshold. -/
