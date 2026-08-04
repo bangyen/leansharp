@@ -32,6 +32,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 | :--- | :--- | :--- |
 | **Conditional Non-Convex SAM-ZSharp Rate** | Medium | The complete $O(1/\sqrt{T})$ rate is formalized in `sam_nonconvex_rate_complete` under the conditional `SAMDescentEnvelope`, with perturbation penalty $2L^2\rho^2$. **Remaining:** derive that conditional envelope for the filtered sequence from `sam_stochastic_descent_step`, including the required filtration and measurability bridge. |
 | **Conditional Oracle Model** | Medium | Introduce a generic adapted filtration with conditional martingale-noise and variance assumptions at the SAM-perturbed point, then instantiate `SAMDescentEnvelope` without modeling dataset sampling or architecture-specific randomness. |
+| **Wire Alignment Bridges into the Rates** | Medium | `zsharp_convergence` and the rate theorems take `AlignmentCondition`/`StochasticAlignmentCondition` as hypotheses. Derive them from the bridge theorems (`alignment_condition_of_signal_noise`, `deterministic_implies_stochastic_alignment`) so the convergence claims hold under those sufficient conditions rather than as assumptions. |
 
 ## Scope & Limitations
 
