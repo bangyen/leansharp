@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Core.Filters
+import LeanSharp.Theory.Concentration
 import LeanSharp.Theory.Structural.ChainStability
 import LeanSharp.Theory.Structural.FilterAlgebra
 import LeanSharp.Theory.Structural.HardThresholding
@@ -73,6 +74,15 @@ component of the gradient. -/
 example [Nonempty ι] (g : W ι) {z : ℝ} (hz_ge : 1 ≤ z) :
     ∃ i : ι, (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 1 :=
   zscore_mask_nonempty g hz_ge
+
+/-- Interface test: the corrected mask keeps at least `1 - 1/z²` of the components
+(those within `zσ` of the mean), discarding at most the Chebyshev tail fraction. -/
+example [Nonempty ι] (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVariance g > 0) :
+    (1 - 1 / z^2) ≤
+      ((Finset.univ.filter fun i =>
+        |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ)
+        / (Fintype.card ι : ℝ) :=
+  zScoreMask_coverage g hz hvar
 
 /-- Interface test: constant gradients (zero standard deviation) are preserved
 by the filter. -/

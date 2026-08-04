@@ -25,20 +25,23 @@ assumptions (thus acting as our substitute for a Central Limit Theorem).
 ## Main Theorems
 
 * `chebyshev_vector`: Discrete version of Chebyshev's inequality for vector components.
+* `zScoreMask_coverage`: the fraction of components kept by the mask (within `zσ` of the
+  mean) is at least `1 - 1/z²`.
 -/
 namespace LeanSharp
 open Finset BigOperators Real
 variable {ι : Type*} [Fintype ι] [Nonempty ι]
 
-/-- The subset of indices that fall in the tail, defined by the Z-score threshold.
-    These are the components KEPT by `zScoreMask` when $z > 0$. -/
+/-- The subset of indices in the Z-score tail, i.e. components at least `zσ` from the mean.
+    These are the components *discarded* by the corrected `zScoreMask`; its kept set is the
+    complementary within-threshold set. -/
 noncomputable def zScoreTails (g : W ι) (z : ℝ) : Finset ι :=
   univ.filter fun i => |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≥ z * vectorStd g
 
 /-- **Discrete Chebyshev's Inequality for Vectors**:
 For any $z > 0$, the fraction of coordinates falling in the $z$-standard
 deviation tail is bounded by $1/z^2$ when variance is non-zero.
-This guarantees the sparsity of the Z-score filter for large z. -/
+This bounds the fraction of components the corrected mask discards. -/
 theorem chebyshev_vector (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVariance g > 0) :
     ((zScoreTails g z).card : ℝ) / (Fintype.card ι : ℝ) ≤ 1 / z^2 := by
   let μ := vectorMean g
@@ -92,5 +95,51 @@ theorem chebyshev_vector (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVarianc
       exact (mul_div_cancel_right₀ _ (ne_of_gt hz2_pos)).symm
     _ ≤ 1 / z^2 := by
       exact div_le_div_of_nonneg_right h_div_card (le_of_lt hz2_pos)
+
+/-- **Z-Score Mask Coverage**: the fraction of components kept by the corrected mask —
+those within `zσ` of the mean — is at least `1 - 1/z²`. The filter keeps most
+components and discards at most a `1/z²` tail fraction. -/
+theorem zScoreMask_coverage (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVariance g > 0) :
+    (1 - 1 / z^2) ≤
+      ((univ.filter fun i =>
+        |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ)
+        / (Fintype.card ι : ℝ) := by
+  classical
+  let I : Finset ι := univ.filter fun i =>
+    |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g
+  let T : Finset ι := zScoreTails g z
+  have h_cheb := chebyshev_vector g hz hvar
+  have h_sub : (univ \ T) ⊆ I := by
+    intro i hi
+    have hi_not : i ∉ T := (Finset.mem_sdiff.mp hi).2
+    simp only [I, Finset.mem_filter, Finset.mem_univ, true_and]
+    have h_ge : ¬ z * vectorStd g ≤ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| := by
+      intro hg
+      have h_in_T : i ∈ T := by
+        simp only [T, zScoreTails, Finset.mem_filter, Finset.mem_univ, true_and]
+        exact hg
+      exact hi_not h_in_T
+    exact le_of_lt (lt_of_not_ge h_ge)
+  have h_card_le : (Fintype.card ι : ℝ) - (T.card : ℝ) ≤ (I.card : ℝ) := by
+    have hsub : (univ \ T).card ≤ I.card := Finset.card_le_card h_sub
+    have hT_le : T.card ≤ Fintype.card ι := by
+      rw [← Finset.card_univ]
+      exact Finset.card_le_card (Finset.subset_univ T)
+    have hsd : (univ \ T).card = (Fintype.card ι : ℕ) - T.card := by
+      rw [← Finset.card_univ]
+      rw [Finset.card_sdiff]
+      simp only [Finset.inter_univ]
+    have hsub_nat : (Fintype.card ι : ℕ) - T.card ≤ I.card := by
+      rwa [← hsd]
+    exact_mod_cast hsub_nat
+  have h_card_pos : (0 : ℝ) < (Fintype.card ι : ℝ) := by positivity
+  have h_frac : 1 - (T.card : ℝ) / (Fintype.card ι : ℝ) ≤
+      (I.card : ℝ) / (Fintype.card ι : ℝ) := by
+    have h_div := div_le_div_of_nonneg_right h_card_le (le_of_lt h_card_pos)
+    rw [sub_div] at h_div
+    rw [div_self (ne_of_gt h_card_pos)] at h_div
+    exact h_div
+  have h_tail : (T.card : ℝ) / (Fintype.card ι : ℝ) ≤ 1 / z^2 := h_cheb
+  linarith
 
 end LeanSharp
