@@ -33,7 +33,12 @@ For a detailed overview of the project's design patterns, including the `W` para
 | Task | Priority | Justification |
 | :--- | :--- | :--- |
 | **Non-Convex SAM-ZSharp Rate** | Medium | The non-convex $O(1/\sqrt{T})$ analogue for the SAM-perturbed step is open (the existing rate covers plain filtered descent). A formal treatment needs a gradient-Lipschitz bound, a SAM-aligned descent envelope (the perturbation turns `E[g] = ∇f(w)` into `E[g] = ∇f(w+ε)`), and absorbs the perturbation error into the variance term — yielding a rate weaker than the unfiltered/plain-step one. Audit-scoped. |
-| **Z-Score Mask Breakdown Point** | Medium | Formalize how many outliers the mask survives before collapsing, reusing the existing breakdown-point framework. |
+
+> **Note on the Z-Score filter's robustness**: the filter's robustness guarantee is the bounded-outlier
+> type — the filtered mean stays bounded when a strict majority of points are fixed and the outliers are
+> bounded (`z_filtered_empirical_mean_bounded_subset`, `median_and_zfiltered_mean_bounded_subset`). It is
+> not breakdown-robust in the unbounded sense: a single concentrated outlier vector (σ = 0) passes the
+> per-vector mask untouched, so the strict finite-sample breakdown point is zero, as for the ordinary mean.
 
 > **Scope.** This project verifies the Z-Score filtered SAM algorithm itself — its convergence, stability,
 > robustness, and the statistical properties of the filter. It deliberately does not develop general learning
