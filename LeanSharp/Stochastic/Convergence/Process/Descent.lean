@@ -3,6 +3,7 @@ Copyright (c) 2026 Bangyen Pham. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
+import LeanSharp.Core.Taylor.SmoothDescent
 import LeanSharp.Stochastic.Convergence.Process.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Tactic.Linarith
@@ -19,6 +20,7 @@ stochastic convergence theorem for ZSharp.
 * `stochastic_expected_descent_step`: Single-step progress bound.
 * `stochastic_zsharp_convergence`: Martingale-based convergence theorem.
 * `z_score_descent_fixed`: Final descent lemma for Z-score filtered gradients.
+* `sam_expected_descent_step`: Expected one-step descent for a SAM-filtered update.
 -/
 
 namespace LeanSharp
@@ -138,5 +140,92 @@ theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W 
       have h_factor : η / 4 ≤ η / 2 - η ^ 2 * L_smooth / 2 := by
         nlinarith [h_η_pos, h_ηL]
       apply mul_le_mul_of_nonneg_right h_factor (pow_two_nonneg _)
+
+/-- **SAM-filtered expected one-step descent**: Given alignment at the base
+point and an explicit second-moment bound for the filtered update, the expected
+loss decreases with a perturbation-dependent error term. -/
+theorem sam_expected_descent_step
+    (L : SmoothObjective ι) (g : Ω → W ι) (w : W ι)
+    (η z ρ σsq : ℝ)
+    (h_η : 0 < η)
+    (h_int_gf : Integrable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable
+      (fun ω => L.toFun (w - η • filteredGradient (g ω) z)) ℙ)
+    (h_second : 𝔼[fun ω => ‖filteredGradient (g ω) z‖ ^ 2] ≤
+      σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2)
+    (h_align : ‖gradient L.toFun w‖ ^ 2 ≤
+      2 * inner ℝ (gradient L.toFun w)
+        (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => L.toFun (w - η • filteredGradient (g ω) z)] ≤
+      L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) *
+          (σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2) := by
+  let g_f_loc (ω : Ω) := filteredGradient (g ω) z
+  have h_int_gf' : Integrable g_f_loc ℙ := by
+    simpa only [g_f_loc] using h_int_gf
+  have h_int_inner : Integrable
+      (fun ω => η * inner ℝ (gradient L.toFun w) (g_f_loc ω)) ℙ := by
+    apply (Integrable.inner_const h_int_gf' (gradient L.toFun w)).const_mul η |>.congr
+    apply Filter.Eventually.of_forall
+    intro ω
+    dsimp only
+    rw [real_inner_comm]
+  have h_int_rhs : Integrable
+      (fun ω => L.toFun w - η * inner ℝ (gradient L.toFun w) (g_f_loc ω) +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) * ‖g_f_loc ω‖ ^ 2) ℙ := by
+    exact (integrable_const (L.toFun w) |>.sub h_int_inner).add (h_int_f.const_mul _)
+  have h_simp_f (ω : Ω) :
+      L.toFun (w - η • g_f_loc ω) ≤
+        L.toFun w - η * inner ℝ (gradient L.toFun w) (g_f_loc ω) +
+          (η ^ 2 * (L.smoothness : ℝ) / 2) * ‖g_f_loc ω‖ ^ 2 := by
+    have h_taylor := smooth_descent L w (-η • g_f_loc ω)
+    have h_term1 : inner ℝ (gradient L.toFun w) (-η • g_f_loc ω) =
+        -η * inner ℝ (gradient L.toFun w) (g_f_loc ω) := by
+      rw [inner_smul_right, real_inner_comm]
+    have h_term2 : ‖-η • g_f_loc ω‖ ^ 2 = η ^ 2 * ‖g_f_loc ω‖ ^ 2 := by
+      simp only [norm_neg, norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+    rw [h_term1, h_term2] at h_taylor
+    have h_lhs : w - η • g_f_loc ω = w + -η • g_f_loc ω := by
+      rw [sub_eq_add_neg, neg_smul]
+    rw [h_lhs]
+    convert h_taylor using 1
+    all_goals ring
+  have h_int_le : 𝔼[fun ω => L.toFun (w - η • g_f_loc ω)] ≤
+      𝔼[fun ω => L.toFun w - η * inner ℝ (gradient L.toFun w) (g_f_loc ω) +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) * ‖g_f_loc ω‖ ^ 2] :=
+    integral_mono h_int_f_val h_int_rhs h_simp_f
+  have h_exp_rhs : 𝔼[fun ω => L.toFun w -
+      η * inner ℝ (gradient L.toFun w) (g_f_loc ω) +
+      (η ^ 2 * (L.smoothness : ℝ) / 2) * ‖g_f_loc ω‖ ^ 2] =
+      L.toFun w - η * inner ℝ (gradient L.toFun w) (𝔼[g_f_loc]) +
+      (η ^ 2 * (L.smoothness : ℝ) / 2) * 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2] := by
+    have h_int_c : Integrable (fun (_ : Ω) => L.toFun w) ℙ := integrable_const _
+    have h_part1 : Integrable (fun ω => L.toFun w -
+        η * inner ℝ (gradient L.toFun w) (g_f_loc ω)) ℙ :=
+      h_int_c.sub h_int_inner
+    rw [integral_add h_part1 (h_int_f.const_mul _)]
+    rw [integral_sub h_int_c h_int_inner, integral_const,
+      probReal_univ, one_smul, integral_const_mul, integral_const_mul]
+    congr 2
+    rw [integral_inner h_int_gf' (gradient L.toFun w), real_inner_comm]
+  rw [h_exp_rhs] at h_int_le
+  let G := ‖gradient L.toFun w‖ ^ 2
+  let V_f := 𝔼[fun ω => ‖g_f_loc ω‖ ^ 2]
+  let I_f := inner ℝ (gradient L.toFun w) (𝔼[g_f_loc])
+  have h_ps : -η * I_f ≤ -(η / 2) * G := by
+    rw [neg_mul, neg_mul, neg_le_neg_iff]
+    calc
+      η * I_f = (η / 2) * (2 * I_f) := by ring
+      _ ≥ (η / 2) * G := by
+        apply mul_le_mul_of_nonneg_left h_align
+        linarith
+  have h_vs : (η ^ 2 * (L.smoothness : ℝ) / 2) * V_f ≤
+      (η ^ 2 * (L.smoothness : ℝ) / 2) *
+        (σsq + (‖gradient L.toFun w‖ + (L.smoothness : ℝ) * ρ) ^ 2) := by
+    apply mul_le_mul_of_nonneg_left h_second
+    positivity
+  simp only [G, V_f, I_f] at h_ps h_vs ⊢
+  linarith [h_int_le, h_ps, h_vs]
 
 end LeanSharp
