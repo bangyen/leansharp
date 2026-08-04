@@ -5,7 +5,6 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Layers.Architectures.Attention
-import LeanSharp.Layers.Architectures.AttentionInvariance
 import LeanSharp.Layers.Architectures.Transformer
 
 /-!

@@ -81,11 +81,6 @@ def forwardChain {In Out : Type} {c : Chain In Out} :
       match p with
       | .append p_prev w => L.forward w (forwardChain p_prev x)
 
-/-- Forward pass through a chain of layers. Alias for `forwardChain`. -/
-abbrev Chain.forward {In Out : Type} {c : Chain In Out}
-    (p : ChainData c) (x : In) : Out :=
-  forwardChain p x
-
 /-- Recursive backpropagation through a chain.
     Applies Z-score filtering at each layer. -/
 noncomputable def backpropChain {In Out : Type} {c : Chain In Out}

@@ -19,7 +19,6 @@ stochastic convergence theorem for ZSharp.
 ## Main Theorems
 * `stochastic_expected_descent_step`: Single-step progress bound.
 * `stochastic_zsharp_convergence`: Martingale-based convergence theorem.
-* `z_score_descent_fixed`: Final descent lemma for Z-score filtered gradients.
 * `sam_expected_descent_step`: Expected one-step descent for a SAM-filtered update.
 -/
 
@@ -96,50 +95,6 @@ theorem stochastic_zsharp_convergence (w_star : W ι) {g_adv : Ω → W ι} (w :
       (η t) * μ * ‖A‖^2 :=
     h_align.2.2
   linarith [pow_two_nonneg ‖A‖]
-
-theorem z_score_descent_fixed (L_smooth : ℝ) (f : W ι → ℝ) (g : Ω → W ι) (w : W ι)
-    (η z : ℝ) (σsq : ℝ)
-    (h_smooth : IsSmooth f L_smooth)
-    (h_stoch : IsStochasticGradient f g w)
-    (h_var : HasBoundedVariance f g w σsq)
-    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
-    (h_η : 0 < η ∧ η ≤ 1 / (2 * L_smooth))
-    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
-    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
-    (h_int_f_val : Integrable (fun ω => f (w - η • filteredGradient (g ω) z)) ℙ)
-    (h_align : ‖gradient f w‖ ^ 2 ≤
-      2 * inner ℝ (gradient f w) (𝔼[fun ω => filteredGradient (g ω) z])) :
-    𝔼[fun ω => f (w - η • filteredGradient (g ω) z)] ≤
-      f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
-  have h_η_pos := h_η.1
-  have h_η_le := h_η.2
-  have h_L_pos : 0 < L_smooth := by
-    by_contra h_le_zero; push_neg at h_le_zero
-    if h_zero : L_smooth = 0 then
-      rw [h_zero] at h_η_le; norm_num at h_η_le; linarith
-    else
-      have h_neg : L_smooth < 0 := lt_of_le_of_ne h_le_zero h_zero
-      have : 1 / (2 * L_smooth) < 0 := by apply div_neg_of_pos_of_neg <;> linarith
-      linarith
-  have h_η_orig : η ≤ 1 / L_smooth :=
-    h_η_le.trans (by apply one_div_le_one_div_of_le h_L_pos; linarith)
-  have h_descent := z_score_descent L_smooth f g w η z σsq
-    h_smooth h_stoch h_var h_int ⟨h_η_pos, h_η_orig⟩ h_meas_f h_int_f h_int_f_val h_align
-  calc 𝔼[fun ω => f (w - η • filteredGradient (g ω) z)]
-    _ ≤ f w - (η / 2) * ‖gradient f w‖ ^ 2 +
-        (η ^ 2 * L_smooth / 2) * (σsq + ‖gradient f w‖ ^ 2) := h_descent
-    _ = f w - (η / 2 - η ^ 2 * L_smooth / 2) * ‖gradient f w‖ ^ 2 +
-        (η ^ 2 * L_smooth / 2) * σsq := by ring
-    _ ≤ f w - (η / 4) * ‖gradient f w‖ ^ 2 + (η ^ 2 * L_smooth / 2) * σsq := by
-      simp only [add_le_add_iff_right, sub_le_sub_iff_left]
-      have h_ηL : η * L_smooth ≤ 1 / 2 := by
-        have h_pos : 2 * L_smooth > 0 := by linarith [h_L_pos]
-        have h_le := h_η_le
-        rw [le_div_iff₀ h_pos] at h_le
-        nlinarith
-      have h_factor : η / 4 ≤ η / 2 - η ^ 2 * L_smooth / 2 := by
-        nlinarith [h_η_pos, h_ηL]
-      apply mul_le_mul_of_nonneg_right h_factor (pow_two_nonneg _)
 
 /-- **SAM-filtered expected one-step descent**: Given alignment at the base
 point and an explicit second-moment bound for the filtered update, the expected

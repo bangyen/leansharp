@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import Tests.Theory.Generalization
 import Tests.Theory.InfiniteLimit
+import Tests.Theory.PacBayes
 import Tests.Theory.Robustness
 import Tests.Theory.SamNonconvex
 

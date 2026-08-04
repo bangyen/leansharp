@@ -184,8 +184,4 @@ theorem zscore_mask_idempotent (g : W ι) (z : ℝ) :
   simp only [Equiv.apply_symm_apply]
   split_ifs <;> simp only [mul_one, mul_zero]
 
-/-- The update step for Sharpness-Aware Minimization with Z-score filtering. -/
-noncomputable def samZSharpUpdate (L : W ι → ℝ) (w : W ι) (η ρ z : ℝ) : W ι :=
-  w - η • filteredGradient (gradient L (w + samPerturbation L w ρ)) z
-
 end LeanSharp

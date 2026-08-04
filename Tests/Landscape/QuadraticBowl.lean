@@ -73,4 +73,9 @@ example :
   rw [Equiv.apply_symm_apply] at h0
   norm_num at h0
 
+/-- Verifies that the computed gradient equals the analytical gradient of the toy loss. -/
+example (w : W (Fin 2)) :
+    gradient toyLoss w = exactGradientToy w := by
+  exact gradient_toy_eq w
+
 end LeanSharp.Tests

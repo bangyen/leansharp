@@ -31,7 +31,6 @@ theoretical analysis remains consistent across different dynamical regimes.
 
 * `AlignmentCondition`: Deterministic descent direction alignment.
 * `StochasticAlignmentCondition`: Generalization for stochastic processes.
-* `StabilityCertificate`: Bundles forward pass with regularity properties.
 
 ## Main theorems
 
@@ -40,7 +39,6 @@ theoretical analysis remains consistent across different dynamical regimes.
 * `alignment_condition_of_signal_noise`: Bridge theorem for stochastic models.
 * `deterministic_implies_stochastic_alignment`: Deterministic alignment implies
   the stochastic variant under a degenerate distribution.
-* `lipschitzOnWith_closedBall_of_contDiff_two`: A $C^2$ function is Lipschitz on closed balls.
 -/
 
 variable {ι : Type*} [Fintype ι]
@@ -62,69 +60,6 @@ def StochasticAlignmentCondition (w w_star : W ι) (g : Ω → W ι) (η μ : �
   Integrable (fun ω => ‖g_f ω‖ ^ 2) ∧
   2 * η * (@inner ℝ _ _ (𝔼[g_f]) (w - w_star)) -
   η^2 * 𝔼[fun ω => ‖g_f ω‖ ^ 2] ≥ η * μ * ‖w - w_star‖ ^ 2
-
-/-- **Stability Certificate**: Bundles a forward pass operation with its analytical
-    regularity properties (Lipschitz continuity and differentiability).
-    By enforcing `ContDiffOn ℝ 2`, this certificate ensures that the layer is
-    compatible with Hessian-based second-order analysis within a stable region. -/
-structure StabilityCertificate (α β : Type*) [NormedAddCommGroup α] [NormedSpace ℝ α]
-  [NormedAddCommGroup β] [NormedSpace ℝ β] where
-  /-- The forward pass mapping. -/
-  f : α → β
-  /-- Domain of stability. -/
-  S : Set α
-  /-- Lipschitz constant witness. -/
-  K : NNReal
-  /-- Proof of Lipschitz continuity on S. -/
-  h_lipschitz : LipschitzOnWith K f S
-  /-- Proof of $C^2$ smoothness on S. -/
-  h_smooth : ContDiffOn ℝ 2 f S
-
-/-- **Certificate Composition**: If two maps are stability-certified, their
-    composition is also certified. The Lipschitz constant is the product
-    of the individual constants. -/
-noncomputable def StabilityCertificate.comp {α β γ : Type*}
-    [NormedAddCommGroup α] [NormedSpace ℝ α]
-    [NormedAddCommGroup β] [NormedSpace ℝ β]
-    [NormedAddCommGroup γ] [NormedSpace ℝ γ]
-    (c2 : StabilityCertificate β γ) (c1 : StabilityCertificate α β) :
-    StabilityCertificate α γ where
-  f := c2.f ∘ c1.f
-  S := c1.S ∩ (c1.f ⁻¹' c2.S)
-  K := c2.K * c1.K
-  h_lipschitz := c2.h_lipschitz.comp
-    (c1.h_lipschitz.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
-  h_smooth := ContDiffOn.comp c2.h_smooth
-    (c1.h_smooth.mono Set.inter_subset_left) (by intro x hx; exact hx.2)
-
-/-- **Locally-Lipschitz from $C^2$**: Any globally $C^2$ function between finite
-dimensional Euclidean spaces is Lipschitz on every centered ball $B(0, R)$, with
-Lipschitz constant the maximum Fréchet-derivative norm on the closed ball
-(obtained via the Extreme Value Theorem). This factors out the shared boilerplate
-of the layer Lipschitz proofs. -/
-theorem lipschitzOnWith_closedBall_of_contDiff_two {E F : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    [NormedAddCommGroup F] [NormedSpace ℝ F]
-    (f : E → F) (R : ℝ) (hR : 0 < R)
-    (h_c2 : ContDiff ℝ 2 f) :
-    ∃ K, LipschitzOnWith K f (Metric.ball 0 R) := by
-  have h_diff : ∀ x, DifferentiableAt ℝ f x := fun x => h_c2.differentiable (by decide) x
-  have h_cont_deriv : Continuous (fderiv ℝ f) := h_c2.continuous_fderiv (by decide)
-  have h_compact : IsCompact (Metric.closedBall (0 : E) R) :=
-    isCompact_closedBall (0 : E) R
-  have h_cont_norm : Continuous (fun x => ‖fderiv ℝ f x‖) :=
-    continuous_norm.comp h_cont_deriv
-  have h_nonempty : (Metric.closedBall (0 : E) R).Nonempty :=
-    Metric.nonempty_closedBall.mpr hR.le
-  obtain ⟨x0, _, h_max⟩ := IsCompact.exists_isMaxOn h_compact h_nonempty h_cont_norm.continuousOn
-  let K := ‖fderiv ℝ f x0‖₊
-  use K
-  have h_lips : LipschitzOnWith K f (Metric.closedBall 0 R) := by
-    apply Convex.lipschitzOnWith_of_nnnorm_fderiv_le (𝕜 := ℝ)
-    · exact fun x _ => h_diff x
-    · exact fun x hx => h_max hx
-    · exact convex_closedBall 0 R
-  exact h_lips.mono Metric.ball_subset_closedBall
 
 /-- **Hadamard Inner Product Identity**:
     The inner product of a Hadamard product `hadamard a b` with `v` is the

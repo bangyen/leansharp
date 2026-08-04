@@ -24,8 +24,6 @@ This module formalizes normalization layers, specifically Layer Normalization.
 
 ## Main theorems
 
-* `contDiff_layernormForward`: Layer Normalization is $C^2$ under non-degenerate variance.
-* `layernorm_forward_lipschitz`: The LayerNorm forward pass is locally Lipschitz.
 * `layernorm_mean_zero`: Proves that LayerNorm output has mean zero.
 -/
 
@@ -73,40 +71,5 @@ theorem layernorm_mean_zero [Nonempty ι] (x : W ι) (ε : ℝ) :
   unfold layernormForward
   simp only [Equiv.apply_symm_apply, one_mul, add_zero]
   exact vectorMean_normalize x ε
-
-/-- **LayerNorm Smoothness**: Layer Normalization is $C^2$ provided ε > 0. -/
-theorem contDiff_layernormForward (w : W (NormParam ι)) {ε : ℝ} (hε : 0 < ε) :
-    ContDiff ℝ 2 (fun x => layernormForward w x ε) := by
-  unfold layernormForward
-  apply contDiff_piLp'
-  intro i
-  apply ContDiff.add
-  · apply ContDiff.mul
-    · exact contDiff_const
-    · have h1 : ContDiff ℝ 2 (fun x : W ι => vectorNormalize x ε) :=
-        contDiff_vectorNormalize ι hε |>.of_le le_top
-      have h2 : ContDiff ℝ 2 (fun (x : W ι) => (WithLp.equiv 2 (ι → ℝ) x) i) :=
-        contDiff_piLp_apply (p := 2) (i := i) |>.of_le le_top
-      exact ContDiff.comp h2 h1
-  · exact contDiff_const
-
-/-- **LayerNorm Forward Lipschitz**: The LayerNorm forward pass is locally Lipschitz
-    on `Metric.ball 0 R` for any R > 0, provided ε > 0. -/
-theorem layernorm_forward_lipschitz (w : W (NormParam ι)) (ε : ℝ) (hε : 0 < ε) (R : ℝ)
-    (hR : 0 < R) :
-    ∃ K, LipschitzOnWith K (fun x => layernormForward w x ε) (Metric.ball 0 R) :=
-  lipschitzOnWith_closedBall_of_contDiff_two (fun x => layernormForward w x ε) R hR
-    (contDiff_layernormForward w hε)
-
-/-- **LayerNorm Stability Certificate**: Bundles the LayerNorm layer's forward pass
-    with its Lipschitz constant and $C^2$ smoothness proof. -/
-noncomputable def layerNormCertificate (w : W (NormParam ι)) (ε : ℝ) (hε : 0 < ε) (R : ℝ)
-    (hR : 0 < R) :
-    StabilityCertificate (W ι) (W ι) where
-  f := fun x => layernormForward w x ε
-  S := Metric.ball 0 R
-  K := (layernorm_forward_lipschitz w ε hε R hR).choose
-  h_lipschitz := (layernorm_forward_lipschitz w ε hε R hR).choose_spec
-  h_smooth := (contDiff_layernormForward w hε).contDiffOn
 
 end LeanSharp

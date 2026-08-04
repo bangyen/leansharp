@@ -24,14 +24,6 @@ It includes scaled dot-product attention (with Softmax) and the associated linea
 
 * `attentionForward`: Scaled dot-product attention.
 * `mhaLayer`: A full Multi-Head Attention layer.
-* `attentionCertificate`: Stability certificate bounding the Lipschitz and smoothness criteria.
-
-## Main theorems
-
-* `contDiff_attentionForward`: The attention forward pass is $C^2$.
-* `contDiff_attentionForward_global`: The attention forward pass is globally $C^2$.
-* `attention_forward_lipschitz`: The attention forward pass is locally Lipschitz on
-  `Metric.ball 0 R` for any $R > 0$ (proved via the Extreme Value Theorem on compact sets).
 -/
 
 variable {S D H : ℕ} [NeZero S] [NeZero D] [NeZero H]
@@ -136,73 +128,5 @@ noncomputable def mhaLayer (S D : ℕ) : Layer (W (Fin S × Fin D)) (W (Fin S ×
       (∑ d, gK_f (s, d) * K_p_f (k, d)) +
       (∑ d, gV_f (s, d) * V_p_f (k, d))
     (g_w, g_x)
-
-/-- **Attention Global Smoothness**: Extracted global $C^2$ operation. -/
-theorem contDiff_attentionForward_global
-      (S D : ℕ) [NeZero S] [NeZero D]
-      (w : W (ATTParam (Fin D))) :
-    ContDiff ℝ 2 ((mhaLayer S D).forward w) := by
-  have hfact : Fact (1 ≤ (2 : ENNReal)) := ⟨by norm_num⟩
-  apply contDiff_piLp'
-  intro ⟨idx_s, idx_d⟩
-  dsimp only [mhaLayer, Layer.forward, attentionForward]
-  simp only [WithLp.equiv_apply, WithLp.equiv_symm_apply]
-  apply ContDiff.sum
-  intro j _
-  apply ContDiff.mul
-  · apply ContDiff.comp (contDiff_piLp_apply (p := 2) (i := j))
-    apply ContDiff.comp contDiff_softmax
-    apply contDiff_piLp'
-    intro j'
-    apply ContDiff.div
-    · apply ContDiff.sum
-      intro k _
-      apply ContDiff.mul
-      · apply ContDiff.sum
-        intro d _
-        apply ContDiff.mul
-        · apply contDiff_piLp_apply
-        · apply contDiff_const
-      · apply ContDiff.sum
-        intro d _
-        apply ContDiff.mul
-        · apply contDiff_piLp_apply
-        · apply contDiff_const
-    · exact contDiff_const
-    · intro _
-      apply ne_of_gt
-      apply Real.sqrt_pos.mpr
-      have : (0 : ℝ) < ↑D := Nat.cast_pos.mpr (NeZero.pos D)
-      exact this
-  · apply ContDiff.sum
-    intro d _
-    apply ContDiff.mul
-    · apply contDiff_piLp_apply
-    · apply contDiff_const
-
-/-- **Attention Forward Lipschitz**:
-    Softmax-based attention is locally Lipschitz continuous bounding domains. -/
-theorem attention_forward_lipschitz (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
-    (R : ℝ) (hR : 0 < R) :
-    ∃ K, LipschitzOnWith K ((mhaLayer S D).forward w) (Metric.ball 0 R) :=
-  lipschitzOnWith_closedBall_of_contDiff_two ((mhaLayer S D).forward w) R hR
-    (contDiff_attentionForward_global S D w)
-
-/-- **Attention Smoothness**: Softmax and linear projections form a $C^2$ operation locally. -/
-theorem contDiff_attentionForward (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
-    (R : ℝ) :
-    ContDiffOn ℝ 2 ((mhaLayer S D).forward w) (Metric.ball 0 R) :=
-  (contDiff_attentionForward_global S D w).contDiffOn
-
-/-- **Attention Stability Certificate**: Bundles the Attention layer's forward pass
-    with its Lipschitz constant and $C^2$ smoothness proof. -/
-noncomputable def attentionCertificate (S D : ℕ) [NeZero S] [NeZero D] (w : W (ATTParam (Fin D)))
-    (R : ℝ) (hR : 0 < R) :
-    StabilityCertificate (W (Fin S × Fin D)) (W (Fin S × Fin D)) where
-  f := (mhaLayer S D).forward w
-  S := Metric.ball 0 R
-  K := (attention_forward_lipschitz S D w R hR).choose
-  h_lipschitz := (attention_forward_lipschitz S D w R hR).choose_spec
-  h_smooth := (contDiff_attentionForward_global S D w).contDiffOn
 
 end LeanSharp
