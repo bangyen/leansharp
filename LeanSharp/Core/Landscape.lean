@@ -28,6 +28,7 @@ Sharpness-Aware Minimization (SAM).
 * `norm_descent_step_sq`: The standard squared-norm expansion of the descent step.
 * `norm_sub_smul_sq`: $\|a - \eta b\|^2 = \|a\|^2 - 2\eta\langle a, b\rangle + \eta^2\|b\|^2$.
 * `coordinate_dual_apply`: Coordinate-wise evaluation of the Riesz representative.
+* `hasFDerivAt_quadratic`: The derivative of the 2D diagonal quadratic $a x_0^2 + b x_1^2$.
 ## Implementation notes
 
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (ι)`.
@@ -146,5 +147,60 @@ lemma coordinate_dual_apply [DecidableEq ι] (g : W ι →L[ℝ] ℝ) (i : ι) :
   have hv : @inner ℝ (W ι) _ v (EuclideanSpace.single i (1 : ℝ)) = v i := by
     rw [EuclideanSpace.inner_single_right, starRingEnd_apply, star_trivial, one_mul]
   rw [← hv, InnerProductSpace.toDual_symm_apply]
+
+/-- The Fréchet derivative of the diagonal quadratic $a x_0^2 + b x_1^2$ on
+$\mathbb{R}^2$ is $2a w_0\,\mathrm{proj}_0 + 2b w_1\,\mathrm{proj}_1$.
+This is the shared derivative core for the concrete example landscapes. -/
+lemma hasFDerivAt_quadratic (a b : ℝ) (w : W (Fin 2)) :
+    HasFDerivAt (fun x : W (Fin 2) => a * (x 0) ^ 2 + b * (x 1) ^ 2)
+      (((2 * a) * w 0) • (EuclideanSpace.proj 0 : W (Fin 2) →L[ℝ] ℝ) +
+        ((2 * b) * w 1) • (EuclideanSpace.proj 1 : W (Fin 2) →L[ℝ] ℝ)) w := by
+  let p0 : W (Fin 2) →L[ℝ] ℝ := EuclideanSpace.proj 0
+  let p1 : W (Fin 2) →L[ℝ] ℝ := EuclideanSpace.proj 1
+  have h0 : HasFDerivAt (fun x : W (Fin 2) => x 0) p0 w := p0.hasFDerivAt
+  have h1 : HasFDerivAt (fun x : W (Fin 2) => x 1) p1 w := p1.hasFDerivAt
+  have h0_sq : HasFDerivAt (fun x : W (Fin 2) => (x 0) ^ 2) (((2 : ℝ) * w 0) • p0) w := by
+    rw [show (fun x : W (Fin 2) => (x 0) ^ 2) = (fun x => x 0 * x 0) by ext; ring]
+    convert h0.mul h0 using 1
+    ext; simp only [
+      Fin.isValue,
+      ContinuousLinearMap.coe_smul',
+      Pi.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      ContinuousLinearMap.add_apply,
+      p0
+    ]; ring
+  have h1_sq : HasFDerivAt (fun x : W (Fin 2) => (x 1) ^ 2) (((2 : ℝ) * w 1) • p1) w := by
+    rw [show (fun x : W (Fin 2) => (x 1) ^ 2) = (fun x => x 1 * x 1) by ext; ring]
+    convert h1.mul h1 using 1
+    ext; simp only [
+      Fin.isValue,
+      ContinuousLinearMap.coe_smul',
+      Pi.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      ContinuousLinearMap.add_apply,
+      p1
+    ]; ring
+  apply HasFDerivAt.add
+  · convert HasFDerivAt.const_smul h0_sq a using 1
+    ext; simp only [
+      Fin.isValue,
+      ContinuousLinearMap.coe_smul',
+      Pi.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      p0
+    ]; ring
+  · convert HasFDerivAt.const_smul h1_sq b using 1
+    ext; simp only [
+      Fin.isValue,
+      ContinuousLinearMap.coe_smul',
+      Pi.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      p1
+    ]; ring
 
 end LeanSharp

@@ -44,46 +44,10 @@ noncomputable def exactGradientAdvanced (w : W2) : W2 :=
 lemma hasFDerivAt_advancedLoss (w : W2) :
     HasFDerivAt advancedLoss (((20 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) +
       ((2 : ℝ) * w 1) • (EuclideanSpace.proj 1 : W2 →L[ℝ] ℝ)) w := by
-  let p0 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 0
-  let p1 : W2 →L[ℝ] ℝ := EuclideanSpace.proj 1
-  have h0 : HasFDerivAt (fun x : W2 => x 0) p0 w := p0.hasFDerivAt
-  have h1 : HasFDerivAt (fun x : W2 => x 1) p1 w := p1.hasFDerivAt
-  have h0_sq : HasFDerivAt (fun x : W2 => (x 0) ^ 2) (((2 : ℝ) * w 0) • p0) w := by
-    rw [show (fun x : W2 => (x 0) ^ 2) = (fun x => x 0 * x 0) by ext; ring]
-    convert h0.mul h0 using 1
-    ext; simp only [
-      Fin.isValue,
-      ContinuousLinearMap.coe_smul',
-      Pi.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      ContinuousLinearMap.add_apply,
-      p0
-    ]; ring
-  have h1_sq : HasFDerivAt (fun x : W2 => (x 1) ^ 2) (((2 : ℝ) * w 1) • p1) w := by
-    rw [show (fun x : W2 => (x 1) ^ 2) = (fun x => x 1 * x 1) by ext; ring]
-    convert h1.mul h1 using 1
-    ext; simp only [
-      Fin.isValue,
-      ContinuousLinearMap.coe_smul',
-      Pi.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      ContinuousLinearMap.add_apply,
-      p1
-    ]; ring
-  rw [show advancedLoss = fun w => 10 * (w 0) ^ 2 + (w 1) ^ 2 by ext; rfl]
-  apply HasFDerivAt.add
-  · convert HasFDerivAt.const_smul h0_sq (10 : ℝ) using 1
-    ext; simp only [
-      Fin.isValue,
-      ContinuousLinearMap.coe_smul',
-      Pi.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      p0
-    ]; ring
-  · convert h1_sq using 1
+  rw [show advancedLoss = fun w : W2 => 10 * (w 0) ^ 2 + (w 1) ^ 2 by ext; rfl]
+  convert hasFDerivAt_quadratic 10 1 w using 1
+  · ext x; simp only [one_mul]
+  · ring_nf
 
 theorem gradient_advanced_eq (w : W2) :
     gradient advancedLoss w = exactGradientAdvanced w := by
