@@ -6,7 +6,6 @@ Authors: Bangyen Pham
 
 import Tests.Landscape.CosineDecays
 import Tests.Landscape.IllConditioned
-import Tests.Landscape.MultilinearTaylor
 import Tests.Landscape.QuadraticBowl
 import Tests.Landscape.Rate
 

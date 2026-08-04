@@ -51,11 +51,6 @@ noncomputable def exactGradientToy (w : W2) : W2 :=
 noncomputable def wInit : W2 :=
   (WithLp.equiv 2 (Fin 2 → ℝ)).symm (fun i => if i = 0 then 1 else 3)
 
-/-- **Toy Perturbation**: For the quadratic bowl at $w=[1, 3]$, the perturbation
-direction is aligned with the gradient $[2, 6]$. -/
-noncomputable def toyPerturbation (ρ : ℝ) : W2 :=
-  samPerturbation toyLoss wInit ρ
-
 /-- The analytical Fréchet derivative of `toyLoss`. -/
 lemma hasFDerivAt_toyLoss (w : W2) :
     HasFDerivAt toyLoss (((2 : ℝ) * w 0) • (EuclideanSpace.proj 0 : W2 →L[ℝ] ℝ) +

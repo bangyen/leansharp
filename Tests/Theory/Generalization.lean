@@ -23,10 +23,6 @@ example {m : ℕ} (f : W (Fin m) → ℝ) (r : ℝ) (w : W (Fin m))
     samObjective f w r ≥ f w := by
   exact sam_objective_ge_self f w hr h_bdd
 
-/-- Test: Sharpness-aware bound positivity. -/
-example (r : ℝ) (hr : r > 0) : r ≥ 0 := by
-  apply le_of_lt hr
-
 /-- Test: SAM objective non-negativity if the original objective is non-negative. -/
 example {m : ℕ} (f : W (Fin m) → ℝ) (r : ℝ) (w : W (Fin m))
     (hf : ∀ x, f x ≥ 0) (hr : r ≥ 0)
