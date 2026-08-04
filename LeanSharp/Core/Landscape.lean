@@ -29,6 +29,7 @@ Sharpness-Aware Minimization (SAM).
 * `norm_sub_smul_sq`: $\|a - \eta b\|^2 = \|a\|^2 - 2\eta\langle a, b\rangle + \eta^2\|b\|^2$.
 * `coordinate_dual_apply`: Coordinate-wise evaluation of the Riesz representative.
 * `hasFDerivAt_quadratic`: The derivative of the 2D diagonal quadratic $a x_0^2 + b x_1^2$.
+* `gradient_diagonal_quadratic_eq`: The gradient of $a x_0^2 + b x_1^2$ is $[2a w_0, 2b w_1]$.
 ## Implementation notes
 
 Since weights are generally vectors in `ℝ^d`, we use `EuclideanSpace ℝ (ι)`.
@@ -202,5 +203,43 @@ lemma hasFDerivAt_quadratic (a b : ℝ) (w : W (Fin 2)) :
       smul_eq_mul,
       p1
     ]; ring
+
+/-- The gradient of the diagonal quadratic $a x_0^2 + b x_1^2$ on $\mathbb{R}^2$
+is $[2a w_0, 2b w_1]$. This is the shared gradient core for the concrete example
+landscapes. -/
+theorem gradient_diagonal_quadratic_eq (a b : ℝ) (w : W (Fin 2)) :
+    gradient (fun x : W (Fin 2) => a * (x 0) ^ 2 + b * (x 1) ^ 2) w =
+      (WithLp.equiv 2 (Fin 2 → ℝ) |>.symm fun i =>
+        if i = 0 then 2 * a * w 0 else 2 * b * w 1 : W (Fin 2)) := by
+  let g_analytical : W (Fin 2) →L[ℝ] ℝ :=
+    ((2 * a) * w 0) • EuclideanSpace.proj 0 + ((2 * b) * w 1) • EuclideanSpace.proj 1
+  have hL : HasFDerivAt (fun x : W (Fin 2) => a * (x 0) ^ 2 + b * (x 1) ^ 2)
+      g_analytical w := by
+    simpa only [g_analytical] using hasFDerivAt_quadratic a b w
+  unfold gradient
+  rw [hL.fderiv]
+  ext i
+  rw [coordinate_dual_apply g_analytical i]
+  fin_cases i
+  · simp only [
+      g_analytical,
+      ContinuousLinearMap.add_apply,
+      ContinuousLinearMap.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      Fin.zero_eta
+    ]
+    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
+    norm_num
+  · simp only [
+      g_analytical,
+      ContinuousLinearMap.add_apply,
+      ContinuousLinearMap.smul_apply,
+      PiLp.proj_apply,
+      smul_eq_mul,
+      Fin.mk_one
+    ]
+    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
+    norm_num
 
 end LeanSharp

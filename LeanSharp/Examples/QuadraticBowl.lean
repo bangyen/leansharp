@@ -63,34 +63,11 @@ lemma hasFDerivAt_toyLoss (w : W2) :
 $\nabla L(w) = [2w_0, 2w_1]$. -/
 theorem gradient_toy_eq (w : W2) :
     gradient toyLoss w = exactGradientToy w := by
-  let g_analytical : W2 →L[ℝ] ℝ := ((2 : ℝ) * w 0) • EuclideanSpace.proj 0 +
-    ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
-  have hL : HasFDerivAt toyLoss g_analytical w := hasFDerivAt_toyLoss w
-  unfold gradient
-  rw [hL.fderiv]
-  ext i
+  rw [show toyLoss = fun x : W2 => 1 * (x 0) ^ 2 + 1 * (x 1) ^ 2
+      by ext x; simp only [toyLoss, WithLp.equiv_apply, one_mul]]
+  rw [gradient_diagonal_quadratic_eq 1 1]
   unfold exactGradientToy
-  rw [coordinate_dual_apply g_analytical i]
-  fin_cases i
-  · simp only [
-      g_analytical,
-      ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      Fin.zero_eta
-    ]
-    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
-    norm_num
-  · simp only [
-      g_analytical,
-      ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      Fin.mk_one
-    ]
-    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
-    norm_num
+  ext i
+  fin_cases i <;> norm_num [WithLp.equiv_symm_apply, WithLp.equiv_apply]
 
 end LeanSharp.QuadraticBowl

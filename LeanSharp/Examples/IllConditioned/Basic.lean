@@ -51,34 +51,11 @@ lemma hasFDerivAt_advancedLoss (w : W2) :
 
 theorem gradient_advanced_eq (w : W2) :
     gradient advancedLoss w = exactGradientAdvanced w := by
-  let g_analytical : W2 →L[ℝ] ℝ := ((20 : ℝ) * w 0) • EuclideanSpace.proj 0 +
-    ((2 : ℝ) * w 1) • EuclideanSpace.proj 1
-  have hL : HasFDerivAt advancedLoss g_analytical w := hasFDerivAt_advancedLoss w
-  unfold gradient
-  rw [hL.fderiv]
-  ext i
+  rw [show advancedLoss = fun x : W2 => 10 * (x 0) ^ 2 + 1 * (x 1) ^ 2
+      by ext x; simp only [advancedLoss, one_mul]]
+  rw [gradient_diagonal_quadratic_eq 10 1]
   unfold exactGradientAdvanced
-  rw [coordinate_dual_apply g_analytical i]
-  fin_cases i
-  · simp only [
-      g_analytical,
-      ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      Fin.zero_eta
-    ]
-    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
-    norm_num
-  · simp only [
-      g_analytical,
-      ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply,
-      PiLp.proj_apply,
-      smul_eq_mul,
-      Fin.mk_one
-    ]
-    unfold EuclideanSpace.single; rw [WithLp.equiv_symm_apply]
-    norm_num
+  ext i
+  fin_cases i <;> norm_num [WithLp.equiv_symm_apply]
 
 end LeanSharp.IllConditioned
