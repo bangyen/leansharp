@@ -30,7 +30,6 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Conditional SAM Envelope Derivation** | Medium | `sam_nonconvex_rate_complete` gives the $O(1/\sqrt{T})$ rate conditional on `SAMDescentEnvelope`. **Done:** `zsharp_envelope_of_pointwise_descent` (the filtration/measurability bridge) and `sam_stochastic_descent_step_effective` (the one-step bound in quarter-gradient effective-variance form under $\eta L \le 1/4$). **Remaining:** the conditional lift — instantiate the effective one-step bound at the filtered iterate under conditional martingale-noise and variance assumptions and feed it to the bridge. |
 | **Wire Alignment Bridges into the Rates** | Low | Optional polish: `zsharp_convergence` and the rate theorems hold conditionally on `AlignmentCondition`/`StochasticAlignmentCondition`, which is already valid math; the bridge theorems (`alignment_condition_of_signal_noise`, `deterministic_implies_stochastic_alignment`) provide sufficient conditions but are not wired in. Deriving the hypothesis from them would weaken it, but the conditional results stand on their own. |
 
 ## Scope & Limitations
@@ -46,6 +45,13 @@ robustness, and the statistical properties of the filter. Within generalization,
 distributional PAC-Bayes **sharpness** bounds (`ZSharpPacBayesBound`), but deliberately does not develop the
 full KL-divergence PAC-Bayes risk form (with prior/posterior complexity term) or convergence results that
 require idealized assumptions unmet by deep networks; that material is out of scope.
+
+**Conditional SAM rate.** The $O(1/\sqrt{T})$ non-convex rate (`sam_nonconvex_rate_complete`) holds
+conditional on the `SAMDescentEnvelope` premise. Two supporting results are formalized —
+`zsharp_envelope_of_pointwise_descent` (the conditional-expectation/measurability bridge) and
+`sam_stochastic_descent_step_effective` (the one-step bound in quarter-gradient effective-variance form) —
+but deriving the envelope itself for the filtered sequence requires conditional martingale-noise machinery
+that this project does not develop, so the rate is stated conditionally.
 
 **CLT.** The discrete Z-score mask is a discontinuous function, so a classical Central Limit Theorem for the
 filtered gradient is not formally derivable here. Instead, the project provides non-asymptotic concentration
