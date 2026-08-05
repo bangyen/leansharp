@@ -17,6 +17,8 @@ contracts to replace traditional finite-variance requirements.
 
 * `zsharp_heavy_tail_convergence`: Proves almost-sure convergence of the
   objective process when the noise satisfies a non-Gaussian probability oracle.
+* `zsharp_heavy_tail_convergence_of_alpha_stable`: The same convergence under an
+  α-stable oracle, wired through the α-stable-to-non-Gaussian oracle conversion.
 -/
 
 namespace LeanSharp
@@ -64,5 +66,33 @@ theorem zsharp_heavy_tail_convergence
     rw [hfun, eLpNorm_neg]
     exact hbdd t
   exact zsharp_objective_as_convergence_of_neg_submartingale f w ℱfil R h_sub_neg hbdd_neg
+
+/-- **Heavy-Tailed Convergence under α-stable noise**: if the update increments
+satisfy an α-stable probability oracle (α ≥ 1), they are a valid non-Gaussian
+oracle, so the same almost-sure convergence holds. This makes the α-stable claim
+end-to-end. -/
+theorem zsharp_heavy_tail_convergence_of_alpha_stable
+    (f : W ι → ℝ) (w : ℕ → Ω → W ι) (η : ℕ → ℝ)
+    (ℱ : ℕ → MeasurableSpace Ω)
+    (ℱfil : Filtration ℕ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (α : ℝ) (h_alpha : 1 ≤ α)
+    (h_rm : RobbinsMonroStepsize η)
+    (h_stable : AlphaStableProbabilityOracleProcess
+      (fun t ω => w (t + 1) ω - w t ω) α)
+    (h_adapted : ∃ R : NNReal,
+      StronglyAdapted ℱfil (fun t ω => f (w t ω))
+        ∧ (∀ t, ℙ[fun ω => f (w (t + 1) ω) | ℱfil t] ≤ᵐ[ℙ] (fun ω => f (w t ω)))
+        ∧ (∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R))
+    (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_int : ∀ t, Integrable (fun ω => f (w t ω)) ℙ) :
+    ZSharpObjectiveAsConvergence f w := by
+  have h_ng : NonGaussianProbabilityOracleProcess
+      (fun t ω => w (t + 1) ω - w t ω) := by
+    intro t
+    exact alpha_stable_is_non_gaussian h_alpha (fun ω => w (t + 1) ω - w t ω)
+      (h_stable t)
+  let h_oracle : ZSharpOracleDescentHypotheses f w η ℱ ℱfil :=
+    ⟨h_rm, ⟨1, 1, by norm_num, le_rfl, h_ng⟩, h_adapted, h_meas⟩
+  exact zsharp_heavy_tail_convergence f w η ℱ ℱfil h_oracle h_int
 
 end LeanSharp
