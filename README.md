@@ -31,6 +31,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
 | **Genuinely-Random Noise Instantiation** | Low | The noise hypotheses (`IsStochasticGradient`, `HasBoundedVariance`) are shown satisfiable only in the deterministic `PUnit` case. Instantiate a genuinely random two-point noise on the quadratic bowl, which requires a uniform probability measure on a finite type that mathlib does not provide out of the box. |
+| **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. The alignment hypothesis is the hard part. |
 
 ## Scope & Limitations
 
@@ -52,6 +53,11 @@ conditional on the `SAMDescentEnvelope` premise. Two supporting results are form
 `sam_stochastic_descent_step_effective` (the one-step bound in quarter-gradient effective-variance form) —
 but deriving the envelope itself for the filtered sequence requires conditional martingale-noise machinery
 that this project does not develop, so the rate is stated conditionally.
+
+**Heavy-tail oracles.** The `AlphaStableProbabilityOracle`/`CauchyProbabilityOracle` predicates are
+polynomial-tail *upper bounds* (`ℙ[‖ξ‖ ≥ r] ≤ C/r^α`), and any bounded noise satisfies them. The heavy-tail
+convergence theorem therefore applies to bounded noise as well; the "heavy-tailed" framing is stronger than
+what the oracle predicates enforce.
 
 **CLT.** The discrete Z-score mask is a discontinuous function, so a classical Central Limit Theorem for the
 filtered gradient is not formally derivable here. Instead, the project provides non-asymptotic concentration
