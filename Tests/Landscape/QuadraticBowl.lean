@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Stochastic.Mechanics.SharpnessMap
 import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Dynamics.Convergence
 
@@ -114,5 +115,22 @@ example {Ω : Type*} [MeasureSpace Ω] (ω : Ω) (w w_star : W (Fin 2))
       (filteredGradient (gradient toyLoss (w + samPerturbation toyLoss w ρ)) z) μ L_smooth := by
   exact alignment_of_sam_signal_conditions Ω ω toyLoss w w_star ρ z μ L_smooth
     h_align h_norm h_safe
+
+/-- The stochastic-gradient hypotheses are satisfiable on the quadratic bowl: the
+deterministic oracle `g = ∇toyLoss(w)` is a valid stochastic gradient with bounded
+variance (σ² = 0), so `IsStochasticGradient` and `HasBoundedVariance` are non-vacuous. -/
+example (w : W (Fin 2)) :
+    IsStochasticGradient toyLoss (fun _ : PUnit => gradient toyLoss w) w ∧
+    HasBoundedVariance toyLoss (fun _ : PUnit => gradient toyLoss w) w 0 := by
+  have hvol : (volume : Measure PUnit) = Measure.dirac PUnit.unit := rfl
+  constructor
+  · constructor
+    · rw [hvol]
+      exact integrable_const (gradient toyLoss w)
+    · rw [hvol]
+      simp only [integral_dirac]
+  · unfold HasBoundedVariance
+    simp only [sub_self, norm_zero]
+    norm_num
 
 end LeanSharp.Tests
