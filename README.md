@@ -26,6 +26,12 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 - **Estimator Breakdown Analysis**: The empirical mean has finite-sample breakdown point $1/n$ ([`mean_breakdown_point_zero`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean)) while the geometric median's is at least $1/2$, with the matching adversarial side ([`geometric_median_breakdown_point_ge_half`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean), [`median_breakdown`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/MedianComparison/Breakdown.lean)); under a strict-majority fixed subset, one movable outlier drives the mean unbounded while the median stays bounded ([`median_bounded_mean_unbounded_one_outlier_of_majority`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/ComparisonResults.lean)).
 - **SAM Non-Convex Rate**: The conditional $O(1/\sqrt{T})$ result with explicit $2L^2\rho^2$ perturbation penalty ([`sam_nonconvex_rate_complete`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Foundations/Schedules/SamNonconvex.lean), [`SAMDescent`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Convergence/Process/SamDescent.lean), [`SAMOracle`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Foundations/SAMOracle.lean)).
 
+## Immediate Roadmap
+
+| Task | Priority | Details |
+| :--- | :--- | :--- |
+| **Genuinely-Random Noise Instantiation** | Low | The noise hypotheses (`IsStochasticGradient`, `HasBoundedVariance`) are shown satisfiable only in the deterministic `PUnit` case. Instantiate a genuinely random two-point noise on the quadratic bowl, which requires a uniform probability measure on a finite type that mathlib does not provide out of the box. |
+
 ## Scope & Limitations
 
 **Robustness.** The filter's robustness guarantee is the bounded-outlier type — the filtered mean stays
