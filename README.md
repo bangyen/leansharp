@@ -32,7 +32,6 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 | :--- | :--- | :--- |
 | **Genuinely-Random Noise Instantiation** | Low | The noise hypotheses (`IsStochasticGradient`, `HasBoundedVariance`) are shown satisfiable only in the deterministic `PUnit` case. Instantiate a genuinely random two-point noise on the quadratic bowl, which requires a uniform probability measure on a finite type that mathlib does not provide out of the box. |
 | **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. The alignment hypothesis is the hard part. |
-| **Second-Order/Hessian Load-Bearing** | Low | `hessian_symmetric`, `zsharp_second_order_descent`, and `alignment_condition_of_curvature_bound` are unused in production (test-only or dead). Making them load-bearing requires a `TwiceDifferentiable` witness for a concrete landscape (`ContDiff ℝ 2` for `toyLoss`) and wiring the curvature-based alignment/descent into a stated result. |
 
 ## Scope & Limitations
 
