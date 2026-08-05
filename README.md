@@ -26,12 +26,6 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 - **Estimator Breakdown Analysis**: The empirical mean has finite-sample breakdown point $1/n$ ([`mean_breakdown_point_zero`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean)) while the geometric median's is at least $1/2$, with the matching adversarial side ([`geometric_median_breakdown_point_ge_half`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean), [`median_breakdown`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/MedianComparison/Breakdown.lean)); under a strict-majority fixed subset, one movable outlier drives the mean unbounded while the median stays bounded ([`median_bounded_mean_unbounded_one_outlier_of_majority`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/ComparisonResults.lean)).
 - **SAM Non-Convex Rate**: The conditional $O(1/\sqrt{T})$ result with explicit $2L^2\rho^2$ perturbation penalty ([`sam_nonconvex_rate_complete`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Foundations/Schedules/SamNonconvex.lean), [`SAMDescent`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Convergence/Process/SamDescent.lean), [`SAMOracle`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Foundations/SAMOracle.lean)).
 
-## Immediate Roadmap
-
-| Task | Priority | Details |
-| :--- | :--- | :--- |
-| **Wire Alignment Bridges into the Rates** | Low | Optional polish: `zsharp_convergence` and the rate theorems hold conditionally on `AlignmentCondition`/`StochasticAlignmentCondition`, which is already valid math; the bridge theorems (`alignment_condition_of_signal_noise`, `deterministic_implies_stochastic_alignment`) provide sufficient conditions but are not wired in. Deriving the hypothesis from them would weaken it, but the conditional results stand on their own. |
-
 ## Scope & Limitations
 
 **Robustness.** The filter's robustness guarantee is the bounded-outlier type — the filtered mean stays
