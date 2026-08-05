@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Dynamics.Convergence
 
 /-!
@@ -23,6 +24,7 @@ gradients and filtering behavior used throughout proof examples.
 namespace LeanSharp.Tests
 
 open LeanSharp.QuadraticBowl
+open MeasureTheory
 
 /-- Verifies the fundamental L2 contraction property of the Z-score filter on the toy model. -/
 example :
@@ -77,5 +79,40 @@ example :
 example (w : W (Fin 2)) :
     gradient toyLoss w = exactGradientToy w := by
   exact gradient_toy_eq w
+
+/-- Verifies that the toy gradient is 2-Lipschitz. -/
+example (w v : W (Fin 2)) :
+    ‖gradient toyLoss w - gradient toyLoss v‖ ≤ 2 * ‖w - v‖ :=
+  toy_L_smooth.2 w v
+
+/-- Verifies that the toy loss is 2-strongly convex. -/
+example (w v : W (Fin 2)) :
+    toyLoss v ≥ toyLoss w + inner ℝ (gradient toyLoss w) (v - w) +
+      (2 / 2) * ‖v - w‖ ^ 2 :=
+  toy_strongly_convex.2 w v
+
+/-- Verifies the bundled objective exposes the expected constants. -/
+example :
+    QuadraticBowl.toyLossBundled.μ = 2 ∧ QuadraticBowl.toyLossBundled.smoothness = 2 := by
+  constructor <;> rfl
+
+/-- The alignment bridge derives the convergence alignment hypothesis for the
+SAM-perturbed quadratic-bowl gradient from pointwise signal-noise conditions. -/
+example {Ω : Type*} [MeasureSpace Ω] (ω : Ω) (w w_star : W (Fin 2))
+    (ρ z μ L_smooth : ℝ)
+    (h_align : μ * ‖w - w_star‖ ^ 2 ≤
+      inner ℝ (gradient toyLoss (w + samPerturbation toyLoss w ρ)) (w - w_star))
+    (h_norm : ‖filteredGradient (gradient toyLoss (w + samPerturbation toyLoss w ρ)) z‖ ≤
+      L_smooth * ‖w - w_star‖)
+    (h_safe : ∀ i : Fin 2,
+      (WithLp.equiv 2 (Fin 2 → ℝ)
+        (zScoreMask (gradient toyLoss (w + samPerturbation toyLoss w ρ)) z)) i = 0 →
+      (WithLp.equiv 2 (Fin 2 → ℝ) (w - w_star) i) *
+        (WithLp.equiv 2 (Fin 2 → ℝ)
+          (gradient toyLoss (w + samPerturbation toyLoss w ρ)) i) ≤ 0) :
+    AlignmentCondition w w_star
+      (filteredGradient (gradient toyLoss (w + samPerturbation toyLoss w ρ)) z) μ L_smooth := by
+  exact alignment_of_sam_signal_conditions Ω ω toyLoss w w_star ρ z μ L_smooth
+    h_align h_norm h_safe
 
 end LeanSharp.Tests

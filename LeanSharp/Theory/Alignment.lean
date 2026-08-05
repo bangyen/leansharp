@@ -39,6 +39,8 @@ theoretical analysis remains consistent across different dynamical regimes.
 * `alignment_condition_of_signal_noise`: Bridge theorem for stochastic models.
 * `deterministic_implies_stochastic_alignment`: Deterministic alignment implies
   the stochastic variant under a degenerate distribution.
+* `alignment_of_sam_signal_conditions`: Derives the convergence alignment from
+  signal-noise conditions on the SAM-perturbed gradient.
 -/
 
 variable {ι : Type*} [Fintype ι]
@@ -180,5 +182,45 @@ theorem deterministic_implies_stochastic_alignment (Ω : Type*) [MeasureSpace Ω
       apply sub_le_sub_left
       apply mul_le_mul_of_nonneg_left h_L_sq
       nlinarith [sq_nonneg (η t)]
+
+/-- **Alignment from SAM signal conditions**: the `AlignmentCondition` hypothesis used
+by `zsharp_convergence` can be derived via the alignment bridge from pointwise
+signal-noise conditions on the SAM-perturbed gradient. This wires the bridge into the
+convergence theorem's hypothesis. -/
+theorem alignment_of_sam_signal_conditions (Ω : Type*) [MeasureSpace Ω] (ω : Ω)
+    (L : W ι → ℝ) (w w_star : W ι) (ρ z μ L_smooth : ℝ)
+    (h_align : μ * ‖w - w_star‖ ^ 2 ≤
+      inner ℝ (gradient L (w + samPerturbation L w ρ)) (w - w_star))
+    (h_norm : ‖filteredGradient (gradient L (w + samPerturbation L w ρ)) z‖ ≤
+      L_smooth * ‖w - w_star‖)
+    (h_safe : ∀ i : ι,
+      (WithLp.equiv 2 (ι → ℝ) (zScoreMask (gradient L (w + samPerturbation L w ρ)) z)) i = 0 →
+      (WithLp.equiv 2 (ι → ℝ) (w - w_star) i) *
+        (WithLp.equiv 2 (ι → ℝ) (gradient L (w + samPerturbation L w ρ)) i) ≤ 0) :
+    AlignmentCondition w w_star
+      (filteredGradient (gradient L (w + samPerturbation L w ρ)) z) μ L_smooth := by
+  let g : W ι := gradient L (w + samPerturbation L w ρ)
+  let m : SignalNoiseModel ι Ω := {
+    g_true := g,
+    noise := fun _ => 0,
+    h_mean := by simp only [integral_zero],
+    h_int := integrable_zero _ _ _
+  }
+  have h_obs : m.observed ω = g := by
+    dsimp only [SignalNoiseModel.observed, m]
+    simp only [add_zero]
+  have h_align' : μ * ‖w - w_star‖ ^ 2 ≤ inner ℝ (m.observed ω) (w - w_star) := by
+    simpa only [g, h_obs] using h_align
+  have h_norm' : ‖filteredGradient (m.observed ω) z‖ ≤ L_smooth * ‖w - w_star‖ := by
+    simpa only [g, h_obs] using h_norm
+  have h_safe' : ∀ i : ι,
+      (WithLp.equiv 2 (ι → ℝ) (zScoreMask (m.observed ω) z)) i = 0 →
+      (WithLp.equiv 2 (ι → ℝ) (w - w_star) i) * (WithLp.equiv 2 (ι → ℝ) (m.observed ω) i) ≤ 0 := by
+    intro i hi
+    have h_hi : (WithLp.equiv 2 (ι → ℝ) (zScoreMask g z)) i = 0 := by
+      simpa only [g, h_obs] using hi
+    simpa only [g, h_obs] using h_safe i h_hi
+  simpa only [g, h_obs] using alignment_condition_of_signal_noise Ω w w_star z μ L_smooth ω m
+    h_align' h_norm' h_safe'
 
 end LeanSharp
