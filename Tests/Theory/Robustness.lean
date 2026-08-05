@@ -7,6 +7,7 @@ import LeanSharp.Core.Landscape
 import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilterBias
+import LeanSharp.Theory.Robustness.FilteredMeanProps.Basic
 
 /-!
 # Robustness Tests
@@ -87,5 +88,23 @@ example {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
     (h_int : ∀ i ∈ s, Integrable (fun g => filteredGradient g z) D) :
     (∫ ω, zFilteredEmpiricalMean s (fun i => η i ω) z ∂P) = 0 :=
   zFilteredEmpiricalMean_symmetric_noise_mean_zero s η z D h_sym h_law h_int
+
+/-- Test witness (sample satisfiability): a concrete `RobustSample` exists — three
+points with a strict-majority fixed subset and bounded fixed points — so the
+robustness structure's hypotheses are non-vacuous. -/
+example :
+    ∃ S : RobustSample (Fin 3) (Fin 2), 2 * S.s_fixed.card > S.s.card := by
+  let u : W (Fin 2) := (WithLp.equiv 2 (Fin 2 → ℝ)).symm (fun _ => (1 : ℝ))
+  let S : RobustSample (Fin 3) (Fin 2) := {
+    s := Finset.univ
+    g := fun _ => u
+    s_fixed := ({0, 1} : Finset (Fin 3))
+    h_sub := by intro i hi; exact Finset.mem_univ i
+    R_fixed := ‖u‖
+    R_out := 0
+    h_fixed_bound := by intro i hi; exact le_rfl
+  }
+  refine ⟨S, ?_⟩
+  norm_num [S, Finset.card_univ]
 
 end LeanSharp.Tests
