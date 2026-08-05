@@ -56,8 +56,10 @@ require idealized assumptions unmet by deep networks; that material is out of sc
 conditional on the `SAMDescentEnvelope` premise. Two supporting results are formalized —
 `zsharp_envelope_of_pointwise_descent` (the conditional-expectation/measurability bridge) and
 `sam_stochastic_descent_step_effective` (the one-step bound in quarter-gradient effective-variance form) —
-but deriving the envelope itself for the filtered sequence requires conditional martingale-noise machinery
-that this project does not develop, so the rate is stated conditionally.
+but deriving the envelope itself for the filtered sequence requires re-deriving the one-step descent under
+conditional expectation, whose central step — conditional expectation commuting with multiplication by a
+filtration-measurable scalar — is not available in Mathlib and would itself require building density-change
+(`withDensity`) infrastructure. That machinery is not developed here, so the rate is stated conditionally.
 
 **Heavy-tail oracles.** The `AlphaStableProbabilityOracle`/`CauchyProbabilityOracle` predicates are
 polynomial-tail *upper bounds* (`ℙ[‖ξ‖ ≥ r] ≤ C/r^α`), and any bounded noise satisfies them. The heavy-tail
