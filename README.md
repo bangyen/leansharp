@@ -33,6 +33,9 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 | **Genuinely-Random Noise Instantiation** | Low | The noise hypotheses (`IsStochasticGradient`, `HasBoundedVariance`) are shown satisfiable only in the deterministic `PUnit` case. Instantiate a genuinely random two-point noise on the quadratic bowl, which requires a uniform probability measure on a finite type that mathlib does not provide out of the box. |
 | **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. The alignment hypothesis is the hard part. |
 | **Concrete Geometric Alignment** | Low | Every `zsharp_convergence` test takes `AlignmentCondition` as an assumption; nothing proves it holds for a concrete gradient. Establishing it for `toyLoss`/`advancedLoss` (even unfiltered) requires WithLp-smul, inner-product, and filter computations that proved fiddly in an initial attempt. |
+| **Degenerate `SAMDescentEnvelope` Satisfiability** | Low | Mirror of the completed `ZSharpDescentEnvelope` proof: show the SAM envelope (the SAM non-convex rate's core assumption) is non-vacuous for the zero sequence. |
+| **`SignalNoiseModel` Satisfiability** | Low | Discharge `h_mean`/`h_int` for a concrete (zero-noise) model, used by the alignment bridge. |
+| **`CauchyProbabilityOracle` Satisfiability** | Low | A constant noise satisfies the Cauchy oracle, mirroring the completed α-stable one. |
 
 ## Scope & Limitations
 
