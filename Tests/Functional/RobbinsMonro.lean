@@ -7,6 +7,8 @@ Authors: Bangyen Pham
 import LeanSharp.Stochastic.Foundations.Martingale
 import LeanSharp.Stochastic.Foundations.RobbinsMonro
 import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
+import Mathlib.Analysis.PSeries
+import Mathlib.Analysis.SpecificLimits.Basic
 
 /-!
 # Robbins-Monro Tests
@@ -98,5 +100,21 @@ example [IsProbabilityMeasure (volume : Measure Ω)]
     (hbdd : ∀ t, eLpNorm (fun ω => f (w t ω)) 1 ℙ ≤ R) :
     ZSharpObjectiveAsConvergence f w := by
   exact zsharp_objective_as_convergence_of_submartingale f w ℱ R h_sub hbdd
+
+/-- The Robbins-Monro step-size condition is satisfiable: the harmonic schedule
+`η_t = 1/(t+1)` is nonnegative, square-summable, and vanishes. -/
+example : RobbinsMonroStepsize (fun t : ℕ => 1 / (t + 1 : ℝ)) := by
+  unfold RobbinsMonroStepsize
+  constructor
+  · intro t; positivity
+  · constructor
+    · have hp := (Real.summable_one_div_nat_pow (p := 2)).2 (by norm_num : 1 < 2)
+      have hf : Summable (fun n : ℕ => (1 / (n : ℝ)) ^ 2) := by
+        simpa only [div_pow, one_pow] using hp
+      have hshift : Summable (fun t : ℕ => (1 / ((t + 1 : ℕ) : ℝ)) ^ 2) :=
+        (summable_nat_add_iff 1).2 hf
+      simpa only [Nat.cast_add, Nat.cast_one] using hshift
+    · change Filter.Tendsto (fun t : ℕ => 1 / (t + 1 : ℝ)) Filter.atTop (nhds 0)
+      exact tendsto_one_div_add_atTop_nhds_zero_nat
 
 end LeanSharp.Tests

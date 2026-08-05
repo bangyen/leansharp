@@ -23,6 +23,7 @@ in `W ι` can be explicitly evaluated on Euclidean vectors.
 * `exactGradientToy`: The explicit analytical gradient of `toyLoss`.
 * `wInit`: A concrete initial weight vector $[1, 3]$.
 * `toyLossBundled`: The bundled strongly convex objective for the quadratic bowl.
+* `toyTwiceDifferentiable`: A `TwiceDifferentiable` witness for the quadratic bowl.
 
 ## Main theorems
 
@@ -30,6 +31,7 @@ in `W ι` can be explicitly evaluated on Euclidean vectors.
 * `gradient_toy_eq`: Shows that the computed gradient matches the analytical one.
 * `toy_L_smooth`: The gradient is Lipschitz with $L = 2$.
 * `toy_strongly_convex`: The function is $\mu$-strongly convex with $\mu = 2$.
+* `toy_IsSmooth`: The quadratic bowl satisfies the Taylor descent bound `IsSmooth toyLoss 2`.
 -/
 
 namespace LeanSharp.QuadraticBowl
@@ -137,5 +139,30 @@ noncomputable def toyLossBundled : StronglyConvexObjective (Fin 2) where
     intro w v; simpa only [dist_eq_norm] using toy_L_smooth.2 w v
   μ := 2
   strongly_convex := toy_strongly_convex
+
+/-- **Taylor Smoothness**: the quadratic bowl satisfies the Taylor descent bound
+`toyLoss y ≤ toyLoss x + ⟨∇toyLoss x, y - x⟩ + ‖y - x‖²`, i.e. `IsSmooth toyLoss 2`.
+This discharges the smoothness hypothesis of the descent lemma. -/
+theorem toy_IsSmooth : IsSmooth toyLoss 2 := by
+  intro x y
+  rw [gradient_toy_eq]
+  simp only [exactGradientToy, toyLoss, PiLp.inner_apply, RCLike.inner_apply, conj_trivial,
+    Fin.sum_univ_two, WithLp.equiv_apply, WithLp.equiv_symm_apply, PiLp.sub_apply,
+    EuclideanSpace.norm_sq_eq, Real.norm_eq_abs, sq_abs]
+  ring_nf
+  exact le_rfl
+
+/-- **Twice Differentiable**: the quadratic bowl is `ContDiff ℝ 2`, so it is a
+`TwiceDifferentiable` witness for the Hessian machinery. -/
+noncomputable def toyTwiceDifferentiable : TwiceDifferentiable (Fin 2) where
+  toFun := toyLoss
+  differentiable := by
+    rw [show toyLoss = fun x : W (Fin 2) => (x 0) ^ 2 + (x 1) ^ 2
+        by ext x; simp only [toyLoss, WithLp.equiv_apply]]
+    apply ContDiff.add
+    · simpa only [sq] using (contDiff_piLp_apply (p := 2) (i := (0 : Fin 2))).mul
+        (contDiff_piLp_apply (p := 2) (i := (0 : Fin 2)))
+    · simpa only [sq] using (contDiff_piLp_apply (p := 2) (i := (1 : Fin 2))).mul
+        (contDiff_piLp_apply (p := 2) (i := (1 : Fin 2)))
 
 end LeanSharp.QuadraticBowl
