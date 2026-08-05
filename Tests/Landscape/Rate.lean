@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Stochastic.Convergence.Process.Sequence
 import LeanSharp.Stochastic.Rate
 
 /-!
@@ -68,5 +69,58 @@ example (L : W2 → ℝ) (η : ℕ → ℝ) (z μ L_smooth : ℝ)
         ≤ (‖wInit - 0‖ ^ 2 + 1) / T := by
   exact stochastic_zsharp_rate_O1_T_of_deterministic_alignment L 0 wInit η z μ L_smooth
     g_adv ℱ ε h_le h_cond_bound hμ h_step h_g0 h_align_det h_tight h_eta h_int
+
+/-- The `ZSharpDescentEnvelope` hypothesis is non-vacuous: it holds for the degenerate
+zero sequence, where the filtered step stays at the minimum. -/
+example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    (ℱ : ℕ → MeasurableSpace Ω) (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (L_smooth σsq z : ℝ) (hL : 0 ≤ L_smooth) (hσ : 0 ≤ σsq) :
+    ZSharpDescentEnvelope L_smooth toyLoss (fun (_ : ℕ) (_ : Ω) => (0 : W (Fin 2)))
+      (fun _ => (1 : ℝ)) z σsq (fun (_ : ℕ) (_ : Ω) => (0 : W (Fin 2))) ℱ 0 := by
+  unfold ZSharpDescentEnvelope
+  have h_had_zero (a : W (Fin 2)) : hadamard (0 : W (Fin 2)) a = 0 := by
+    apply (WithLp.equiv 2 (Fin 2 → ℝ)).injective
+    ext i
+    simp only [hadamard, WithLp.equiv_apply, WithLp.equiv_symm_apply, WithLp.ofLp_zero,
+      Pi.zero_apply, zero_mul]
+  have h_filt : filteredGradient (0 : W (Fin 2)) z = 0 := by
+    unfold filteredGradient
+    exact h_had_zero (zScoreMask (0 : W (Fin 2)) z)
+  have h_step (ω' : Ω) :
+      toyLoss (stochasticZSharpStep (0 : W (Fin 2)) (fun _ => (1 : ℝ)) 0 z
+        (fun _ => (0 : W (Fin 2))) ω') = 0 := by
+    have h_step0 : stochasticZSharpStep (0 : W (Fin 2)) (fun _ => (1 : ℝ)) 0 z
+        (fun _ => (0 : W (Fin 2))) ω' = 0 := by
+      simp only [stochasticZSharpStep, h_filt, one_smul, sub_self]
+    rw [h_step0]
+    norm_num [toyLoss, WithLp.equiv_apply]
+  have h_ce_const : volume[fun _ : Ω => (0 : ℝ) | ℱ 0] =ᵐ[ℙ] (fun _ => (0 : ℝ)) := by
+    exact Filter.Eventually.of_forall (fun ω => congrFun (condExp_const (h_meas 0) (0 : ℝ)) ω)
+  have h_ce_step :
+      volume[fun ω' => toyLoss (stochasticZSharpStep (0 : W (Fin 2)) (fun _ => (1 : ℝ)) 0 z
+        (fun _ => (0 : W (Fin 2))) ω') | ℱ 0] =ᵐ[ℙ] (fun _ => (0 : ℝ)) := by
+    have h_congr := condExp_congr_ae (μ := volume) (m₀ := ‹MeasureSpace Ω›.toMeasurableSpace)
+      (m := ℱ 0) (f := fun ω' =>
+        toyLoss (stochasticZSharpStep (0 : W (Fin 2)) (fun _ => (1 : ℝ)) 0 z
+          (fun _ => (0 : W (Fin 2))) ω')) (g := fun _ : Ω => (0 : ℝ))
+      (Filter.Eventually.of_forall h_step)
+    exact h_congr.trans h_ce_const
+  have h_grad0 : gradient toyLoss 0 = 0 := by
+    rw [gradient_toy_eq]
+    ext i
+    norm_num [exactGradientToy, WithLp.equiv_apply, WithLp.equiv_symm_apply]
+  have h_rhs : toyLoss (0 : W (Fin 2)) - (1 / 4) * ‖gradient toyLoss 0‖ ^ 2 +
+      (1 ^ 2 * L_smooth / 2) * σsq = (L_smooth / 2) * σsq := by
+    rw [h_grad0]
+    norm_num [toyLoss, WithLp.equiv_apply]
+  filter_upwards [h_ce_step] with ω h1
+  calc
+    volume[fun ω' => toyLoss (stochasticZSharpStep (0 : W (Fin 2)) (fun _ => (1 : ℝ)) 0 z
+        (fun _ => (0 : W (Fin 2))) ω') | ℱ 0] ω
+      = (0 : ℝ) := h1
+    _ ≤ toyLoss (0 : W (Fin 2)) - (1 / 4) * ‖gradient toyLoss 0‖ ^ 2 +
+        (1 ^ 2 * L_smooth / 2) * σsq := by
+      rw [h_rhs]
+      exact mul_nonneg (div_nonneg hL (by norm_num : (0 : ℝ) ≤ 2)) hσ
 
 end LeanSharp.Tests

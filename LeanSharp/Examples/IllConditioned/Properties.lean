@@ -15,10 +15,13 @@ ill-conditioned quadratic objective.
 
 ## Main Definitions
 * `SmoothObjective`: Uses the bundled assumption structure.
+* `advancedLossBundled`: The bundled strongly convex objective.
+* `advancedTwiceDifferentiable`: A `TwiceDifferentiable` witness.
 
 ## Main Theorems
 * `advanced_L_smooth`: The gradient is Lipschitz with $L = 20$.
 * `advanced_strongly_convex`: The function is $\mu$-strongly convex.
+* `advanced_IsSmooth`: The ill-conditioned bowl satisfies the Taylor descent bound.
 -/
 
 namespace LeanSharp.IllConditioned
@@ -93,5 +96,33 @@ noncomputable def advancedLossBundled : StronglyConvexObjective (Fin 2) where
     intro w v; simpa only [dist_eq_norm] using advanced_L_smooth.2 w v
   μ := 2
   strongly_convex := advanced_strongly_convex
+
+/-- **Taylor Smoothness**: the ill-conditioned bowl satisfies the Taylor descent bound
+`advancedLoss y ≤ advancedLoss x + ⟨∇advancedLoss x, y - x⟩ + 10‖y - x‖²`, i.e.
+`IsSmooth advancedLoss 20`. This discharges the descent lemma's smoothness hypothesis. -/
+theorem advanced_IsSmooth : IsSmooth advancedLoss 20 := by
+  intro x y
+  rw [gradient_advanced_eq]
+  simp only [exactGradientAdvanced, advancedLoss, PiLp.inner_apply, RCLike.inner_apply,
+    conj_trivial, Fin.sum_univ_two, WithLp.equiv_symm_apply, PiLp.sub_apply, ↓reduceIte,
+    EuclideanSpace.norm_sq_eq, Real.norm_eq_abs, sq_abs]
+  ring_nf
+  norm_num
+  nlinarith [sq_nonneg (y 1 - x 1)]
+
+/-- **Twice Differentiable**: the ill-conditioned bowl is `ContDiff ℝ 2`, so it is a
+`TwiceDifferentiable` witness for the Hessian machinery. -/
+noncomputable def advancedTwiceDifferentiable : TwiceDifferentiable (Fin 2) where
+  toFun := advancedLoss
+  differentiable := by
+    rw [show advancedLoss = fun x : W (Fin 2) => 10 * (x 0) ^ 2 + (x 1) ^ 2
+        by ext x; simp only [advancedLoss]]
+    apply ContDiff.add
+    · have h0 : ContDiff ℝ 2 (fun x : W (Fin 2) => (x 0) ^ 2) := by
+        simpa only [sq] using (contDiff_piLp_apply (p := 2) (i := (0 : Fin 2))).mul
+          (contDiff_piLp_apply (p := 2) (i := (0 : Fin 2)))
+      exact ContDiff.mul (contDiff_const : ContDiff ℝ 2 (fun _ : W (Fin 2) => (10 : ℝ))) h0
+    · simpa only [sq] using (contDiff_piLp_apply (p := 2) (i := (1 : Fin 2))).mul
+        (contDiff_piLp_apply (p := 2) (i := (1 : Fin 2)))
 
 end LeanSharp.IllConditioned
