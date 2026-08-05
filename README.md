@@ -30,7 +30,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Conditional SAM Envelope Derivation** | Medium | `sam_nonconvex_rate_complete` gives the $O(1/\sqrt{T})$ rate conditional on `SAMDescentEnvelope`. **Remaining:** derive that envelope for the filtered sequence from `sam_stochastic_descent_step`, introducing a generic adapted filtration with conditional martingale-noise and variance assumptions at the SAM-perturbed point — without modeling dataset sampling or architecture-specific randomness. (Subsumes the earlier "conditional oracle model" item.) |
+| **Conditional SAM Envelope Derivation** | Medium | `sam_nonconvex_rate_complete` gives the $O(1/\sqrt{T})$ rate conditional on `SAMDescentEnvelope`. **Done:** the filtration/measurability bridge `zsharp_envelope_of_pointwise_descent` turns a pointwise one-step descent into the conditional envelope (SAM form by the $\sigma^2 + 2L^2\rho^2$ substitution). **Remaining:** establish that pointwise SAM one-step bound for the filtered sequence from conditional martingale-noise and variance assumptions at the SAM-perturbed point. |
 | **Wire Alignment Bridges into the Rates** | Low | Optional polish: `zsharp_convergence` and the rate theorems hold conditionally on `AlignmentCondition`/`StochasticAlignmentCondition`, which is already valid math; the bridge theorems (`alignment_condition_of_signal_noise`, `deterministic_implies_stochastic_alignment`) provide sufficient conditions but are not wired in. Deriving the hypothesis from them would weaken it, but the conditional results stand on their own. |
 
 ## Scope & Limitations

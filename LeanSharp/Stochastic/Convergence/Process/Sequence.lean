@@ -19,6 +19,8 @@ governing the entire optimization trajectory.
 ## Main Theorems
 * `stochastic_zsharp_sequence_descent`: Accumulation of descent steps over time.
 * `sam_sequence_descent`: Accumulation of SAM descent envelopes over time.
+* `zsharp_envelope_of_pointwise_descent`: The bridge from a pointwise one-step
+  descent to the conditional envelope.
 -/
 
 namespace LeanSharp
@@ -47,6 +49,66 @@ def SAMDescentEnvelope (L_smooth : ℝ) (f : W ι → ℝ)
     (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq ρ : ℝ)
     (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ) : Prop :=
   ZSharpDescentEnvelope L_smooth f w η z (σsq + 2 * L_smooth ^ 2 * ρ ^ 2) g_adv ℱ t
+
+/-- **Envelope from Pointwise Descent**: If the one-step objective decrease holds
+pointwise almost everywhere and the current objective and gradient norm are adapted
+to the filtration `ℱ t`, then the conditional `ZSharpDescentEnvelope` follows. This
+is the filtration/measurability bridge needed to derive the envelope for the filtered
+sequence from the concrete stochastic descent step. Instantiating `σsq` with the
+effective variance `σsq + 2L²ρ²` yields the `SAMDescentEnvelope` by definition. -/
+theorem zsharp_envelope_of_pointwise_descent (L_smooth : ℝ) (f : W ι → ℝ)
+    (w : ℕ → Ω → W ι) (η : ℕ → ℝ) (z σsq : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ)
+    (h_step_t : ∀ᵐ ω ∂ℙ, w (t + 1) ω = stochasticZSharpStep (w t ω) η t z (g_adv t) ω)
+    (h_pointwise : ∀ᵐ ω ∂ℙ,
+      f (w (t + 1) ω) ≤ f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 +
+        (η t ^ 2 * L_smooth / 2) * σsq)
+    (h_meas_f : AEStronglyMeasurable (m := ℱ t) (fun ω => f (w t ω)) volume)
+    (h_meas_grad : AEStronglyMeasurable (m := ℱ t)
+      (fun ω => ‖gradient f (w t ω)‖ ^ 2) volume)
+    (h_meas_ft : ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_int_t : Integrable (fun ω => f (w t ω)) ℙ)
+    (h_int_grad : Integrable (fun ω => ‖gradient f (w t ω)‖ ^ 2) ℙ)
+    (h_int_next : Integrable (fun ω => f (w (t + 1) ω)) ℙ) :
+    ZSharpDescentEnvelope L_smooth f w η z σsq g_adv ℱ t := by
+  let A (ω : Ω) : ℝ := f (w (t + 1) ω)
+  let B (ω : Ω) : ℝ := f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 +
+    (η t ^ 2 * L_smooth / 2) * σsq
+  have h_pt : A ≤ᵐ[ℙ] B := by
+    simpa only [A, B] using h_pointwise
+  have h_meas_B : AEStronglyMeasurable (m := ℱ t) B volume := by
+    dsimp only [B]
+    have h1 : AEStronglyMeasurable (m := ℱ t)
+        (fun ω => (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) volume :=
+      h_meas_grad.const_mul (η t / 4)
+    have h2 : AEStronglyMeasurable (m := ℱ t)
+        (fun ω => f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2) volume :=
+      h_meas_f.sub h1
+    have h3 : AEStronglyMeasurable (m := ℱ t)
+        (fun ω => (η t ^ 2 * L_smooth / 2) * σsq) volume := by
+      exact stronglyMeasurable_const.aestronglyMeasurable
+    exact h2.add h3
+  have h_int_B : Integrable B ℙ := by
+    dsimp only [B]
+    exact (h_int_t.sub (h_int_grad.const_mul _)).add (integrable_const _)
+  have h_ce_mono : volume[A | ℱ t] ≤ᵐ[ℙ] volume[B | ℱ t] :=
+    condExp_mono h_int_next h_int_B h_pt
+  have h_ce_B : volume[B | ℱ t] =ᵐ[ℙ] B :=
+    condExp_of_aestronglyMeasurable' h_meas_ft h_meas_B h_int_B
+  have h_ce_congr :
+      volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] =ᵐ[ℙ]
+      volume[A | ℱ t] := by
+    apply condExp_congr_ae
+    filter_upwards [h_step_t] with ω' hω'
+    rw [← hω']
+  unfold ZSharpDescentEnvelope
+  filter_upwards [h_ce_congr, h_ce_mono, h_ce_B] with ω hc hm hb
+  calc
+    volume[fun ω' => f (stochasticZSharpStep (w t ω') η t z (g_adv t) ω') | ℱ t] ω
+      = volume[A | ℱ t] ω := hc
+    _ ≤ volume[B | ℱ t] ω := hm
+    _ = f (w t ω) - (η t / 4) * ‖gradient f (w t ω)‖ ^ 2 +
+        (η t ^ 2 * L_smooth / 2) * σsq := hb
 
 /-- **ZSharp Sequence Descent**:
 Aggregates the individual descent steps into a sequence-level bound.

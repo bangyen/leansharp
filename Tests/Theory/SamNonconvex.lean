@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Stochastic.Convergence.Process.Sequence
 import LeanSharp.Stochastic.Foundations.SAMOracle
 import LeanSharp.Stochastic.Foundations.Schedules.SamNonconvex
+import LeanSharp.Stochastic.Foundations.Schedules.StronglyConvex
 
 /-!
 # SAM Non-Convex Rate Tests
@@ -60,5 +62,37 @@ example (z L_smooth σsq ρ : ℝ) (η : ℕ → ℝ)
         (σsq + 2 * L_smooth ^ 2 * ρ ^ 2)) / Real.sqrt (T : ℝ) := by
   exact sam_nonconvex_rate_complete toyLoss wInit z L_smooth σsq ρ η g_adv T hT ℱ
     h_step h_L_pos h_bdd h_int_L h_int_grad h_desc h_meas
+
+/-- The pointwise-to-conditional envelope bridge yields the SAM descent envelope
+for the filtered sequence: given a pointwise one-step SAM descent bound for the
+`weightSequence` and adaptation of the iterate to the filtration, the conditional
+`SAMDescentEnvelope` follows. -/
+example {ι : Type*} [Fintype ι] {Ω : Type*} [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)]
+    (L : SmoothObjective ι) (w0 : W ι) (η : ℕ → ℝ) (z σsq ρ : ℝ)
+    (g_adv : ℕ → Ω → W ι) (ℱ : ℕ → MeasurableSpace Ω) (t : ℕ)
+    (h_pointwise : ∀ᵐ ω ∂ℙ,
+      L.toFun (weightSequence w0 η z g_adv (t + 1) ω) ≤
+        L.toFun (weightSequence w0 η z g_adv t ω) -
+          (η t / 4) * ‖gradient L.toFun (weightSequence w0 η z g_adv t ω)‖ ^ 2 +
+          (η t ^ 2 * (L.smoothness : ℝ) / 2) *
+            (σsq + 2 * (L.smoothness : ℝ) ^ 2 * ρ ^ 2))
+    (h_meas_f : AEStronglyMeasurable (m := ℱ t)
+      (fun ω => L.toFun (weightSequence w0 η z g_adv t ω)) volume)
+    (h_meas_grad : AEStronglyMeasurable (m := ℱ t)
+      (fun ω => ‖gradient L.toFun (weightSequence w0 η z g_adv t ω)‖ ^ 2) volume)
+    (h_meas_ft : ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (h_int_t : Integrable
+      (fun ω => L.toFun (weightSequence w0 η z g_adv t ω)) ℙ)
+    (h_int_grad : Integrable
+      (fun ω => ‖gradient L.toFun (weightSequence w0 η z g_adv t ω)‖ ^ 2) ℙ)
+    (h_int_next : Integrable
+      (fun ω => L.toFun (weightSequence w0 η z g_adv (t + 1) ω)) ℙ) :
+    SAMDescentEnvelope (L.smoothness : ℝ) L.toFun (weightSequence w0 η z g_adv)
+      η z σsq ρ g_adv ℱ t := by
+  exact zsharp_envelope_of_pointwise_descent (L.smoothness : ℝ) L.toFun
+    (weightSequence w0 η z g_adv) η z (σsq + 2 * (L.smoothness : ℝ) ^ 2 * ρ ^ 2)
+    g_adv ℱ t (weight_sequence_step_eventually w0 η z g_adv t) h_pointwise
+    h_meas_f h_meas_grad h_meas_ft h_int_t h_int_grad h_int_next
 
 end LeanSharp.Tests
