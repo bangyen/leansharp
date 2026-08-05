@@ -30,7 +30,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Conditional SAM Envelope Derivation** | Medium | `sam_nonconvex_rate_complete` gives the $O(1/\sqrt{T})$ rate conditional on `SAMDescentEnvelope`. **Done:** the filtration/measurability bridge `zsharp_envelope_of_pointwise_descent` turns a pointwise one-step descent into the conditional envelope (SAM form by the $\sigma^2 + 2L^2\rho^2$ substitution). **Remaining:** establish that pointwise SAM one-step bound for the filtered sequence from conditional martingale-noise and variance assumptions at the SAM-perturbed point. |
+| **Conditional SAM Envelope Derivation** | Medium | `sam_nonconvex_rate_complete` gives the $O(1/\sqrt{T})$ rate conditional on `SAMDescentEnvelope`. **Done:** `zsharp_envelope_of_pointwise_descent` (the filtration/measurability bridge) and `sam_stochastic_descent_step_effective` (the one-step bound in quarter-gradient effective-variance form under $\eta L \le 1/4$). **Remaining:** the conditional lift — instantiate the effective one-step bound at the filtered iterate under conditional martingale-noise and variance assumptions and feed it to the bridge. |
 | **Wire Alignment Bridges into the Rates** | Low | Optional polish: `zsharp_convergence` and the rate theorems hold conditionally on `AlignmentCondition`/`StochasticAlignmentCondition`, which is already valid math; the bridge theorems (`alignment_condition_of_signal_noise`, `deterministic_implies_stochastic_alignment`) provide sufficient conditions but are not wired in. Deriving the hypothesis from them would weaken it, but the conditional results stand on their own. |
 
 ## Scope & Limitations

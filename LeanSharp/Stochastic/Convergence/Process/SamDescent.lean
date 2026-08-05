@@ -14,6 +14,8 @@ general Z-score descent process.
 ## Main Theorems
 * `sam_filtered_second_moment_le`: Perturbation-aware second-moment bound.
 * `sam_stochastic_descent_step`: Complete perturbation-aware one-step bound.
+* `sam_stochastic_descent_step_effective`: One-step bound in quarter-gradient
+  effective-variance form.
 -/
 
 namespace LeanSharp
@@ -101,5 +103,69 @@ theorem sam_stochastic_descent_step
     h_stoch h_var h_int h_int_f
   exact sam_expected_descent_step L g w η z ρ σsq hη h_int_gf h_int_f
     h_int_f_val h_second h_align
+
+/-- **Effective-variance SAM one-step bound**: under the step-size condition
+`η · L ≤ 1/4`, the perturbation-dependent second-moment term collapses to the
+quarter-gradient form with effective variance `σ² + 2L²ρ²`, matching the
+`SAMDescentEnvelope` interface. -/
+theorem sam_stochastic_descent_step_effective
+    (L : SmoothObjective ι) (g : Ω → W ι) (w : W ι)
+    (η z ρ σsq : ℝ) (hρ : 0 ≤ ρ) (hη : 0 < η)
+    (h_ηL : η * (L.smoothness : ℝ) ≤ 1 / 4)
+    (h_stoch : IsStochasticGradient L.toFun g
+      (w + samPerturbation L.toFun w ρ))
+    (h_var : HasBoundedVariance L.toFun g
+      (w + samPerturbation L.toFun w ρ) σsq)
+    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable
+      (fun ω => L.toFun (w - η • filteredGradient (g ω) z)) ℙ)
+    (h_align : ‖gradient L.toFun w‖ ^ 2 ≤
+      2 * inner ℝ (gradient L.toFun w)
+        (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => L.toFun (w - η • filteredGradient (g ω) z)] ≤
+      L.toFun w - (η / 4) * ‖gradient L.toFun w‖ ^ 2 +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) *
+          (σsq + 2 * (L.smoothness : ℝ) ^ 2 * ρ ^ 2) := by
+  have h_base := sam_stochastic_descent_step L g w η z ρ σsq hρ hη
+    h_stoch h_var h_int h_meas_f h_int_f h_int_f_val h_align
+  let Ls : ℝ := (L.smoothness : ℝ)
+  have h_Ls_nonneg : 0 ≤ Ls := L.smoothness.coe_nonneg
+  have h_sq_bound : (‖gradient L.toFun w‖ + Ls * ρ) ^ 2 ≤
+      2 * ‖gradient L.toFun w‖ ^ 2 + 2 * (Ls * ρ) ^ 2 := by
+    nlinarith [sq_nonneg (‖gradient L.toFun w‖ - Ls * ρ)]
+  have h_mid_nonneg : 0 ≤ η ^ 2 * Ls / 2 := by
+    positivity
+  have h_eta_sq_L : η ^ 2 * Ls ≤ η / 4 := by
+    have h_mul : η * (η * Ls) ≤ η * (1 / 4) :=
+      mul_le_mul_of_nonneg_left h_ηL (le_of_lt hη)
+    nlinarith
+  have h_coeff : η ^ 2 * Ls - η / 2 ≤ - (η / 4) := by
+    nlinarith [h_eta_sq_L]
+  have h_grad_nonneg : 0 ≤ ‖gradient L.toFun w‖ ^ 2 := sq_nonneg _
+  have h_grade : (η ^ 2 * Ls - η / 2) * ‖gradient L.toFun w‖ ^ 2 ≤
+      - (η / 4) * ‖gradient L.toFun w‖ ^ 2 :=
+    mul_le_mul_of_nonneg_right h_coeff h_grad_nonneg
+  calc
+    𝔼[fun ω => L.toFun (w - η • filteredGradient (g ω) z)]
+      ≤ L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 +
+          (η ^ 2 * Ls / 2) * (σsq + (‖gradient L.toFun w‖ + Ls * ρ) ^ 2) := h_base
+    _ ≤ L.toFun w - (η / 2) * ‖gradient L.toFun w‖ ^ 2 +
+          (η ^ 2 * Ls / 2) * (σsq + 2 * ‖gradient L.toFun w‖ ^ 2 + 2 * (Ls * ρ) ^ 2) := by
+      have hS : σsq + (‖gradient L.toFun w‖ + Ls * ρ) ^ 2 ≤
+          σsq + 2 * ‖gradient L.toFun w‖ ^ 2 + 2 * (Ls * ρ) ^ 2 := by
+        nlinarith [h_sq_bound]
+      have hMul : (η ^ 2 * Ls / 2) * (σsq + (‖gradient L.toFun w‖ + Ls * ρ) ^ 2) ≤
+          (η ^ 2 * Ls / 2) * (σsq + 2 * ‖gradient L.toFun w‖ ^ 2 + 2 * (Ls * ρ) ^ 2) :=
+        mul_le_mul_of_nonneg_left hS h_mid_nonneg
+      linarith
+    _ = L.toFun w + (η ^ 2 * Ls - η / 2) * ‖gradient L.toFun w‖ ^ 2 +
+          (η ^ 2 * Ls / 2) * (σsq + 2 * (Ls * ρ) ^ 2) := by ring
+    _ ≤ L.toFun w - (η / 4) * ‖gradient L.toFun w‖ ^ 2 +
+          (η ^ 2 * Ls / 2) * (σsq + 2 * (Ls * ρ) ^ 2) := by
+      linarith [h_grade]
+    _ = L.toFun w - (η / 4) * ‖gradient L.toFun w‖ ^ 2 +
+          (η ^ 2 * Ls / 2) * (σsq + 2 * Ls ^ 2 * ρ ^ 2) := by ring
 
 end LeanSharp

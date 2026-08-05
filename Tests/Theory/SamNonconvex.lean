@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 import LeanSharp.Examples.QuadraticBowl
+import LeanSharp.Stochastic.Convergence.Process.SamDescent
 import LeanSharp.Stochastic.Convergence.Process.Sequence
 import LeanSharp.Stochastic.Foundations.SAMOracle
 import LeanSharp.Stochastic.Foundations.Schedules.SamNonconvex
@@ -94,5 +95,31 @@ example {ι : Type*} [Fintype ι] {Ω : Type*} [MeasureSpace Ω]
     (weightSequence w0 η z g_adv) η z (σsq + 2 * (L.smoothness : ℝ) ^ 2 * ρ ^ 2)
     g_adv ℱ t (weight_sequence_step_eventually w0 η z g_adv t) h_pointwise
     h_meas_f h_meas_grad h_meas_ft h_int_t h_int_grad h_int_next
+
+/-- The effective-variance one-step SAM bound specializes to the quadratic bowl:
+under the step-size condition `η · L ≤ 1/4` the perturbation term collapses to the
+quarter-gradient envelope form with penalty `2L²ρ²`. -/
+example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    (L : SmoothObjective (Fin 2)) (g : Ω → W (Fin 2)) (w : W (Fin 2))
+    (η z ρ σsq : ℝ) (hρ : 0 ≤ ρ) (hη : 0 < η)
+    (h_ηL : η * (L.smoothness : ℝ) ≤ 1 / 4)
+    (h_stoch : IsStochasticGradient L.toFun g
+      (w + samPerturbation L.toFun w ρ))
+    (h_var : HasBoundedVariance L.toFun g
+      (w + samPerturbation L.toFun w ρ) σsq)
+    (h_int : Integrable (fun ω => ‖g ω‖ ^ 2) ℙ)
+    (h_meas_f : AEStronglyMeasurable (fun ω => filteredGradient (g ω) z) ℙ)
+    (h_int_f : Integrable (fun ω => ‖filteredGradient (g ω) z‖ ^ 2) ℙ)
+    (h_int_f_val : Integrable
+      (fun ω => L.toFun (w - η • filteredGradient (g ω) z)) ℙ)
+    (h_align : ‖gradient L.toFun w‖ ^ 2 ≤
+      2 * inner ℝ (gradient L.toFun w)
+        (𝔼[fun ω => filteredGradient (g ω) z])) :
+    𝔼[fun ω => L.toFun (w - η • filteredGradient (g ω) z)] ≤
+      L.toFun w - (η / 4) * ‖gradient L.toFun w‖ ^ 2 +
+        (η ^ 2 * (L.smoothness : ℝ) / 2) *
+          (σsq + 2 * (L.smoothness : ℝ) ^ 2 * ρ ^ 2) := by
+  exact sam_stochastic_descent_step_effective L g w η z ρ σsq hρ hη h_ηL
+    h_stoch h_var h_int h_meas_f h_int_f h_int_f_val h_align
 
 end LeanSharp.Tests
