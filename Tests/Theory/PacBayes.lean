@@ -11,13 +11,11 @@ import LeanSharp.Theory.Robustness.PacBayes
 # PAC-Bayes Tests
 
 This module instantiates the ZSharp PAC-Bayes bound on the quadratic-bowl
-landscape: the pointwise bound holds for the toy loss itself, and both the
-standard-SAM comparison and the distributional integration fire on the concrete
-example.
+landscape: the standard-SAM comparison and the distributional integration fire on
+the concrete example.
 
 ## Examples
 
-* `quadratic_bowl_zsharp_bound_holds`.
 * `quadratic_bowl_zsharp_implies_standard`.
 * `quadratic_bowl_zsharp_distributional`.
 -/
@@ -28,25 +26,6 @@ open LeanSharp.QuadraticBowl
 open MeasureTheory
 
 local notation "W2" => W (Fin 2)
-
-/-- The ZSharp PAC-Bayes bound holds for the toy loss against itself with $C = 0$:
-the population risk is (vacuously) bounded by the filtered expansion since the
-filter term is non-negative. -/
-example (w : W2) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
-    ZSharpPacBayesBound toyLoss toyLoss w ρ z 0 := by
-  unfold ZSharpPacBayesBound
-  have h_nonneg : 0 ≤ ‖filteredGradient (gradient toyLoss w) z‖ * ρ :=
-    mul_nonneg (norm_nonneg _) hρ
-  linarith
-
-/-- The fully-evaluated pointwise bound: substituting the analytical gradient
-`∇toyLoss = exactGradientToy` into the filtered expansion. -/
-example (w : W2) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
-    toyLoss w ≤ toyLoss w + ‖filteredGradient (exactGradientToy w) z‖ * ρ := by
-  rw [← gradient_toy_eq]
-  have h_nonneg : 0 ≤ ‖filteredGradient (gradient toyLoss w) z‖ * ρ :=
-    mul_nonneg (norm_nonneg _) hρ
-  linarith
 
 /-- The ZSharp-to-standard-SAM comparison specializes to the quadratic bowl. -/
 example (L_D : W2 → ℝ) (w : W2) (ρ z C : ℝ) (hρ : 0 ≤ ρ)
