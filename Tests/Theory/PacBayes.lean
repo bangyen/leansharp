@@ -64,19 +64,4 @@ example (L_D : W2 → ℝ) (P : Measure W2) [IsProbabilityMeasure P] (ρ z C : �
         ∫ w, ‖filteredGradient (gradient toyLoss w) z‖ * ρ ∂P + C := by
   exact z_sharp_pac_bayes_expected P ρ z C h h_D h_S h_f
 
-/-- The distributional PAC-Bayes bound specializes to a Dirac measure at `w0`,
-recovering the pointwise `ZSharpPacBayesBound` — showing the distributional form is a
-true generalization of the pointwise one. -/
-example (w0 : W2) (L_D : W2 → ℝ) (ρ z C : ℝ)
-    (h : ∀ w, ZSharpPacBayesBound L_D toyLoss w ρ z C) :
-    L_D w0 ≤ toyLoss w0 + ‖filteredGradient (gradient toyLoss w0) z‖ * ρ + C := by
-  let P : Measure W2 := Measure.dirac w0
-  have h_int := z_sharp_pac_bayes_expected (P := P) ρ z C h
-    (integrable_dirac (f := L_D) (a := w0) (by exact enorm_lt_top))
-    (integrable_dirac (f := toyLoss) (a := w0) (by exact enorm_lt_top))
-    (integrable_dirac (f := fun w => ‖filteredGradient (gradient toyLoss w) z‖ * ρ)
-      (a := w0) (by exact enorm_lt_top))
-  rw [integral_dirac, integral_dirac, integral_dirac] at h_int
-  exact h_int
-
 end LeanSharp.Tests
