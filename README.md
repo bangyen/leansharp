@@ -36,8 +36,6 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 | **Degenerate `SAMDescentEnvelope` Satisfiability** | Low | Mirror of the completed `ZSharpDescentEnvelope` proof: show the SAM envelope (the SAM non-convex rate's core assumption) is non-vacuous for the zero sequence. |
 | **`SignalNoiseModel` Satisfiability** | Low | Discharge `h_mean`/`h_int` for a concrete (zero-noise) model, used by the alignment bridge. |
 | **`CauchyProbabilityOracle` Satisfiability** | Low | A constant noise satisfies the Cauchy oracle, mirroring the completed α-stable one. |
-| **Non-Quadratic Smoothness Witness** | Low | All smoothness/Convexity witnesses are quadratics where the bounds are exact identities. Prove `IsSmooth`/`IsLSmooth`/`TwiceDifferentiable` for a non-quadratic landscape (e.g., `L(w) = w₀² + w₁² + sin w₀`), requiring genuine sin-analysis content. |
-| **Non-Degenerate `RobustSample`** | Low | The concrete sample uses a constant vector at every point; use distinct sample vectors with `h_fixed_bound` verified per point. |
 | **Polynomial-Tailed Oracle Noise** | Low | The α-stable/Cauchy satisfiability used bounded (constant) noise. Prove a genuinely polynomial-tailed discrete distribution satisfies the oracle on a probability space, which requires the discrete-measure construction. |
 
 ## Scope & Limitations
