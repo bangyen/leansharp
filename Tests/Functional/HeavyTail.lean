@@ -20,6 +20,7 @@ heavy-tailed noise.
 ## Theorems
 
 * `alpha_stable_constant_noise`: A constant noise satisfies the α-stable oracle.
+* `cauchy_constant_noise`: A constant noise satisfies the Cauchy oracle.
 -/
 
 namespace LeanSharp.Tests
@@ -79,6 +80,32 @@ lemma alpha_stable_constant_noise {Ω : Type*} [MeasureSpace Ω]
       (inferInstance : IsProbabilityMeasure (volume : Measure Ω)).measure_univ
     rw [hμ]
     norm_num
+    have h_r_le : r ≤ ‖c‖ + 1 := by nlinarith [h_le, norm_nonneg c]
+    exact (one_le_div₀ hr).2 h_r_le
+  · have h_event : normTailEvent (fun _ : Ω => c) r = ∅ := by
+      ext ω
+      simp only [normTailEvent, Set.mem_setOf_eq, Set.mem_empty_iff_false]
+      exact Iff.intro (fun hc => h_le hc) (fun hf => False.elim hf)
+    rw [h_event, measure_empty, ENNReal.toReal_zero]
+    positivity
+
+/-- A concrete (constant) noise satisfies the Cauchy oracle: the inverse-radius tail
+bound holds trivially for bounded noise, mirroring the α-stable witness. -/
+lemma cauchy_constant_noise {Ω : Type*} [MeasureSpace Ω]
+    [IsProbabilityMeasure (volume : Measure Ω)] (c : W ι) :
+    CauchyProbabilityOracle (fun _ : Ω => c) := by
+  unfold CauchyProbabilityOracle
+  refine ⟨‖c‖ + 1, by positivity, ?_⟩
+  intro r hr
+  by_cases h_le : r ≤ ‖c‖
+  · have h_event : normTailEvent (fun _ : Ω => c) r = Set.univ := by
+      ext ω
+      simp only [normTailEvent, Set.mem_setOf_eq, Set.mem_univ]
+      exact Iff.intro (fun _ => trivial) (fun _ => h_le)
+    rw [h_event]
+    have hμ : (volume : Measure Ω) Set.univ = (1 : ENNReal) :=
+      (inferInstance : IsProbabilityMeasure (volume : Measure Ω)).measure_univ
+    rw [hμ, ENNReal.toReal_one]
     have h_r_le : r ≤ ‖c‖ + 1 := by nlinarith [h_le, norm_nonneg c]
     exact (one_le_div₀ hr).2 h_r_le
   · have h_event : normTailEvent (fun _ : Ω => c) r = ∅ := by

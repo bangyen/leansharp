@@ -8,6 +8,7 @@ import LeanSharp.Theory.Robustness.BreakdownPoint
 import LeanSharp.Theory.Robustness.ComparisonResults
 import LeanSharp.Theory.Robustness.FilterBias
 import LeanSharp.Theory.Robustness.FilteredMeanProps.Basic
+import LeanSharp.Theory.Robustness.SensitivityBounds
 
 /-!
 # Robustness Tests
@@ -106,5 +107,23 @@ example :
   }
   refine ⟨S, ?_⟩
   norm_num [S, Finset.card_univ]
+
+/-- Test witness (`SignalNoiseModel` satisfiability): the zero-noise model discharges
+both structure fields — `h_mean` (the noise integrates to zero) and `h_int`
+(integrability) — so the signal-noise interface used by the alignment bridge is
+non-vacuous. Its observed gradient is exactly the ground truth, and it meets the
+variance bound at `σsq = 0`. -/
+example {Ω : Type*} [MeasureSpace Ω] (g : W ι) :
+    ∃ m : SignalNoiseModel ι Ω, m.g_true = g
+      ∧ (∀ ω, m.observed ω = g) ∧ NoiseVarianceBound m 0 := by
+  refine ⟨{ g_true := g
+            noise := fun _ => 0
+            h_mean := by simp only [integral_zero]
+            h_int := integrable_zero _ _ _ }, rfl, ?_, ?_⟩
+  · intro ω
+    simp only [SignalNoiseModel.observed, add_zero]
+  · intro i
+    simp only [WithLp.ofLp_zero, Pi.zero_apply, ne_eq, OfNat.ofNat_ne_zero,
+      not_false_eq_true, zero_pow, integral_zero, le_refl]
 
 end LeanSharp.Tests

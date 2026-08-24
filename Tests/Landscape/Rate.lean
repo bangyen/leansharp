@@ -18,6 +18,13 @@ concrete example with the canonical $\eta_t = 1 / (\mu (t+1))$ schedule.
 ## Examples
 
 * `quadratic_bowl_O1_T_rate`.
+
+## Theorems
+
+* `zsharp_descent_envelope_zero_sequence`: the ZSharp conditional-descent
+  envelope is non-vacuous for the degenerate zero sequence.
+* `sam_descent_envelope_zero_sequence`: the same for the SAM envelope, the
+  core premise of the SAM non-convex rate.
 -/
 
 namespace LeanSharp.Tests
@@ -72,7 +79,8 @@ example (L : W2 → ℝ) (η : ℕ → ℝ) (z μ L_smooth : ℝ)
 
 /-- The `ZSharpDescentEnvelope` hypothesis is non-vacuous: it holds for the degenerate
 zero sequence, where the filtered step stays at the minimum. -/
-example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+lemma zsharp_descent_envelope_zero_sequence
+    {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     (ℱ : ℕ → MeasurableSpace Ω) (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
     (L_smooth σsq z : ℝ) (hL : 0 ≤ L_smooth) (hσ : 0 ≤ σsq) :
     ZSharpDescentEnvelope L_smooth toyLoss (fun (_ : ℕ) (_ : Ω) => (0 : W (Fin 2)))
@@ -122,5 +130,20 @@ example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure �
         (1 ^ 2 * L_smooth / 2) * σsq := by
       rw [h_rhs]
       exact mul_nonneg (div_nonneg hL (by norm_num : (0 : ℝ) ≤ 2)) hσ
+
+/-- The `SAMDescentEnvelope` hypothesis — the core assumption of the SAM non-convex
+rate — is non-vacuous: it holds for the degenerate zero sequence. The SAM envelope is
+the ZSharp envelope at the effective variance `σsq + 2 L² ρ²`, which stays nonnegative,
+so the degenerate witness transfers directly. -/
+lemma sam_descent_envelope_zero_sequence
+    {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    (ℱ : ℕ → MeasurableSpace Ω) (h_meas : ∀ t, ℱ t ≤ ‹MeasureSpace Ω›.toMeasurableSpace)
+    (L_smooth σsq ρ z : ℝ) (hL : 0 ≤ L_smooth) (hσ : 0 ≤ σsq) :
+    SAMDescentEnvelope L_smooth toyLoss (fun (_ : ℕ) (_ : Ω) => (0 : W (Fin 2)))
+      (fun _ => (1 : ℝ)) z σsq ρ (fun (_ : ℕ) (_ : Ω) => (0 : W (Fin 2))) ℱ 0 := by
+  unfold SAMDescentEnvelope
+  refine zsharp_descent_envelope_zero_sequence ℱ h_meas L_smooth
+    (σsq + 2 * L_smooth ^ 2 * ρ ^ 2) z hL ?_
+  positivity
 
 end LeanSharp.Tests
