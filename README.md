@@ -30,10 +30,9 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Genuinely-Random Noise Instantiation** | Low | The noise hypotheses (`IsStochasticGradient`, `HasBoundedVariance`) are shown satisfiable only in the deterministic `PUnit` case. Instantiate a genuinely random two-point noise on the quadratic bowl, which requires a uniform probability measure on a finite type that mathlib does not provide out of the box. |
-| **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. The alignment hypothesis is the hard part. |
+| **Finite Discrete Probability Measure** | Low | The shared blocker behind the remaining non-vacuity work: mathlib does not provide a uniform probability measure on a finite type out of the box. Building it unblocks two dependents at once — a genuinely random two-point noise on the quadratic bowl, discharging `IsStochasticGradient`/`HasBoundedVariance` beyond the deterministic `PUnit` case; and a genuinely polynomial-tailed discrete distribution satisfying the α-stable/Cauchy oracles, whose current witnesses use bounded (constant) noise. |
 | **Concrete Geometric Alignment** | Low | Every `zsharp_convergence` test takes `AlignmentCondition` as an assumption; nothing proves it holds for a concrete gradient. Establishing it for `toyLoss`/`advancedLoss` (even unfiltered) requires WithLp-smul, inner-product, and filter computations that proved fiddly in an initial attempt. |
-| **Polynomial-Tailed Oracle Noise** | Low | The α-stable/Cauchy satisfiability used bounded (constant) noise. Prove a genuinely polynomial-tailed discrete distribution satisfies the oracle on a probability space, which requires the discrete-measure construction. |
+| **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. Blocked on both rows above: it needs the discrete measure for the noise, and concrete alignment for the hard hypothesis. |
 
 ## Scope & Limitations
 
