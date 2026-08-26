@@ -30,8 +30,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Percentile Threshold** | Medium | The paper's threshold $q_{Q_p}$ is a *percentile* of the batch of $\lvert$Z-scores$\rvert$, so a fixed fraction of coordinates survives regardless of the gradient's distribution. Both `zScoreTailMask` and `zScoreMask` use a fixed multiplier $z\cdot\sigma$, under which the retained count varies. Requires an order-statistic / rank formalization over `Finset` that mathlib does not provide directly. |
-| **Layer-Wise Filter Statistics** | Medium | The paper computes $\mu, \sigma$ per layer $\ell$. Both filters take a single mean and std over the whole flat index, so `zsharpStep` filters globally. Per-layer filtering already exists in `backpropChain` (`Core/Models.lean`), but the convergence path does not use it; connecting the `Chain` architecture to the update is the actual work. |
+| **Percentile Threshold** | Medium | The paper's threshold $q_{Q_p}$ is a *percentile* of the batch of $\lvert$Z-scores$\rvert$, so a fixed fraction of coordinates survives regardless of the gradient's distribution. All three masks use a fixed multiplier $z\cdot\sigma$, under which the retained count varies. Requires an order-statistic / rank formalization over `Finset` that mathlib does not provide directly. |
 | **Finite Discrete Probability Measure** | Low | The shared blocker behind the remaining non-vacuity work: mathlib does not provide a uniform probability measure on a finite type out of the box. Building it unblocks two dependents at once — a genuinely random two-point noise on the quadratic bowl, discharging `IsStochasticGradient`/`HasBoundedVariance` beyond the deterministic `PUnit` case; and a genuinely polynomial-tailed discrete distribution satisfying the α-stable/Cauchy oracles, whose current witnesses use bounded (constant) noise. |
 | **Concrete Geometric Alignment** | Low | Every `zsharp_convergence` test takes `AlignmentCondition` as an assumption; nothing proves it holds for a concrete gradient. Establishing it for `toyLoss`/`advancedLoss` (even unfiltered) requires WithLp-smul, inner-product, and filter computations that proved fiddly in an initial attempt. |
 | **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. Blocked on both rows above: it needs the discrete measure for the noise, and concrete alignment for the hard hypothesis. |
@@ -44,10 +43,16 @@ direction when the filter annihilates the gradient; and the descent uses the *ra
 perturbed point, since the paper filters step (i) only — "ZSharp keeps steps (ii) and (iii) identical to
 SAM". Three deviations remain, tracked in the roadmap above.
 The ascent step is also supported on the paper's coordinates: `zScoreTailMask` keeps the components with
-the *largest* absolute Z-scores, and `zsharpPerturbation` is built on it. Two deviations remain. The
-threshold is a fixed multiplier $z\cdot\sigma$ rather than the paper's percentile $q_{Q_p}$, so the
-*number* of retained coordinates varies with the gradient's distribution where the paper fixes the
-fraction; and the filter statistics are computed globally rather than per layer.
+the *largest* absolute Z-scores, and `zsharpPerturbation` is built on it. Statistics are computed per
+layer, as the paper specifies — `layerZScoreTailMask` indexes the parameter space by a partition
+`π : ι → Λ` whose fibers are the layers, and judges each coordinate against its own fiber. One deviation
+remains: the threshold is a fixed multiplier $z\cdot\sigma$ rather than the paper's percentile $q_{Q_p}$,
+so the *number* of retained coordinates varies with the gradient's distribution where the paper fixes the
+fraction.
+
+The layer-wise generalization is not vacuous in either direction: `layerTailFilteredGradient_const` shows
+a constant partition recovers the global filter, and `sep_layer_ne_global` exhibits a concrete gradient
+the two filters treat differently.
 
 The original inlier filter (`zScoreMask`) is retained alongside it, and the robustness development —
 `FilterBias`, `BreakdownPoint`, the median comparisons — remains stated over that one. Most of those
