@@ -28,8 +28,7 @@ example (T : ℕ) (hT : T > 0)
     (h_bounds : 0 ≤ η0 ∧ η0 * (L.smoothness : ℝ) ^ 2 ≤ L.μ ∧
       η0 ≤ 1 / (L.smoothness : ℝ) ∧ L.μ < (L.smoothness : ℝ))
     (h_align : ∀ w : W (Fin 2),
-                let g_f := filteredGradient
-                  (gradient L.toFun (w + zsharpPerturbation L.toFun w ρ z)) z
+                let g_f := gradient L.toFun (w + zsharpPerturbation L.toFun w ρ z)
                 AlignmentCondition w 0 g_f L.μ L.smoothness) :
     ZSharpConvergenceHolds L.toFun 0
       (cosineDecaySchedule η0 0 T) ρ z L.smoothness L.μ := by
