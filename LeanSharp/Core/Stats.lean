@@ -26,12 +26,13 @@ import Mathlib.Topology.Order.Basic
 This module exists to define means, variances, z-scores, and masking lemmas for
 gradient vectors so filtering proofs can share a common statistical foundation.
 
+The geometric median lives in `LeanSharp.Core.GeometricMedian`.
+
 ## Definitions
 
 * `vectorMean`.
 * `vectorVariance`.
 * `vectorStd`.
-* `geometricMedian`.
 
 ## Theorems
 
@@ -44,10 +45,6 @@ gradient vectors so filtering proofs can share a common statistical foundation.
 * `vectorVariance_nonneg`.
 * `vectorVariance_smul`.
 * `vectorStd_smul`.
-* `continuous_sum_distances`.
-* `tendsto_sum_distances_cocompact`.
-* `exists_isMin_on_finite_sum_norm`.
-* `geometricMedian_eq_choose`.
 * `eq_mean_of_vectorVariance_eq_zero`.
 -/
 
@@ -103,63 +100,6 @@ lemma vectorStd_smul (k : ℝ) (g : W ι) :
     vectorStd (k • g) = |k| * vectorStd g := by
   unfold vectorStd
   rw [vectorVariance_smul, Real.sqrt_mul (sq_nonneg k), Real.sqrt_sq_eq_abs]
-
-/-- The sum of Euclidean distances from `m` to a set of vectors `g_i` is continuous. -/
-lemma continuous_sum_distances {α : Type*} (s : Finset α) (g : α → W ι) :
-    Continuous (fun m : W ι => ∑ i ∈ s, ‖g i - m‖) := by
-  apply continuous_finset_sum
-  intro i _
-  apply continuous_norm.comp
-  apply continuous_const.sub continuous_id
-
-/-- The sum of distances is coercive: it tends to infinity as `m` grows. -/
-lemma tendsto_sum_distances_cocompact {α : Type*} (s : Finset α)
-    (g : α → W ι) (hs : s.Nonempty) :
-    Filter.Tendsto (fun m : W ι => ∑ i ∈ s, ‖g i - m‖)
-      (Filter.cocompact (W ι)) Filter.atTop := by
-  let i0 := hs.choose
-  have hi0 : i0 ∈ s := hs.choose_spec
-  apply Filter.tendsto_atTop_mono (α := W ι) (f := fun m => ‖g i0 - m‖)
-  · intro m
-    apply Finset.single_le_sum (f := fun i => ‖g i - m‖) (fun i _ => norm_nonneg _) hi0
-  · -- tendsto ‖g i0 - m‖ cocompact implies it grows.
-    apply Filter.tendsto_atTop_mono (f := fun m => ‖m‖ - ‖g i0‖)
-    · intro m; rw [norm_sub_rev]; apply norm_sub_norm_le
-    · rw [Filter.tendsto_atTop]
-      intro b
-      filter_upwards [tendsto_norm_cocompact_atTop.eventually_ge_atTop (b + ‖g i0‖)] with m hm
-      linarith
-
-/-- The geometric median objective possesses a minimizer for every finite index set. -/
-lemma exists_isMin_on_finite_sum_norm {α : Type*} (s : Finset α) (g : α → W ι) :
-    ∃ m : W ι, IsMinOn (fun m => ∑ i ∈ s, ‖g i - m‖) Set.univ m := by
-  by_cases hs : s.Nonempty
-  · let f := fun m : W ι => ∑ i ∈ s, ‖g i - m‖
-    have hf : Continuous f := continuous_sum_distances s g
-    have h_coercive := tendsto_sum_distances_cocompact s g hs
-    let m0 : W ι := g hs.choose
-    have hev : ∀ᶠ (x : W ι) in Filter.cocompact (W ι), f m0 ≤ f x :=
-      h_coercive.eventually (Filter.eventually_ge_atTop (f m0))
-    have ⟨m, hm⟩ := hf.exists_forall_le' m0 hev
-    exact ⟨m, fun x _ => hm x⟩
-  · use 0
-    have h_empty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp hs
-    intro x hx
-    simp only [h_empty, Finset.sum_empty, le_refl] at *
-    exact hx
-
-/-- The Multivariate (Geometric) Median minimizes the sum of Euclidean distances. -/
-noncomputable def geometricMedian {α : Type*} (s : Finset α) (g : α → W ι) : W ι :=
-  if _ : s.Nonempty then
-    Classical.choose (exists_isMin_on_finite_sum_norm s g)
-  else
-    0
-
-/-- When `s` is nonempty, `geometricMedian` equals the chosen minimizer; used to apply
-`Classical.choose_spec` in robustness proofs. -/
-lemma geometricMedian_eq_choose {α : Type*} (s : Finset α) (g : α → W ι) (h : s.Nonempty) :
-    geometricMedian s g = Classical.choose (exists_isMin_on_finite_sum_norm s g) := by
-  unfold geometricMedian; rw [dif_pos h]
 
 /-- If the variance of a vector is zero, then all its components are equal to the mean. -/
 lemma eq_mean_of_vectorVariance_eq_zero [Nonempty ι] (g : W ι) (h : vectorVariance g = 0) :
