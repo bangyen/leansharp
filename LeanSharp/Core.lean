@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Core.Filters
+import LeanSharp.Core.GeometricMedian
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.LayerFilters
 import LeanSharp.Core.Models
