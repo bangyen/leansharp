@@ -21,6 +21,7 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 - **Unified Alignment Framework**: The [`AlignmentCondition`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Alignment.lean) bridge linking deterministic gradient geometry to stochastic Z-score filtering.
 - **Generalization Theory**: The **ZSharp PAC-Bayes sharpness bound** ([`ZSharpPacBayesBound`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/PacBayes.lean)) — a pointwise sharpness bound tighter than standard SAM via the filter's $L_2$ contraction, integrating to a distributional expected-risk form.
 - **Heavy-Tail Robustness**: Almost-sure convergence of the objective under heavy-tailed Cauchy and $\alpha$-stable noise via non-Gaussian probability oracles ([`zsharp_heavy_tail_convergence`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Stochastic/Convergence/HeavyTail.lean)).
+- **Percentile Filter Sparsity**: The paper's own thresholding rule, formalized by rank counting, retains at most $n - \lceil Q_p n\rceil$ of each layer's $n$ coordinates ([`percentile_mask_sparsity`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Core/PercentileFilters.lean)) — the fixed-fraction guarantee a $z\sigma$ threshold cannot give.
 - **Concentration & Infinite-Width Stability**: Discrete vector concentration (Chebyshev) on Z-score mask coverage, plus infinite-width filtered-norm/mean/std domination under convergent gradient norms — the CLT-substitute program ([`Concentration`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Concentration.lean), [`InfiniteLimit`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/InfiniteLimit.lean)).
 - **Filter Statistical Guarantees**: Zero filter bias on symmetric heavy-tailed noise (Cauchy, $\alpha$-stable): $E[\mathrm{filteredGradient}\ \eta] = E[\mathrm{zFilteredEmpiricalMean}\ \eta] = 0$ for the sample estimator the algorithm uses ([`FilterBias`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/FilterBias.lean)).
 - **Estimator Breakdown Analysis**: The empirical mean has finite-sample breakdown point $1/n$ ([`mean_breakdown_point_zero`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean)) while the geometric median's is at least $1/2$, with the matching adversarial side ([`geometric_median_breakdown_point_ge_half`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/BreakdownPoint.lean), [`median_breakdown`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/MedianComparison/Breakdown.lean)); under a strict-majority fixed subset, one movable outlier drives the mean unbounded while the median stays bounded ([`median_bounded_mean_unbounded_one_outlier_of_majority`](https://github.com/bangyen/leansharp/blob/main/LeanSharp/Theory/Robustness/ComparisonResults.lean)).
@@ -30,36 +31,36 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 | Task | Priority | Details |
 | :--- | :--- | :--- |
-| **Percentile Threshold** | Medium | The paper's threshold $q_{Q_p}$ is a *percentile* of the batch of $\lvert$Z-scores$\rvert$, so a fixed fraction of coordinates survives regardless of the gradient's distribution. All three masks use a fixed multiplier $z\cdot\sigma$, under which the retained count varies. Requires an order-statistic / rank formalization over `Finset` that mathlib does not provide directly. |
 | **Finite Discrete Probability Measure** | Low | The shared blocker behind the remaining non-vacuity work: mathlib does not provide a uniform probability measure on a finite type out of the box. Building it unblocks two dependents at once — a genuinely random two-point noise on the quadratic bowl, discharging `IsStochasticGradient`/`HasBoundedVariance` beyond the deterministic `PUnit` case; and a genuinely polynomial-tailed discrete distribution satisfying the α-stable/Cauchy oracles, whose current witnesses use bounded (constant) noise. |
 | **Concrete Geometric Alignment** | Low | Every `zsharp_convergence` test takes `AlignmentCondition` as an assumption; nothing proves it holds for a concrete gradient. Establishing it for `toyLoss`/`advancedLoss` (even unfiltered) requires WithLp-smul, inner-product, and filter computations that proved fiddly in an initial attempt. |
 | **Full-Stack Concrete Stochastic Instantiation** | Low | No concrete noise satisfies the *complete* hypothesis stack (stochastic gradient + variance + alignment) of a descent or rate theorem. Instantiate one that does and fire it through `z_score_descent` or a rate result, making the headline results non-vacuous end-to-end. Blocked on both rows above: it needs the discrete measure for the noise, and concrete alignment for the hard hypothesis. |
 
 ## Scope & Limitations
 
-**Fidelity to the paper.** The update rule now follows the paper (arXiv:2505.02369). `zsharpPerturbation`
-computes the ascent step from the *filtered* gradient, with the paper's fallback to the unfiltered
-direction when the filter annihilates the gradient; and the descent uses the *raw* gradient at the
-perturbed point, since the paper filters step (i) only — "ZSharp keeps steps (ii) and (iii) identical to
-SAM". Three deviations remain, tracked in the roadmap above.
-The ascent step is also supported on the paper's coordinates: `zScoreTailMask` keeps the components with
-the *largest* absolute Z-scores, and `zsharpPerturbation` is built on it. Statistics are computed per
-layer, as the paper specifies — `layerZScoreTailMask` indexes the parameter space by a partition
-`π : ι → Λ` whose fibers are the layers, and judges each coordinate against its own fiber. One deviation
-remains: the threshold is a fixed multiplier $z\cdot\sigma$ rather than the paper's percentile $q_{Q_p}$,
-so the *number* of retained coordinates varies with the gradient's distribution where the paper fixes the
-fraction.
+**Fidelity to the paper.** The update rule now matches the algorithm of arXiv:2505.02369:
+`zsharpPerturbation` computes the ascent step from the filtered gradient with the paper's fallback to the
+unfiltered direction; the descent uses the *raw* gradient at the perturbed point, since the paper filters
+step (i) only — "ZSharp keeps steps (ii) and (iii) identical to SAM"; `percentileTailMask` keeps the
+largest absolute Z-scores; statistics are per layer, via a partition `π : ι → Λ` whose fibers are the
+layers; and the threshold is the percentile $Q_p$, not a multiple of $\sigma$.
 
-The layer-wise generalization is not vacuous in either direction: `layerTailFilteredGradient_const` shows
-a constant partition recovers the global filter, and `sep_layer_ne_global` exhibits a concrete gradient
-the two filters treat differently.
+Two conventions are fixed here that the paper leaves open, and both are worth stating plainly. The paper
+does not say which percentile convention it uses, so this formalization takes **nearest-rank** with the
+paper's strict `>`, encoded by rank counting; ties are therefore kept together, and a constant layer
+retains nothing. And the paper's numerical-stability term $\delta = 10^{-8}$ is omitted, since it guards a
+floating-point division that cannot underflow over $\mathbb{R}$.
 
-The original inlier filter (`zScoreMask`) is retained alongside it, and the robustness development —
-`FilterBias`, `BreakdownPoint`, the median comparisons — remains stated over that one. Most of those
-results are in fact direction-agnostic, resting on the $L_2$ contraction and the evenness of
-$|g_i - \mu|$, which both masks share; the genuinely direction-dependent statements are the coverage and
-non-emptiness results, whose duals for the tail filter are different theorems
-(`zScoreTailMask_sparsity`, `tail_filtered_gradient_eq_zero_of_std_zero`).
+What this does *not* mean is that the paper's theorems are verified. The convergence results here remain
+the ones described below — `zsharp_convergence` is geometric convergence under strong convexity and an
+*assumed* `AlignmentCondition`, and the $O(1/\sqrt{T})$ rate is conditional on `SAMDescentEnvelope`.
+Neither is the paper's Theorem 4. What now matches is the *algorithm the theorems are stated about*.
+
+The earlier `z * σ` filters (`zScoreMask`, `zScoreTailMask`, `layerZScoreTailMask`) are retained as library
+API: the Chebyshev coverage and sparsity results are stated over them, and the robustness development —
+`FilterBias`, `BreakdownPoint`, the median comparisons — stays on the inlier `zScoreMask`. Most of those
+proofs are in fact direction-agnostic, resting on the $L_2$ contraction and the evenness of
+$|g_i - \mu|$, which every one of these masks shares; the genuinely direction-dependent statements are the
+coverage and non-emptiness results, whose duals are separate theorems.
 
 **Robustness.** The filter's robustness guarantee is the bounded-outlier type — the filtered mean stays
 bounded when a strict majority of points are fixed and the outliers are bounded
