@@ -61,10 +61,12 @@ structure StronglyConvexObjective (ι : Type*) [Fintype ι] extends SmoothObject
   strongly_convex : IsStronglyConvex toFun μ
 
 /-- The parameter update for a single step of ZSharp with a learning rate schedule.
-`w_{t+1} = w_t - η_t * filteredGradient(∇L(w_t + ε), z)` -/
+`w_{t+1} = w_t - η_t * filteredGradient(∇L(w_t + ε), z)`, where the ascent step
+`ε = zsharpPerturbation L w ρ z` is itself computed from the filtered gradient, as in
+arXiv:2505.02369. -/
 noncomputable def zsharpStep (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ)
     (ρ z : ℝ) : W ι :=
-  let ε := samPerturbation L w ρ
+  let ε := zsharpPerturbation L w ρ z
   let g_adv := gradient L (w + ε)
   let g_filtered := filteredGradient g_adv z
   w - (η t) • g_filtered
@@ -92,7 +94,7 @@ structure ZSharpModel (ι : Type*) [Fintype ι] where
   z : ℝ
   /-- The foundational alignment condition connecting geometry to filtering. -/
   alignment : ∀ w : W ι,
-    let ε := samPerturbation L.toFun w ρ
+    let ε := zsharpPerturbation L.toFun w ρ z
     let g_f := filteredGradient (gradient L.toFun (w + ε)) z
     AlignmentCondition w w_star g_f L.μ (L.smoothness : ℝ)
 
@@ -147,7 +149,7 @@ theorem zsharp_convergence (M : ZSharpModel ι) (η : Schedule)
     · exact sub_lt_self 1 (mul_pos (hη t) L_obj.strongly_convex.1)
   refine ⟨c, h_c_valid, fun w t => ?_⟩
   rw [zsharpStep]
-  let ε := samPerturbation L_obj.toFun w ρ
+  let ε := zsharpPerturbation L_obj.toFun w ρ z
   let g_f := filteredGradient (gradient L_obj.toFun (w + ε)) z
   -- Step 2: Bound the filtered gradient norm squared using the alignment condition
   obtain ⟨h_inner_bound, h_gf_bound⟩ := h_align w
