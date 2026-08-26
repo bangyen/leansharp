@@ -10,6 +10,7 @@ import LeanSharp.Core.Models
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Stats
 import LeanSharp.Core.StatsBounds
+import LeanSharp.Core.TailFilters
 import LeanSharp.Core.Taylor
 
 /-!

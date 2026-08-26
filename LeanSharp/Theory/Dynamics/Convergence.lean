@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
 import LeanSharp.Core.Objective
+import LeanSharp.Core.TailFilters
 import LeanSharp.Core.Taylor.SamBounds
 import LeanSharp.Theory.Alignment
 import LeanSharp.Theory.Dynamics.Schedulers

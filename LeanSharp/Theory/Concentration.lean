@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Stats
+import LeanSharp.Core.TailFilters
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Real.Basic
 /-!
@@ -27,6 +28,8 @@ assumptions (thus acting as our substitute for a Central Limit Theorem).
 * `chebyshev_vector`: Discrete version of Chebyshev's inequality for vector components.
 * `zScoreMask_coverage`: the fraction of components kept by the mask (within `zσ` of the
   mean) is at least `1 - 1/z²`.
+* `zScoreTailMask_sparsity`: dually, the paper's tail mask keeps at most a `1/z²`
+  fraction of components.
 -/
 namespace LeanSharp
 open Finset BigOperators Real
@@ -141,5 +144,36 @@ theorem zScoreMask_coverage (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVari
     exact h_div
   have h_tail : (T.card : ℝ) / (Fintype.card ι : ℝ) ≤ 1 / z^2 := h_cheb
   linarith
+
+/-- **Tail Mask Sparsity**: the fraction of components kept by the paper's tail mask —
+those more than `zσ` from the mean — is at most `1/z²`. This is the exact dual of
+`zScoreMask_coverage`, and it is what makes the paper's filter a *sparsifying* one:
+the ascent step is supported on a vanishing fraction of coordinates as `z` grows. -/
+theorem zScoreTailMask_sparsity (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVariance g > 0) :
+    ((univ.filter fun i =>
+      ¬ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ)
+        / (Fintype.card ι : ℝ) ≤ 1 / z^2 := by
+  classical
+  have h_cheb := chebyshev_vector g hz hvar
+  have h_sub : (univ.filter fun i =>
+      ¬ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g) ⊆
+      zScoreTails g z := by
+    intro i hi
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi
+    simp only [zScoreTails, Finset.mem_filter, Finset.mem_univ, true_and]
+    exact le_of_lt (lt_of_not_ge hi)
+  have h_card := Finset.card_le_card h_sub
+  have h_card_real : ((univ.filter fun i =>
+      ¬ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ) ≤
+      ((zScoreTails g z).card : ℝ) := by exact_mod_cast h_card
+  have h_pos : (0 : ℝ) < (Fintype.card ι : ℝ) := by
+    have : 0 < Fintype.card ι := Fintype.card_pos
+    exact_mod_cast this
+  calc ((univ.filter fun i =>
+        ¬ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ)
+        / (Fintype.card ι : ℝ)
+      _ ≤ ((zScoreTails g z).card : ℝ) / (Fintype.card ι : ℝ) :=
+        (div_le_div_iff_of_pos_right h_pos).mpr h_card_real
+      _ ≤ 1 / z^2 := h_cheb
 
 end LeanSharp
