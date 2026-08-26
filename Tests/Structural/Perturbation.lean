@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 
 import LeanSharp.Core.Filters
+import LeanSharp.Core.LayerFilters
 import LeanSharp.Core.TailFilters
 import LeanSharp.Theory.Concentration
 import LeanSharp.Theory.Dynamics.Convergence
@@ -27,46 +28,51 @@ perturbation exactly in the paper's fallback case.
 * `test_tail_filter_decomposition_interface`.
 * `test_tail_filter_contraction_interface`.
 * `test_tail_filter_sparsity_interface`.
+* `test_layer_filter_const_reduction`.
+* `test_layer_filter_contraction_interface`.
 -/
 
 namespace LeanSharp.Tests
 
-variable {ι : Type*} [Fintype ι]
+variable {ι : Type*} [Fintype ι] {Λ : Type*} [DecidableEq Λ]
 
 /-- Interface test: the ZSharp perturbation stays inside the radius-`ρ` ball,
 matching the guarantee the SAM perturbation provides. -/
-example (L : W ι → ℝ) (w : W ι) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
-    ‖zsharpPerturbation L w ρ z‖ ≤ ρ :=
-  norm_zsharpPerturbation_le L w ρ z hρ
+example (L : W ι → ℝ) (w : W ι) (π : ι → Λ) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
+    ‖zsharpPerturbation L w π ρ z‖ ≤ ρ :=
+  norm_zsharpPerturbation_le L w π ρ z hρ
 
 /-- Interface test: when the tail filter annihilates the gradient, the ZSharp
 perturbation falls back to the ordinary SAM perturbation, as in the paper's
 second case. -/
-example (L : W ι → ℝ) (w : W ι) (ρ z : ℝ)
-    (h_zero : ‖tailFilteredGradient (gradient L w) z‖ = 0) :
-    zsharpPerturbation L w ρ z = samPerturbation L w ρ :=
-  zsharpPerturbation_eq_samPerturbation_of_tail_zero L w ρ z h_zero
+example (L : W ι → ℝ) (w : W ι) (π : ι → Λ) (ρ z : ℝ)
+    (h_zero : ‖layerTailFilteredGradient (gradient L w) π z‖ = 0) :
+    zsharpPerturbation L w π ρ z = samPerturbation L w ρ :=
+  zsharpPerturbation_eq_samPerturbation_of_tail_zero L w π ρ z h_zero
 
-/-- Interface test: the fallback is reachable — a constant gradient has no outliers,
-so the tail filter zeroes it and the step degenerates to SAM. -/
-example [Nonempty ι] (L : W ι → ℝ) (w : W ι) (ρ z : ℝ)
-    (h_std : vectorStd (gradient L w) = 0) :
-    zsharpPerturbation L w ρ z = samPerturbation L w ρ :=
-  zsharpPerturbation_eq_samPerturbation_of_std_zero L w ρ z h_std
+/-- Interface test: the fallback is reachable — if every layer is constant then no
+coordinate is an outlier within its own fiber, so the step degenerates to SAM. -/
+example (L : W ι → ℝ) (w : W ι) (π : ι → Λ) (ρ : ℝ) {z : ℝ} (hz : 0 ≤ z)
+    (h_std : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) (gradient L w)) i
+      = blockMean (gradient L w) π (π i)) :
+    zsharpPerturbation L w π ρ z = samPerturbation L w ρ :=
+  zsharpPerturbation_eq_samPerturbation_of_blockStd_zero L w π ρ hz h_std
 
 /-- In the non-degenerate case the ascent step points along the *tail-filtered*
 gradient, which is the substance of the paper's definition: filtering steers the
 perturbation onto the largest-|Z-score| components. -/
-example (L : W ι → ℝ) (w : W ι) (ρ z : ℝ)
-    (h_pos : ‖tailFilteredGradient (gradient L w) z‖ ≠ 0) :
-    zsharpPerturbation L w ρ z =
-      (ρ / ‖tailFilteredGradient (gradient L w) z‖) • tailFilteredGradient (gradient L w) z := by
+example (L : W ι → ℝ) (w : W ι) (π : ι → Λ) (ρ z : ℝ)
+    (h_pos : ‖layerTailFilteredGradient (gradient L w) π z‖ ≠ 0) :
+    zsharpPerturbation L w π ρ z =
+      (ρ / ‖layerTailFilteredGradient (gradient L w) π z‖) •
+        layerTailFilteredGradient (gradient L w) π z := by
   simp only [zsharpPerturbation, h_pos, ite_false]
 
 /-- The ZSharp update step descends along the *raw* gradient at the point displaced by
 the filtered-gradient ascent step: per the paper, only the ascent step is filtered. -/
-example (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ) (ρ z : ℝ) :
-    zsharpStep L w η t ρ z = w - (η t) • gradient L (w + zsharpPerturbation L w ρ z) :=
+example (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ) (π : ι → Λ) (ρ z : ℝ) :
+    zsharpStep L w η t π ρ z =
+      w - (η t) • gradient L (w + zsharpPerturbation L w π ρ z) :=
   rfl
 
 /-- Interface test: the paper's tail filter and the repo's inlier filter decompose the
@@ -87,5 +93,18 @@ example [Nonempty ι] (g : W ι) {z : ℝ} (hz : 0 < z) (hvar : vectorVariance g
       ¬ |(WithLp.equiv 2 (ι → ℝ) g) i - vectorMean g| ≤ z * vectorStd g).card : ℝ)
         / (Fintype.card ι : ℝ) ≤ 1 / z^2 :=
   zScoreTailMask_sparsity g hz hvar
+
+/-- Interface test: a constant partition is the single-layer case, so the layer-wise
+filter collapses to the global tail filter. This is what lets the 2-D landscape tests
+instantiate the partition trivially. -/
+example (g : W ι) (z : ℝ) (l₀ : Λ) :
+    layerTailFilteredGradient g (fun _ : ι => l₀) z = tailFilteredGradient g z :=
+  layerTailFilteredGradient_const g z l₀
+
+/-- Interface test: the layer-wise filter is an `L₂` contraction, so the chain-stability
+style bounds carry over to per-layer statistics. -/
+example (g : W ι) (π : ι → Λ) (z : ℝ) :
+    ‖layerTailFilteredGradient g π z‖ ≤ ‖g‖ :=
+  norm_layer_tail_filtered_gradient_le g π z
 
 end LeanSharp.Tests

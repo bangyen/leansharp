@@ -28,8 +28,6 @@ percentile $q_{Q_p}$ — that divergence is tracked separately.
 * `zScoreTailMask`: the complement of `zScoreMask`, keeping components more than
   $z\sigma$ from the mean.
 * `tailFilteredGradient`: the gradient after applying the tail mask.
-* `zsharpPerturbation`: the paper's ascent step, computed from the tail-filtered
-  gradient.
 
 ## Main theorems
 
@@ -39,11 +37,6 @@ percentile $q_{Q_p}$ — that divergence is tracked separately.
 * `norm_tail_filtered_gradient_le`: norm-level form of the contraction.
 * `zScoreTailMask_idempotent`: the tail mask is idempotent under Hadamard product.
 * `tail_filtered_gradient_eq_zero_of_std_zero`: constant gradients are annihilated.
-* `norm_zsharpPerturbation_le`: the ascent step stays in the radius-$\rho$ ball.
-* `zsharpPerturbation_eq_samPerturbation_of_tail_zero`: the fallback case degenerates
-  to the ordinary SAM perturbation.
-* `zsharpPerturbation_eq_samPerturbation_of_std_zero`: the fallback fires on constant
-  gradients.
 -/
 
 namespace LeanSharp
@@ -144,49 +137,5 @@ theorem tail_filtered_gradient_eq_zero_of_std_zero [Nonempty ι] (g : W ι) (z :
   simp only [h_std, h_eq, mul_zero, sub_self, abs_zero, ↓reduceIte, le_refl,
     Equiv.apply_symm_apply, mul_zero]
   rfl
-
-/-- The ZSharp first-order perturbation, as defined in *Sharpness-Aware Minimization with
-Z-Score Gradient Filtering* (arXiv:2505.02369):
-
-$$\varepsilon = \rho \cdot \nabla L(w)_\Omega / \lVert \nabla L(w)_\Omega \rVert_2,$$
-
-falling back to the unfiltered direction when $\lVert \nabla L(w)_\Omega \rVert_2 = 0$.
-Unlike `samPerturbation`, which ascends along the raw gradient, this ascends along the
-*tail-filtered* gradient, so the filter steers the perturbation onto the components with
-the largest absolute Z-scores. The paper's numerical-stability term $\delta = 10^{-8}$ is
-omitted: it guards a floating-point division that cannot underflow over $\mathbb{R}$, and
-both branches here are already total. -/
-noncomputable def zsharpPerturbation (L : W ι → ℝ) (w : W ι) (ρ z : ℝ) : W ι :=
-  let g_f := tailFilteredGradient (gradient L w) z
-  if ‖g_f‖ = 0 then samPerturbation L w ρ else (ρ / ‖g_f‖) • g_f
-
-/-- **ZSharp Perturbation Radius**: like the SAM step, the ZSharp perturbation stays
-inside the radius-`ρ` ball. -/
-lemma norm_zsharpPerturbation_le (L : W ι → ℝ) (w : W ι) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
-    ‖zsharpPerturbation L w ρ z‖ ≤ ρ := by
-  simp only [zsharpPerturbation]
-  split_ifs with h_zero
-  · exact norm_samPerturbation_le L w ρ hρ
-  · rw [norm_smul, Real.norm_eq_abs, abs_div, abs_of_nonneg hρ,
-      abs_of_pos (lt_of_le_of_ne (norm_nonneg _) (Ne.symm h_zero))]
-    field_simp
-    exact le_rfl
-
-/-- **ZSharp Fallback**: when the tail filter annihilates the gradient, the ZSharp
-perturbation degenerates to the ordinary SAM perturbation. -/
-lemma zsharpPerturbation_eq_samPerturbation_of_tail_zero (L : W ι → ℝ) (w : W ι)
-    (ρ z : ℝ) (h_zero : ‖tailFilteredGradient (gradient L w) z‖ = 0) :
-    zsharpPerturbation L w ρ z = samPerturbation L w ρ := by
-  simp only [zsharpPerturbation, h_zero, ite_true]
-
-/-- **Reachable Fallback**: on a constant gradient there are no outliers, so the tail
-filter annihilates it and the perturbation falls back to the SAM step. With the
-inlier filter this branch was unreachable, since a constant gradient was preserved
-whole. -/
-lemma zsharpPerturbation_eq_samPerturbation_of_std_zero [Nonempty ι] (L : W ι → ℝ)
-    (w : W ι) (ρ z : ℝ) (h_std : vectorStd (gradient L w) = 0) :
-    zsharpPerturbation L w ρ z = samPerturbation L w ρ := by
-  apply zsharpPerturbation_eq_samPerturbation_of_tail_zero
-  rw [tail_filtered_gradient_eq_zero_of_std_zero _ z h_std, norm_zero]
 
 end LeanSharp

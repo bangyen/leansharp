@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
+import LeanSharp.Core.LayerFilters
 import LeanSharp.Core.Models
 import LeanSharp.Core.Objective
 import LeanSharp.Core.Stats

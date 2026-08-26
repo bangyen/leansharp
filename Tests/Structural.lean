@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bangyen Pham
 -/
 
+import Tests.Structural.LayerFilters
 import Tests.Structural.Layers
 import Tests.Structural.LearningRates
 import Tests.Structural.Perturbation

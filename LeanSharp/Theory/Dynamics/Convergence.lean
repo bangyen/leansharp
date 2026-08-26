@@ -5,6 +5,7 @@ Authors: Bangyen Pham
 -/
 import LeanSharp.Core.Filters
 import LeanSharp.Core.Landscape
+import LeanSharp.Core.LayerFilters
 import LeanSharp.Core.Objective
 import LeanSharp.Core.TailFilters
 import LeanSharp.Core.Taylor.SamBounds
@@ -41,7 +42,7 @@ namespace LeanSharp
 
 open ProbabilityTheory MeasureTheory
 
-variable {ι : Type*} [Fintype ι]
+variable {ι : Type*} [Fintype ι] {Λ : Type*} [DecidableEq Λ]
 
 /-- A function $L$ is $L_{smooth}$-smooth if its gradient is Lipschitz continuous
 with constant $L_{smooth}$. Predicate for a function being L-smooth. -/
@@ -63,30 +64,31 @@ structure StronglyConvexObjective (ι : Type*) [Fintype ι] extends SmoothObject
 
 /-- The parameter update for a single step of ZSharp with a learning rate schedule,
 `w_{t+1} = w_t - η_t * ∇L(w_t + ε)`, where the ascent step
-`ε = zsharpPerturbation L w ρ z` is computed from the *filtered* gradient.
+`ε = zsharpPerturbation L w π ρ z` is computed from the gradient filtered layer-wise
+along the partition `π`.
 
 Following arXiv:2505.02369, the Z-score filter is applied only to the ascent step:
 "ZSharp keeps steps (ii) and (iii) identical to SAM, but replaces ∇L(w) in the ascent
 step with the filtered gradient". The descent therefore uses the raw gradient at the
 perturbed point, and the mask is never recomputed at `w + ε`. -/
 noncomputable def zsharpStep (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ)
-    (ρ z : ℝ) : W ι :=
-  let ε := zsharpPerturbation L w ρ z
+    (π : ι → Λ) (ρ z : ℝ) : W ι :=
+  let ε := zsharpPerturbation L w π ρ z
   w - (η t) • gradient L (w + ε)
 
 /-- The property that ZSharp converges geometrically to a target point `w_star`
 under a learning rate schedule. -/
 def ZSharpConvergenceHolds (L : W ι → ℝ) (w_star : W ι) (η : ℕ → ℝ)
-    (ρ z L_smooth μ : ℝ) : Prop :=
+    (π : ι → Λ) (ρ z L_smooth μ : ℝ) : Prop :=
   IsLSmooth L L_smooth →
   IsStronglyConvex L μ →
   (∀ t, η t > 0) ∧ ρ > 0 →
   ∃ c : ℕ → ℝ, (∀ t, 0 < c t ∧ c t < 1) ∧
     ∀ w : W ι, ∀ t : ℕ,
-      ‖zsharpStep L w η t ρ z - w_star‖^2 ≤ c t * ‖w - w_star‖^2
+      ‖zsharpStep L w η t π ρ z - w_star‖^2 ≤ c t * ‖w - w_star‖^2
 
 /-- A structure bundling the full set of assumptions for ZSharp convergence. -/
-structure ZSharpModel (ι : Type*) [Fintype ι] where
+structure ZSharpModel (ι : Type*) [Fintype ι] (Λ : Type*) [DecidableEq Λ] where
   /-- The strongly convex and smooth objective. -/
   L : StronglyConvexObjective ι
   /-- The global optimum point. -/
@@ -95,19 +97,21 @@ structure ZSharpModel (ι : Type*) [Fintype ι] where
   ρ : ℝ
   /-- The Z-score filter threshold. -/
   z : ℝ
+  /-- The partition of coordinates into layers. -/
+  π : ι → Λ
   /-- The foundational alignment condition connecting geometry to filtering. -/
   alignment : ∀ w : W ι,
-    let ε := zsharpPerturbation L.toFun w ρ z
+    let ε := zsharpPerturbation L.toFun w π ρ z
     let g_f := gradient L.toFun (w + ε)
     AlignmentCondition w w_star g_f L.μ (L.smoothness : ℝ)
 
 /-- **ZSharp Convergence Theorem**: Under the bundled ZSharp assumptions, any learning
 rate schedule satisfying the local 'tightness' condition (step size scaled by
 smoothness is bounded by strong convexity) guarantees convergence to the optimum. -/
-theorem zsharp_convergence (M : ZSharpModel ι) (η : Schedule)
+theorem zsharp_convergence (M : ZSharpModel ι Λ) (η : Schedule)
     (hη_tight : ∀ t, η t * (M.L.smoothness : ℝ) ^ 2 ≤ M.L.μ)
     (hμL : M.L.μ < (M.L.smoothness : ℝ)) :
-    ZSharpConvergenceHolds M.L.toFun M.w_star η M.ρ M.z (M.L.smoothness : ℝ) M.L.μ := by
+    ZSharpConvergenceHolds M.L.toFun M.w_star η M.π M.ρ M.z (M.L.smoothness : ℝ) M.L.μ := by
   let L_obj := M.L
   let w_star := M.w_star
   let ρ := M.ρ
@@ -152,7 +156,7 @@ theorem zsharp_convergence (M : ZSharpModel ι) (η : Schedule)
     · exact sub_lt_self 1 (mul_pos (hη t) L_obj.strongly_convex.1)
   refine ⟨c, h_c_valid, fun w t => ?_⟩
   rw [zsharpStep]
-  let ε := zsharpPerturbation L_obj.toFun w ρ z
+  let ε := zsharpPerturbation L_obj.toFun w M.π ρ z
   let g_f := gradient L_obj.toFun (w + ε)
   -- Step 2: Bound the filtered gradient norm squared using the alignment condition
   obtain ⟨h_inner_bound, h_gf_bound⟩ := h_align w

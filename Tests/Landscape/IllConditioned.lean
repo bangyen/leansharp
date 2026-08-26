@@ -27,15 +27,18 @@ example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
     (h_align : ∀ w : W (Fin 2),
                 let g_f := gradient IllConditioned.advancedLoss
-                  (w + zsharpPerturbation IllConditioned.advancedLoss w ρ z)
+                  (w + zsharpPerturbation IllConditioned.advancedLoss w
+                    (fun _ => ()) ρ z)
                 AlignmentCondition w 0 g_f 2 20) :
     ZSharpConvergenceHolds IllConditioned.advancedLoss 0
-      (cosineDecaySchedule η0 0 T) ρ z 20 2 := by
-  let M : ZSharpModel (Fin 2) := {
+      (cosineDecaySchedule η0 0 T) (fun _ => ()) ρ z 20 2 := by
+  -- A 2-D toy landscape is a single layer, so the partition is constant.
+  let M : ZSharpModel (Fin 2) Unit := {
     L := IllConditioned.advancedLossBundled,
     w_star := 0,
     ρ := ρ,
     z := z,
+    π := fun _ => (),
     alignment := h_align
   }
   apply zsharp_convergence M

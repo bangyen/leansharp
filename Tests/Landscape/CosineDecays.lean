@@ -28,15 +28,18 @@ example (T : ℕ) (hT : T > 0)
     (h_bounds : 0 ≤ η0 ∧ η0 * (L.smoothness : ℝ) ^ 2 ≤ L.μ ∧
       η0 ≤ 1 / (L.smoothness : ℝ) ∧ L.μ < (L.smoothness : ℝ))
     (h_align : ∀ w : W (Fin 2),
-                let g_f := gradient L.toFun (w + zsharpPerturbation L.toFun w ρ z)
+                let g_f := gradient L.toFun
+                  (w + zsharpPerturbation L.toFun w (fun _ => ()) ρ z)
                 AlignmentCondition w 0 g_f L.μ L.smoothness) :
     ZSharpConvergenceHolds L.toFun 0
-      (cosineDecaySchedule η0 0 T) ρ z L.smoothness L.μ := by
-  let M : ZSharpModel (Fin 2) := {
+      (cosineDecaySchedule η0 0 T) (fun _ => ()) ρ z L.smoothness L.μ := by
+  -- A 2-D toy landscape is a single layer, so the partition is constant.
+  let M : ZSharpModel (Fin 2) Unit := {
     L := L,
     w_star := 0,
     ρ := ρ,
     z := z,
+    π := fun _ => (),
     alignment := h_align
   }
   apply zsharp_convergence M
