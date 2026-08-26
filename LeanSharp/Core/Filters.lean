@@ -23,10 +23,14 @@ Z-score masking.
   within the Z-score threshold.
 * `hadamard`: Element-wise multiplication of two vectors.
 * `filteredGradient`: The final gradient after applying the Z-score mask.
+* `IsZeroOneMask`: Predicate for a mask whose every component is `0` or `1`.
 
 ## Main theorems
 
 * `norm_filtered_gradient_le`: Direct corollary of the $L_2$ contraction, as a norm-level interface.
+* `norm_sq_hadamard_le_of_zeroOne`: Any `0`/`1` mask contracts the squared norm.
+* `norm_hadamard_le_of_zeroOne`: Norm-level form of that contraction.
+* `zScoreMask_isZeroOne`: The Z-score mask is `0`/`1`-valued.
 * `norm_sq_filtered_gradient_le`: Proves that the filter is an $L_2$ contraction.
 * `zscore_mask_nonempty`: Proves that the filter preserves at least one component
   when $z \le 1$.
@@ -58,36 +62,55 @@ noncomputable def hadamard (a b : W ι) : W ι :=
 noncomputable def filteredGradient (g : W ι) (z : ℝ) : W ι :=
   hadamard g (zScoreMask g z)
 
-/-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
-by the original. -/
-theorem norm_sq_filtered_gradient_le (g : W ι) (z : ℝ) :
-    ‖filteredGradient g z‖^2 ≤ ‖g‖^2 := by
+/-- A mask is `0`/`1`-valued when every component is either `0` or `1`. Every filter in
+this library masks by such a vector, and the `L₂` contraction depends on nothing else. -/
+def IsZeroOneMask (m : W ι) : Prop :=
+  ∀ i, (WithLp.equiv 2 (ι → ℝ) m) i = 0 ∨ (WithLp.equiv 2 (ι → ℝ) m) i = 1
+
+/-- **Generic Mask Contraction**: masking by any `0`/`1` vector never increases the
+squared norm, since each component is either preserved or zeroed. Every filter's
+contraction theorem is an instance of this. -/
+theorem norm_sq_hadamard_le_of_zeroOne (g m : W ι) (hm : IsZeroOneMask m) :
+    ‖hadamard g m‖^2 ≤ ‖g‖^2 := by
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   apply Finset.sum_le_sum
   intro i _
-  unfold filteredGradient hadamard zScoreMask
-  rw [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  dsimp only [ge_iff_le, WithLp.equiv_symm_apply, Real.norm_eq_abs]
-  split_ifs
-  · rw [mul_one, sq_abs]
-  · simp only [
-      mul_zero,
-      ne_eq,
-      OfNat.ofNat_ne_zero,
-      not_false_eq_true,
-      zero_pow,
-      sq_abs
-    ]
+  unfold hadamard
+  change ‖g.ofLp i * (WithLp.equiv 2 (ι → ℝ)) m i‖^2 ≤ ‖g.ofLp i‖^2
+  dsimp only [Real.norm_eq_abs]
+  rcases hm i with h | h <;> rw [h]
+  · rw [mul_zero, abs_zero]
+    simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sq_abs]
     positivity
+  · rw [mul_one]
+
+/-- **Generic Mask Norm Bound**: norm-level form of `norm_sq_hadamard_le_of_zeroOne`. -/
+theorem norm_hadamard_le_of_zeroOne (g m : W ι) (hm : IsZeroOneMask m) :
+    ‖hadamard g m‖ ≤ ‖g‖ := by
+  have h_sqrt := Real.sqrt_le_sqrt (norm_sq_hadamard_le_of_zeroOne g m hm)
+  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
+  exact h_sqrt
+
+/-- **Z-Score Mask is 0/1-valued**. -/
+theorem zScoreMask_isZeroOne (g : W ι) (z : ℝ) : IsZeroOneMask (zScoreMask g z) := by
+  intro i
+  unfold zScoreMask
+  rw [Equiv.apply_symm_apply]
+  split_ifs
+  · exact Or.inr rfl
+  · exact Or.inl rfl
+
+/-- **Mask Contraction**: The L2 norm squared of the filtered gradient is bounded
+by the original. -/
+theorem norm_sq_filtered_gradient_le (g : W ι) (z : ℝ) :
+    ‖filteredGradient g z‖^2 ≤ ‖g‖^2 :=
+  norm_sq_hadamard_le_of_zeroOne g _ (zScoreMask_isZeroOne g z)
 
 /-- **Filtered Norm Bound (API convenience)**: Direct corollary of
 `norm_sq_filtered_gradient_le`; kept as a simpler norm-level interface. -/
 theorem norm_filtered_gradient_le (g : W ι) (z : ℝ) :
-    ‖filteredGradient g z‖ ≤ ‖g‖ := by
-  have h_sq := norm_sq_filtered_gradient_le g z
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
+    ‖filteredGradient g z‖ ≤ ‖g‖ :=
+  norm_hadamard_le_of_zeroOne g _ (zScoreMask_isZeroOne g z)
 
 /-- **Non-emptiness Contradiction**: The core contradiction step for Z-score non-emptiness.
 If all components were filtered out (each beyond the threshold), the empirical variance

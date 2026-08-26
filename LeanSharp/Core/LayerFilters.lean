@@ -35,6 +35,7 @@ global filter, which is the content of `layerTailMask_const` and
 
 ## Main theorems
 
+* `layerZScoreTailMask_isZeroOne`: the mask is `0`/`1`-valued.
 * `norm_sq_layer_tail_filtered_gradient_le`: the filter is an $L_2$ contraction.
 * `norm_layer_tail_filtered_gradient_le`: norm-level form of the contraction.
 * `fiber_const`: a constant partition has the single fiber `univ`.
@@ -79,35 +80,25 @@ noncomputable def layerZScoreTailMask (g : W ι) (π : ι → Λ) (z : ℝ) : W 
 noncomputable def layerTailFilteredGradient (g : W ι) (π : ι → Λ) (z : ℝ) : W ι :=
   hadamard g (layerZScoreTailMask g π z)
 
-/-- **Layer-Wise Contraction**: filtering fiberwise never increases the squared norm.
-As for the global filters, this holds because the mask is `0`/`1`-valued. -/
-theorem norm_sq_layer_tail_filtered_gradient_le (g : W ι) (π : ι → Λ) (z : ℝ) :
-    ‖layerTailFilteredGradient g π z‖^2 ≤ ‖g‖^2 := by
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  apply Finset.sum_le_sum
-  intro i _
-  unfold layerTailFilteredGradient hadamard layerZScoreTailMask
-  rw [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  dsimp only [ge_iff_le, WithLp.equiv_symm_apply, Real.norm_eq_abs]
+/-- **layerZScoreTailMask is 0/1-valued**. -/
+theorem layerZScoreTailMask_isZeroOne (g : W ι) (π : ι → Λ) (z : ℝ) :
+    IsZeroOneMask (layerZScoreTailMask g π z) := by
+  intro i
+  unfold layerZScoreTailMask
+  rw [Equiv.apply_symm_apply]
   split_ifs
-  · simp only [
-      mul_zero,
-      ne_eq,
-      OfNat.ofNat_ne_zero,
-      not_false_eq_true,
-      zero_pow,
-      sq_abs
-    ]
-    positivity
-  · rw [mul_one, sq_abs]
+  · exact Or.inl rfl
+  · exact Or.inr rfl
 
-/-- **Layer-Wise Filtered Norm Bound**: norm-level form of the contraction. -/
+/-- **Contraction**: masking never increases the squared norm. -/
+theorem norm_sq_layer_tail_filtered_gradient_le (g : W ι) (π : ι → Λ) (z : ℝ) :
+    ‖layerTailFilteredGradient g π z‖^2 ≤ ‖g‖^2 :=
+  norm_sq_hadamard_le_of_zeroOne g _ (layerZScoreTailMask_isZeroOne g π z)
+
+/-- **Filtered Norm Bound**: norm-level form of the contraction. -/
 theorem norm_layer_tail_filtered_gradient_le (g : W ι) (π : ι → Λ) (z : ℝ) :
-    ‖layerTailFilteredGradient g π z‖ ≤ ‖g‖ := by
-  have h_sq := norm_sq_layer_tail_filtered_gradient_le g π z
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
+    ‖layerTailFilteredGradient g π z‖ ≤ ‖g‖ :=
+  norm_hadamard_le_of_zeroOne g _ (layerZScoreTailMask_isZeroOne g π z)
 
 /-- A constant partition has a single fiber, namely all of `ι`. -/
 lemma fiber_const (l₀ : Λ) : fiber (fun _ : ι => l₀) l₀ = Finset.univ := by
