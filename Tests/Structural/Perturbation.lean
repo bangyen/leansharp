@@ -20,7 +20,7 @@ perturbation exactly in the paper's fallback case.
 * `test_norm_zsharpPerturbation_le_interface`.
 * `test_zsharpPerturbation_fallback_interface`.
 * `test_zsharpPerturbation_eq_filtered_direction`.
-* `test_zsharpStep_uses_filtered_perturbation`.
+* `test_zsharpStep_descends_along_raw_gradient`.
 -/
 
 namespace LeanSharp.Tests
@@ -50,11 +50,10 @@ example (L : W ι → ℝ) (w : W ι) (ρ z : ℝ)
       (ρ / ‖filteredGradient (gradient L w) z‖) • filteredGradient (gradient L w) z := by
   simp only [zsharpPerturbation, h_pos, ite_false]
 
-/-- The ZSharp update step evaluates the gradient at the point displaced by the
-filtered-gradient ascent step. -/
+/-- The ZSharp update step descends along the *raw* gradient at the point displaced by
+the filtered-gradient ascent step: per the paper, only the ascent step is filtered. -/
 example (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ) (ρ z : ℝ) :
-    zsharpStep L w η t ρ z =
-      w - (η t) • filteredGradient (gradient L (w + zsharpPerturbation L w ρ z)) z :=
+    zsharpStep L w η t ρ z = w - (η t) • gradient L (w + zsharpPerturbation L w ρ z) :=
   rfl
 
 end LeanSharp.Tests

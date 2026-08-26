@@ -60,16 +60,18 @@ structure StronglyConvexObjective (ι : Type*) [Fintype ι] extends SmoothObject
   /-- Proof that the loss is μ-strongly convex. -/
   strongly_convex : IsStronglyConvex toFun μ
 
-/-- The parameter update for a single step of ZSharp with a learning rate schedule.
-`w_{t+1} = w_t - η_t * filteredGradient(∇L(w_t + ε), z)`, where the ascent step
-`ε = zsharpPerturbation L w ρ z` is itself computed from the filtered gradient, as in
-arXiv:2505.02369. -/
+/-- The parameter update for a single step of ZSharp with a learning rate schedule,
+`w_{t+1} = w_t - η_t * ∇L(w_t + ε)`, where the ascent step
+`ε = zsharpPerturbation L w ρ z` is computed from the *filtered* gradient.
+
+Following arXiv:2505.02369, the Z-score filter is applied only to the ascent step:
+"ZSharp keeps steps (ii) and (iii) identical to SAM, but replaces ∇L(w) in the ascent
+step with the filtered gradient". The descent therefore uses the raw gradient at the
+perturbed point, and the mask is never recomputed at `w + ε`. -/
 noncomputable def zsharpStep (L : W ι → ℝ) (w : W ι) (η : ℕ → ℝ) (t : ℕ)
     (ρ z : ℝ) : W ι :=
   let ε := zsharpPerturbation L w ρ z
-  let g_adv := gradient L (w + ε)
-  let g_filtered := filteredGradient g_adv z
-  w - (η t) • g_filtered
+  w - (η t) • gradient L (w + ε)
 
 /-- The property that ZSharp converges geometrically to a target point `w_star`
 under a learning rate schedule. -/
@@ -95,7 +97,7 @@ structure ZSharpModel (ι : Type*) [Fintype ι] where
   /-- The foundational alignment condition connecting geometry to filtering. -/
   alignment : ∀ w : W ι,
     let ε := zsharpPerturbation L.toFun w ρ z
-    let g_f := filteredGradient (gradient L.toFun (w + ε)) z
+    let g_f := gradient L.toFun (w + ε)
     AlignmentCondition w w_star g_f L.μ (L.smoothness : ℝ)
 
 /-- **ZSharp Convergence Theorem**: Under the bundled ZSharp assumptions, any learning
@@ -150,7 +152,7 @@ theorem zsharp_convergence (M : ZSharpModel ι) (η : Schedule)
   refine ⟨c, h_c_valid, fun w t => ?_⟩
   rw [zsharpStep]
   let ε := zsharpPerturbation L_obj.toFun w ρ z
-  let g_f := filteredGradient (gradient L_obj.toFun (w + ε)) z
+  let g_f := gradient L_obj.toFun (w + ε)
   -- Step 2: Bound the filtered gradient norm squared using the alignment condition
   obtain ⟨h_inner_bound, h_gf_bound⟩ := h_align w
   have h_gf_sq : ‖g_f‖^2 ≤ ((L_obj.smoothness : ℝ) * ‖w - w_star‖)^2 := by

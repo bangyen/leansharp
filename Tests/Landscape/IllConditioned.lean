@@ -26,9 +26,8 @@ holds for the ill-conditioned landscape with a cosine decay schedule. -/
 example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
     (h_align : ∀ w : W (Fin 2),
-                let g_f := filteredGradient
-                  (gradient IllConditioned.advancedLoss
-                    (w + zsharpPerturbation IllConditioned.advancedLoss w ρ z)) z
+                let g_f := gradient IllConditioned.advancedLoss
+                  (w + zsharpPerturbation IllConditioned.advancedLoss w ρ z)
                 AlignmentCondition w 0 g_f 2 20) :
     ZSharpConvergenceHolds IllConditioned.advancedLoss 0
       (cosineDecaySchedule η0 0 T) ρ z 20 2 := by
