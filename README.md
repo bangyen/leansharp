@@ -39,9 +39,11 @@ The implementation is organized into `Core` (mathematical primitives), `Layers` 
 
 ## Scope & Limitations
 
-**Fidelity to the paper.** The ascent step now follows the paper (arXiv:2505.02369): `zsharpPerturbation`
-computes the perturbation from the *filtered* gradient, with the paper's fallback to the unfiltered
-direction when the filter annihilates the gradient. Three deviations remain, tracked in the roadmap above.
+**Fidelity to the paper.** The update rule now follows the paper (arXiv:2505.02369). `zsharpPerturbation`
+computes the ascent step from the *filtered* gradient, with the paper's fallback to the unfiltered
+direction when the filter annihilates the gradient; and the descent uses the *raw* gradient at the
+perturbed point, since the paper filters step (i) only — "ZSharp keeps steps (ii) and (iii) identical to
+SAM". Three deviations remain, tracked in the roadmap above.
 The mask direction is inverted relative to the paper: `zScoreMask` keeps components *within* the Z-score
 threshold, whereas the paper keeps those with the *largest* absolute Z-scores. The threshold is a fixed
 multiplier $z\cdot\sigma$ rather than the paper's percentile $q_{Q_p}$, and the filter statistics are
