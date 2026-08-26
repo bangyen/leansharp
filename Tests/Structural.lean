@@ -6,6 +6,7 @@ Authors: Bangyen Pham
 
 import Tests.Structural.Layers
 import Tests.Structural.LearningRates
+import Tests.Structural.Perturbation
 import Tests.Structural.SecondOrder
 import Tests.Structural.Stability
 import Tests.Structural.TacticSystems
