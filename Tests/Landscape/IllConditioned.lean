@@ -23,21 +23,21 @@ namespace LeanSharp.Tests
 
 /-- **Advanced Verification**: Proves that the generalized convergence theorem
 holds for the ill-conditioned landscape with a cosine decay schedule. -/
-example (T : ℕ) (hT : T > 0) (η0 ρ z : ℝ)
+example (T : ℕ) (hT : T > 0) (η0 ρ Qp : ℝ)
     (h_bounds : 0 ≤ η0 ∧ η0 * 20 ^ 2 ≤ 2 ∧ η0 ≤ 1 / 20)
     (h_align : ∀ w : W (Fin 2),
                 let g_f := gradient IllConditioned.advancedLoss
                   (w + zsharpPerturbation IllConditioned.advancedLoss w
-                    (fun _ => ()) ρ z)
+                    (fun _ => ()) ρ Qp)
                 AlignmentCondition w 0 g_f 2 20) :
     ZSharpConvergenceHolds IllConditioned.advancedLoss 0
-      (cosineDecaySchedule η0 0 T) (fun _ => ()) ρ z 20 2 := by
+      (cosineDecaySchedule η0 0 T) (fun _ => ()) ρ Qp 20 2 := by
   -- A 2-D toy landscape is a single layer, so the partition is constant.
   let M : ZSharpModel (Fin 2) Unit := {
     L := IllConditioned.advancedLossBundled,
     w_star := 0,
     ρ := ρ,
-    z := z,
+    Qp := Qp,
     π := fun _ => (),
     alignment := h_align
   }

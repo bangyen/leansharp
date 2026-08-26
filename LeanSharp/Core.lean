@@ -9,6 +9,8 @@ import LeanSharp.Core.Landscape
 import LeanSharp.Core.LayerFilters
 import LeanSharp.Core.Models
 import LeanSharp.Core.Objective
+import LeanSharp.Core.PercentileFilters
+import LeanSharp.Core.Perturbation
 import LeanSharp.Core.Stats
 import LeanSharp.Core.StatsBounds
 import LeanSharp.Core.TailFilters

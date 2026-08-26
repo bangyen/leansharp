@@ -32,7 +32,6 @@ global filter, which is the content of `layerTailMask_const` and
 * `blockMean`, `blockVariance`, `blockStd`: statistics over one fiber of `π`.
 * `layerZScoreTailMask`: the paper's mask, applied fiberwise.
 * `layerTailFilteredGradient`: the layer-wise filtered gradient.
-* `zsharpPerturbation`: the paper's ascent step, over the layer-wise filter.
 
 ## Main theorems
 
@@ -44,11 +43,6 @@ global filter, which is the content of `layerTailMask_const` and
 * `blockStd_const`: its block standard deviation is the global one.
 * `layerTailMask_const`: a constant partition recovers `zScoreTailMask`.
 * `layerTailFilteredGradient_const`: hence it recovers `tailFilteredGradient`.
-* `norm_zsharpPerturbation_le`: the ascent step stays in the radius-$\rho$ ball.
-* `zsharpPerturbation_eq_samPerturbation_of_tail_zero`: the fallback degenerates to
-  the ordinary SAM perturbation.
-* `zsharpPerturbation_eq_samPerturbation_of_blockStd_zero`: for `z ≥ 0` the fallback
-  fires when every layer is constant.
 -/
 
 namespace LeanSharp
@@ -153,58 +147,5 @@ theorem layerTailFilteredGradient_const (g : W ι) (z : ℝ) (l₀ : Λ) :
     layerTailFilteredGradient g (fun _ : ι => l₀) z = tailFilteredGradient g z := by
   unfold layerTailFilteredGradient tailFilteredGradient
   rw [layerTailMask_const]
-
-/-- The ZSharp first-order perturbation of arXiv:2505.02369,
-
-$$\varepsilon = \rho \cdot \nabla L(w)_\Omega / \lVert \nabla L(w)_\Omega \rVert_2,$$
-
-with `∇L(w)_Ω` the layer-wise filtered gradient and a fallback to the unfiltered
-direction when the filter annihilates it. The partition `π` names the layers; taking
-it constant gives the single-layer case. -/
-noncomputable def zsharpPerturbation (L : W ι → ℝ) (w : W ι) (π : ι → Λ)
-    (ρ z : ℝ) : W ι :=
-  let g_f := layerTailFilteredGradient (gradient L w) π z
-  if ‖g_f‖ = 0 then samPerturbation L w ρ else (ρ / ‖g_f‖) • g_f
-
-/-- **ZSharp Perturbation Radius**: like the SAM step, the ZSharp perturbation stays
-inside the radius-`ρ` ball. -/
-lemma norm_zsharpPerturbation_le (L : W ι → ℝ) (w : W ι) (π : ι → Λ) (ρ z : ℝ)
-    (hρ : 0 ≤ ρ) : ‖zsharpPerturbation L w π ρ z‖ ≤ ρ := by
-  simp only [zsharpPerturbation]
-  split_ifs with h_zero
-  · exact norm_samPerturbation_le L w ρ hρ
-  · rw [norm_smul, Real.norm_eq_abs, abs_div, abs_of_nonneg hρ,
-      abs_of_pos (lt_of_le_of_ne (norm_nonneg _) (Ne.symm h_zero))]
-    field_simp
-    exact le_rfl
-
-/-- **ZSharp Fallback**: when the layer-wise filter annihilates the gradient, the
-perturbation degenerates to the ordinary SAM perturbation. -/
-lemma zsharpPerturbation_eq_samPerturbation_of_tail_zero (L : W ι → ℝ) (w : W ι)
-    (π : ι → Λ) (ρ z : ℝ)
-    (h_zero : ‖layerTailFilteredGradient (gradient L w) π z‖ = 0) :
-    zsharpPerturbation L w π ρ z = samPerturbation L w ρ := by
-  simp only [zsharpPerturbation, h_zero, ite_true]
-
-/-- **Reachable Fallback**: if every layer is constant then no coordinate is an
-outlier within its own fiber, the filter annihilates the gradient, and the step
-falls back to SAM. -/
-lemma zsharpPerturbation_eq_samPerturbation_of_blockStd_zero (L : W ι → ℝ) (w : W ι)
-    (π : ι → Λ) (ρ : ℝ) {z : ℝ} (hz : 0 ≤ z)
-    (h_std : ∀ i : ι, (WithLp.equiv 2 (ι → ℝ) (gradient L w)) i
-      = blockMean (gradient L w) π (π i)) :
-    zsharpPerturbation L w π ρ z = samPerturbation L w ρ := by
-  apply zsharpPerturbation_eq_samPerturbation_of_tail_zero
-  have h_zero : layerTailFilteredGradient (gradient L w) π z = 0 := by
-    apply (WithLp.equiv 2 (ι → ℝ)).injective
-    ext i
-    unfold layerTailFilteredGradient hadamard layerZScoreTailMask
-    have hi := h_std i
-    change (WithLp.equiv 2 (ι → ℝ) (gradient L w)) i * _ = _
-    rw [Equiv.apply_symm_apply, hi, sub_self, abs_zero]
-    split_ifs with h
-    · rw [mul_zero]; rfl
-    · exact absurd (mul_nonneg hz (Real.sqrt_nonneg _)) h
-  rw [h_zero, norm_zero]
 
 end LeanSharp
