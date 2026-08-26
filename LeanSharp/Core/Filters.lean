@@ -23,8 +23,6 @@ Z-score masking.
   within the Z-score threshold.
 * `hadamard`: Element-wise multiplication of two vectors.
 * `filteredGradient`: The final gradient after applying the Z-score mask.
-* `zsharpPerturbation`: The paper-faithful ascent step, computed from the
-  *filtered* gradient.
 
 ## Main theorems
 
@@ -35,9 +33,6 @@ Z-score masking.
 * `filtered_gradient_eq_self_of_std_zero`: Proves that constant gradients are
   preserved by the filter.
 * `zscore_mask_idempotent`: Proves the mask is idempotent under Hadamard product.
-* `norm_zsharpPerturbation_le`: The ZSharp perturbation stays in the radius-$\rho$ ball.
-* `zsharpPerturbation_eq_samPerturbation_of_filtered_zero`: The fallback case
-  degenerates to the ordinary SAM perturbation.
 -/
 
 namespace LeanSharp
@@ -188,37 +183,5 @@ theorem zscore_mask_idempotent (g : W ι) (z : ℝ) :
   ext i
   simp only [Equiv.apply_symm_apply]
   split_ifs <;> simp only [mul_one, mul_zero]
-
-/-- The ZSharp first-order perturbation, as defined in *Sharpness-Aware Minimization with
-Z-Score Gradient Filtering* (arXiv:2505.02369).
-
-Unlike `samPerturbation`, which ascends along the raw gradient, this ascends along the
-*filtered* gradient, so the Z-score filter steers the perturbation direction. When the
-filter annihilates the gradient the definition falls back to the unfiltered direction,
-matching the paper's two-case formula. The paper's numerical-stability term $\delta = 10^{-8}$
-is omitted: it guards a floating-point division that cannot underflow over $\mathbb{R}$,
-and both branches here are already total. -/
-noncomputable def zsharpPerturbation (L : W ι → ℝ) (w : W ι) (ρ z : ℝ) : W ι :=
-  let g_f := filteredGradient (gradient L w) z
-  if ‖g_f‖ = 0 then samPerturbation L w ρ else (ρ / ‖g_f‖) • g_f
-
-/-- **ZSharp Perturbation Radius**: like the SAM step, the ZSharp perturbation stays
-inside the radius-`ρ` ball. -/
-lemma norm_zsharpPerturbation_le (L : W ι → ℝ) (w : W ι) (ρ z : ℝ) (hρ : 0 ≤ ρ) :
-    ‖zsharpPerturbation L w ρ z‖ ≤ ρ := by
-  simp only [zsharpPerturbation]
-  split_ifs with h_zero
-  · exact norm_samPerturbation_le L w ρ hρ
-  · rw [norm_smul, Real.norm_eq_abs, abs_div, abs_of_nonneg hρ,
-      abs_of_pos (lt_of_le_of_ne (norm_nonneg _) (Ne.symm h_zero))]
-    field_simp
-    exact le_rfl
-
-/-- **ZSharp Fallback**: when the Z-score filter annihilates the gradient, the ZSharp
-perturbation degenerates to the ordinary SAM perturbation. -/
-lemma zsharpPerturbation_eq_samPerturbation_of_filtered_zero (L : W ι → ℝ) (w : W ι)
-    (ρ z : ℝ) (h_zero : ‖filteredGradient (gradient L w) z‖ = 0) :
-    zsharpPerturbation L w ρ z = samPerturbation L w ρ := by
-  simp only [zsharpPerturbation, h_zero, ite_true]
 
 end LeanSharp
