@@ -33,6 +33,7 @@ percentile $q_{Q_p}$ — that divergence is tracked separately.
 
 * `zScoreTailMask_add_zScoreMask`: the two masks partition the coordinates.
 * `tail_filtered_add_filtered`: the two filters decompose the gradient exactly.
+* `zScoreTailMask_isZeroOne`: the mask is `0`/`1`-valued.
 * `norm_sq_tail_filtered_gradient_le`: the tail filter is an $L_2$ contraction.
 * `norm_tail_filtered_gradient_le`: norm-level form of the contraction.
 * `zScoreTailMask_idempotent`: the tail mask is idempotent under Hadamard product.
@@ -81,34 +82,24 @@ theorem tail_filtered_add_filtered (g : W ι) (z : ℝ) :
       g.ofLp i * (if |g.ofLp i - vectorMean g| ≤ z * vectorStd g then 1 else 0) = g.ofLp i
   split_ifs <;> ring
 
-/-- **Tail Mask Contraction**: the tail filter never increases the squared norm. -/
-theorem norm_sq_tail_filtered_gradient_le (g : W ι) (z : ℝ) :
-    ‖tailFilteredGradient g z‖^2 ≤ ‖g‖^2 := by
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  apply Finset.sum_le_sum
-  intro i _
-  unfold tailFilteredGradient hadamard zScoreTailMask
-  rw [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  dsimp only [ge_iff_le, WithLp.equiv_symm_apply, Real.norm_eq_abs]
+/-- **zScoreTailMask is 0/1-valued**. -/
+theorem zScoreTailMask_isZeroOne (g : W ι) (z : ℝ) : IsZeroOneMask (zScoreTailMask g z) := by
+  intro i
+  unfold zScoreTailMask
+  rw [Equiv.apply_symm_apply]
   split_ifs
-  · simp only [
-      mul_zero,
-      ne_eq,
-      OfNat.ofNat_ne_zero,
-      not_false_eq_true,
-      zero_pow,
-      sq_abs
-    ]
-    positivity
-  · rw [mul_one, sq_abs]
+  · exact Or.inl rfl
+  · exact Or.inr rfl
 
-/-- **Tail Filtered Norm Bound**: norm-level form of the contraction. -/
+/-- **Contraction**: masking never increases the squared norm. -/
+theorem norm_sq_tail_filtered_gradient_le (g : W ι) (z : ℝ) :
+    ‖tailFilteredGradient g z‖^2 ≤ ‖g‖^2 :=
+  norm_sq_hadamard_le_of_zeroOne g _ (zScoreTailMask_isZeroOne g z)
+
+/-- **Filtered Norm Bound**: norm-level form of the contraction. -/
 theorem norm_tail_filtered_gradient_le (g : W ι) (z : ℝ) :
-    ‖tailFilteredGradient g z‖ ≤ ‖g‖ := by
-  have h_sq := norm_sq_tail_filtered_gradient_le g z
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
+    ‖tailFilteredGradient g z‖ ≤ ‖g‖ :=
+  norm_hadamard_le_of_zeroOne g _ (zScoreTailMask_isZeroOne g z)
 
 /-- **Tail Mask Idempotency**: the tail mask is its own Hadamard product. -/
 theorem zScoreTailMask_idempotent (g : W ι) (z : ℝ) :

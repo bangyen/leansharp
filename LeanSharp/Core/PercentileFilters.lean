@@ -49,6 +49,7 @@ coordinates tie with.
 
 ## Main theorems
 
+* `percentileTailMask_isZeroOne`: the mask is `0`/`1`-valued.
 * `norm_sq_percentile_filtered_gradient_le`: the filter is an $L_2$ contraction.
 * `norm_percentile_filtered_gradient_le`: norm-level form of the contraction.
 * `percentile_mask_sparsity`: at most `n - ⌈Q_p * n⌉` coordinates of a layer survive.
@@ -83,34 +84,25 @@ noncomputable def percentileTailMask (g : W ι) (π : ι → Λ) (Qp : ℝ) : W 
 noncomputable def percentileFilteredGradient (g : W ι) (π : ι → Λ) (Qp : ℝ) : W ι :=
   hadamard g (percentileTailMask g π Qp)
 
-/-- **Percentile Contraction**: the filter never increases the squared norm. -/
-theorem norm_sq_percentile_filtered_gradient_le (g : W ι) (π : ι → Λ) (Qp : ℝ) :
-    ‖percentileFilteredGradient g π Qp‖^2 ≤ ‖g‖^2 := by
-  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  apply Finset.sum_le_sum
-  intro i _
-  unfold percentileFilteredGradient hadamard percentileTailMask
-  rw [WithLp.equiv_apply, Equiv.apply_symm_apply]
-  dsimp only [ge_iff_le, WithLp.equiv_symm_apply, Real.norm_eq_abs]
+/-- **percentileTailMask is 0/1-valued**. -/
+theorem percentileTailMask_isZeroOne (g : W ι) (π : ι → Λ) (Qp : ℝ) :
+    IsZeroOneMask (percentileTailMask g π Qp) := by
+  intro i
+  unfold percentileTailMask
+  rw [Equiv.apply_symm_apply]
   split_ifs
-  · rw [mul_one, sq_abs]
-  · simp only [
-      mul_zero,
-      ne_eq,
-      OfNat.ofNat_ne_zero,
-      not_false_eq_true,
-      zero_pow,
-      sq_abs
-    ]
-    positivity
+  · exact Or.inr rfl
+  · exact Or.inl rfl
 
-/-- **Percentile Filtered Norm Bound**: norm-level form of the contraction. -/
+/-- **Contraction**: masking never increases the squared norm. -/
+theorem norm_sq_percentile_filtered_gradient_le (g : W ι) (π : ι → Λ) (Qp : ℝ) :
+    ‖percentileFilteredGradient g π Qp‖^2 ≤ ‖g‖^2 :=
+  norm_sq_hadamard_le_of_zeroOne g _ (percentileTailMask_isZeroOne g π Qp)
+
+/-- **Filtered Norm Bound**: norm-level form of the contraction. -/
 theorem norm_percentile_filtered_gradient_le (g : W ι) (π : ι → Λ) (Qp : ℝ) :
-    ‖percentileFilteredGradient g π Qp‖ ≤ ‖g‖ := by
-  have h_sq := norm_sq_percentile_filtered_gradient_le g π Qp
-  have h_sqrt := Real.sqrt_le_sqrt h_sq
-  rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h_sqrt
-  exact h_sqrt
+    ‖percentileFilteredGradient g π Qp‖ ≤ ‖g‖ :=
+  norm_hadamard_le_of_zeroOne g _ (percentileTailMask_isZeroOne g π Qp)
 
 /-- The coordinates of layer `l` that the percentile mask keeps. -/
 noncomputable def keptCoords (g : W ι) (π : ι → Λ) (Qp : ℝ) (l : Λ) : Finset ι :=
