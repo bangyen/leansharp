@@ -98,7 +98,7 @@ filtered gradient is not formally derivable here. Instead, the project provides 
 Make sure you have [elan](https://github.com/leanprover/elan) installed for Lean 4 version management.
 
 ```bash
-git clone https://github.com/bangyen/leansharp.git
+git clone --recurse-submodules https://github.com/bangyen/leansharp.git
 cd leansharp
 lake exe cache get  # Downloads the pre-compiled Mathlib libraries
 lake build
